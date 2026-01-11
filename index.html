@@ -120,77 +120,77 @@
       }
 
       /* Writing */
-.writing-section {
-  padding: 2rem 5rem;
-  max-width: 1200px;
-  margin: 0 auto;
-}
+      .writing-section {
+        padding: 2rem 5rem;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
 
-.writing-card {
-  display: block;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-left: 4px solid var(--accent-cyan);
-  border-radius: 8px;
-  padding: 2rem 2.5rem;
-  text-decoration: none;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
+      .writing-card {
+        display: block;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-left: 4px solid var(--accent-cyan);
+        border-radius: 8px;
+        padding: 2rem 2.5rem;
+        text-decoration: none;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
 
-.writing-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-}
+      .writing-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      }
 
-.writing-label {
-  font-size: 0.75rem;
-  color: var(--accent-coral);
-  letter-spacing: 0.05em;
-}
+      .writing-label {
+        font-size: 0.75rem;
+        color: var(--accent-coral);
+        letter-spacing: 0.05em;
+      }
 
-.writing-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text);
-  margin: 0.75rem 0;
-}
+      .writing-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0.75rem 0;
+      }
 
-.writing-title em {
-  font-style: italic;
-  color: var(--gradient-start);
-}
+      .writing-title em {
+        font-style: italic;
+        color: var(--gradient-start);
+      }
 
-.writing-excerpt {
-  color: var(--text-muted);
-  font-size: 1rem;
-  line-height: 1.6;
-  margin-bottom: 1rem;
-}
+      .writing-excerpt {
+        color: var(--text-muted);
+        font-size: 1rem;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+      }
 
-.writing-cta {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--gradient-start);
-}
+      .writing-cta {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--gradient-start);
+      }
 
-.writing-card:hover .writing-cta {
-  text-decoration: underline;
-}
+      .writing-card:hover .writing-cta {
+        text-decoration: underline;
+      }
 
-@media (max-width: 900px) {
-  .writing-section {
-    padding: 2rem;
-  }
+      @media (max-width: 900px) {
+        .writing-section {
+          padding: 2rem;
+        }
 
-  .writing-card {
-    padding: 1.5rem;
-  }
+        .writing-card {
+          padding: 1.5rem;
+        }
 
-  .writing-title {
-    font-size: 1.25rem;
-  }
-}
-      
+        .writing-title {
+          font-size: 1.25rem;
+        }
+      }
+
       /* Hero Section */
       .hero {
         min-height: auto;
@@ -419,7 +419,6 @@
         gap: 2rem;
       }
 
-      /* Scroll animation for project cards */
       .project-card {
         background: var(--bg-secondary);
         border: 1px solid var(--border);
@@ -427,29 +426,8 @@
         overflow: hidden;
         display: flex;
         flex-direction: column;
-        transition: transform 0.2s, box-shadow 0.2s, opacity 0.6s ease-out;
+        transition: transform 0.2s, box-shadow 0.2s;
         position: relative;
-        opacity: 0;
-        transform: translateY(30px);
-      }
-
-      .project-card.visible {
-        opacity: 1;
-        transform: translateY(0);
-      }
-
-      /* Staggered animation delays */
-      .project-card:nth-child(1) {
-        transition-delay: 0s;
-      }
-      .project-card:nth-child(2) {
-        transition-delay: 0.1s;
-      }
-      .project-card:nth-child(3) {
-        transition-delay: 0.2s;
-      }
-      .project-card:nth-child(4) {
-        transition-delay: 0.3s;
       }
 
       .project-card::before {
@@ -472,10 +450,6 @@
       .project-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-      }
-
-      .project-card.visible:hover {
-        transform: translateY(-4px);
       }
 
       .project-card:hover::before {
@@ -515,6 +489,10 @@
         font-size: 1rem;
         flex-grow: 1;
         line-height: 1.7;
+      }
+
+      .project-description i {
+        color: var(--gradient-start);
       }
 
       .project-tags {
@@ -930,8 +908,11 @@
           <div class="project-content">
             <h2 class="project-title">DownWords</h2>
             <p class="project-description">
-           <i>A daily word puzzle for competitive thinkers.</i><br>
-DownWords is a daily word puzzle available on web and iOS. Players around the world race to unscramble six themed words, earning points for speed and uncovering bonus words. Custom leagues let friends and families compete together.
+              <i>A daily word puzzle for competitive thinkers.</i><br />
+              DownWords is a daily word puzzle available on web and iOS. Players
+              around the world race to unscramble six themed words, earning
+              points for speed and uncovering bonus words. Custom leagues let
+              friends and families compete together.
             </p>
             <div class="project-tags">
               <span class="tag">iOS</span>
@@ -956,10 +937,10 @@ DownWords is a daily word puzzle available on web and iOS. Players around the wo
           <div class="project-content">
             <h2 class="project-title">DriftBound</h2>
             <p class="project-description">
-              <i>Bringing tabletop role‑playing to new players</i><br>
-             DriftBound is a tool designed to help people connect through online
-            tabletop role‑playing games. It brings the experience of TTRPG sessions to players 
-            who might not otherwise be able to play
+              <i>Bringing tabletop role‑playing to new players</i><br />
+              DriftBound is a tool designed to help people connect through
+              online tabletop role‑playing games. It brings the experience of
+              TTRPG sessions to players who might not otherwise be able to play
             </p>
             <div class="project-tags">
               <span class="tag">OpenAI</span>
@@ -980,11 +961,11 @@ DownWords is a daily word puzzle available on web and iOS. Players around the wo
           <div class="project-content">
             <h2 class="project-title">Tourists & Trebuchets</h2>
             <p class="project-description">
-              <i>Castle management with a modern problem.</i><br>
-             Winner of the 2025 Welsh ICE Games Jam, Tourists & Trebuchets is a 
-              castle management simulator built with a brilliant team under the 
-              name Pixel Keep. Balance tourism with medieval defence as you try to 
-              keep your castle standing — and thriving.
+              <i>Castle management with a modern problem.</i><br />
+              Winner of the 2025 Welsh ICE Games Jam, Tourists & Trebuchets is a
+              castle management simulator built with a brilliant team under the
+              name Pixel Keep. Balance tourism with medieval defence as you try
+              to keep your castle standing — and thriving.
             </p>
             <div class="project-tags">
               <span class="tag">Game Jam</span>
@@ -1004,11 +985,12 @@ DownWords is a daily word puzzle available on web and iOS. Players around the wo
           <div class="project-content">
             <h2 class="project-title">Tinkerbot Games</h2>
             <p class="project-description">
-              <i>A decade of tabletop design and publishing.</i><br>
-              I co‑founded Tinkerbot Games, designing and publishing tabletop 
-              board games for over ten years. Our games sold internationally 
-              through retail and Kickstarter, giving me hands‑on experience 
-              across game design, production, publishing, and community building.
+              <i>A decade of tabletop design and publishing.</i><br />
+              I co‑founded Tinkerbot Games, designing and publishing tabletop
+              board games for over ten years. Our games sold internationally
+              through retail and Kickstarter, giving me hands‑on experience
+              across game design, production, publishing, and community
+              building.
             </p>
             <div class="project-tags">
               <span class="tag">Board Games</span>
@@ -1024,53 +1006,54 @@ DownWords is a daily word puzzle available on web and iOS. Players around the wo
         </article>
       </div>
     </section>
-    
-    <!-- Writing -->
-<section id="writing" class="writing-section">
-        <p class="section-header mono">// LATEST WRITING</p>
 
-  <a
-    href="https://www.linkedin.com/feed/update/urn:li:activity:7407755507828162560/"
-    class="writing-card"
-    target="_blank"
-    rel="noopener"
-  >
-    <h3 class="writing-title">Your startup is <em>not</em> a rocket ship</h3>
-    <p class="writing-excerpt">
-      Why building a company feels more like navigating rapids in a plastic
-      boat than flying to the moon.
-    </p>
-    <span class="writing-cta">Read on LinkedIn →</span>
-  </a>
-   <br>
-   <a
-    href="https://www.linkedin.com/pulse/snakes-ladders-terrible-game-heres-how-improve-gino-brancazio-nrhme/?trackingId=z1SpHaGKQhS1Ev2%2FfhORsg%3D%3D"
-    class="writing-card"
-    target="_blank"
-    rel="noopener"
-  >
-    <h3 class="writing-title">Snakes and ladders is a <em>terrible</em> game</h3>
-    <p class="writing-excerpt">
-      Here's how to fix it.
-    </p>
-    <span class="writing-cta">Read on LinkedIn →</span>
-  </a>
-  <br>
-   <a
-    href="https://www.linkedin.com/pulse/journey-matters-gino-brancazio-ixd3e/?trackingId=z1SpHaGKQhS1Ev2%2FfhORsg%3D%3D"
-    class="writing-card"
-    target="_blank"
-    rel="noopener"
-  >
-    <h3 class="writing-title">The journey matters more than you think</h3>
-    <p class="writing-excerpt">
-     Why crafting a strong journey often matters more than the end result.   
-    </p>
-    <span class="writing-cta">Read on LinkedIn →</span>
-  </a>
-  
-</section>
-    
+    <!-- Writing -->
+    <section id="writing" class="writing-section">
+      <p class="section-header mono">// LATEST WRITING</p>
+
+      <a
+        href="https://www.linkedin.com/feed/update/urn:li:activity:7407755507828162560/"
+        class="writing-card"
+        target="_blank"
+        rel="noopener"
+      >
+        <h3 class="writing-title">
+          Your startup is <em>not</em> a rocket ship
+        </h3>
+        <p class="writing-excerpt">
+          Why building a company feels more like navigating rapids in a plastic
+          boat than flying to the moon.
+        </p>
+        <span class="writing-cta">Read on LinkedIn →</span>
+      </a>
+      <br />
+      <a
+        href="https://www.linkedin.com/pulse/snakes-ladders-terrible-game-heres-how-improve-gino-brancazio-nrhme/?trackingId=z1SpHaGKQhS1Ev2%2FfhORsg%3D%3D"
+        class="writing-card"
+        target="_blank"
+        rel="noopener"
+      >
+        <h3 class="writing-title">
+          Snakes and ladders is a <em>terrible</em> game
+        </h3>
+        <p class="writing-excerpt">Here's how to fix it.</p>
+        <span class="writing-cta">Read on LinkedIn →</span>
+      </a>
+      <br />
+      <a
+        href="https://www.linkedin.com/pulse/journey-matters-gino-brancazio-ixd3e/?trackingId=z1SpHaGKQhS1Ev2%2FfhORsg%3D%3D"
+        class="writing-card"
+        target="_blank"
+        rel="noopener"
+      >
+        <h3 class="writing-title">The journey matters more than you think</h3>
+        <p class="writing-excerpt">
+          Why crafting a strong journey often matters more than the end result.
+        </p>
+        <span class="writing-cta">Read on LinkedIn →</span>
+      </a>
+    </section>
+
     <!-- About -->
     <section id="about">
       <p class="section-header mono">// ABOUT ME</p>
@@ -1080,9 +1063,9 @@ DownWords is a daily word puzzle available on web and iOS. Players around the wo
           Cardiff. I specialise in building things that connect people.
         </p>
         <p>
-          I spent ten years designing and publishing board games in the tabletop industry. 
-          Today, I’m combining that experience with my career in tech to build games and 
-          technology that bring people together through play.
+          I spent ten years designing and publishing board games in the tabletop
+          industry. Today, I'm combining that experience with my career in tech
+          to build games and technology that bring people together through play.
         </p>
         <p>
           When I'm not working in tech, you'll find me cosplaying as the
@@ -1100,8 +1083,6 @@ DownWords is a daily word puzzle available on web and iOS. Players around the wo
         </p>
       </div>
     </section>
-    
-    
 
     <!-- Footer -->
     <footer>
@@ -1117,409 +1098,375 @@ DownWords is a daily word puzzle available on web and iOS. Players around the wo
         document.getElementById("projects").scrollIntoView();
       }
 
-      // Scroll-triggered animations for project cards
-      const observerOptions = {
-        threshold: 0.1,
-        rootMargin: "0px 0px -50px 0px",
+      // Pong Game
+      const gameOverlay = document.getElementById("gameOverlay");
+      const canvas = document.getElementById("gameCanvas");
+      const ctx = canvas.getContext("2d");
+      const playerScoreEl = document.getElementById("playerScore");
+      const aiScoreEl = document.getElementById("aiScore");
+      const restartBtn = document.getElementById("restartBtn");
+      const closeBtn = document.getElementById("closeGame");
+      const heroPhoto = document.getElementById("heroPhoto");
+
+      const WINNING_SCORE = 5;
+      const PADDLE_WIDTH = 10;
+      const PADDLE_HEIGHT = 80;
+      const BALL_SIZE = 12;
+      const MAX_BALL_SPEED = 12;
+
+      let gameRunning = false;
+      let animationId = null;
+
+      const game = {
+        player: {
+          y: canvas.height / 2 - PADDLE_HEIGHT / 2,
+          score: 0,
+          speed: 8,
+        },
+        ai: {
+          y: canvas.height / 2 - PADDLE_HEIGHT / 2,
+          score: 0,
+          speed: 2.5,
+          reactionDelay: 0,
+          targetY: canvas.height / 2,
+        },
+        ball: {
+          x: canvas.width / 2,
+          y: canvas.height / 2,
+          vx: 5,
+          vy: 3,
+          speed: 5,
+        },
+        keys: {
+          up: false,
+          down: false,
+        },
       };
 
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("visible");
-            observer.unobserve(entry.target);
-          }
-        });
-      }, observerOptions);
+      function resetBall(direction = 1) {
+        game.ball.x = canvas.width / 2;
+        game.ball.y = canvas.height / 2;
+        game.ball.speed = 5;
+        game.ball.vx = game.ball.speed * direction;
+        game.ball.vy = (Math.random() - 0.5) * 6;
+      }
 
-      document.querySelectorAll(".project-card").forEach((card) => {
-        observer.observe(card);
+      function resetGame() {
+        game.player.score = 0;
+        game.ai.score = 0;
+        game.player.y = canvas.height / 2 - PADDLE_HEIGHT / 2;
+        game.ai.y = canvas.height / 2 - PADDLE_HEIGHT / 2;
+        game.ai.targetY = canvas.height / 2;
+        playerScoreEl.textContent = "0";
+        aiScoreEl.textContent = "0";
+        resetBall(1);
+        gameRunning = true;
+      }
+
+      function checkPaddleCollision(paddleX, paddleY, isLeftPaddle) {
+        const ball = game.ball;
+        const ballRadius = BALL_SIZE / 2;
+        const ballCenterX = ball.x + ballRadius;
+        const ballCenterY = ball.y + ballRadius;
+
+        const prevBallCenterX = ballCenterX - ball.vx;
+
+        const paddleLeft = paddleX;
+        const paddleRight = paddleX + PADDLE_WIDTH;
+        const paddleTop = paddleY;
+        const paddleBottom = paddleY + PADDLE_HEIGHT;
+
+        if (isLeftPaddle) {
+          if (
+            prevBallCenterX - ballRadius >= paddleRight &&
+            ballCenterX - ballRadius <= paddleRight &&
+            ballCenterY + ballRadius >= paddleTop &&
+            ballCenterY - ballRadius <= paddleBottom
+          ) {
+            return true;
+          }
+          if (
+            ballCenterX - ballRadius <= paddleRight &&
+            ballCenterX + ballRadius >= paddleLeft &&
+            ballCenterY + ballRadius >= paddleTop &&
+            ballCenterY - ballRadius <= paddleBottom
+          ) {
+            return true;
+          }
+        } else {
+          if (
+            prevBallCenterX + ballRadius <= paddleLeft &&
+            ballCenterX + ballRadius >= paddleLeft &&
+            ballCenterY + ballRadius >= paddleTop &&
+            ballCenterY - ballRadius <= paddleBottom
+          ) {
+            return true;
+          }
+          if (
+            ballCenterX + ballRadius >= paddleLeft &&
+            ballCenterX - ballRadius <= paddleRight &&
+            ballCenterY + ballRadius >= paddleTop &&
+            ballCenterY - ballRadius <= paddleBottom
+          ) {
+            return true;
+          }
+        }
+
+        return false;
+      }
+
+      function update() {
+        if (!gameRunning) return;
+
+        if (game.keys.up && game.player.y > 0) {
+          game.player.y -= game.player.speed;
+        }
+        if (game.keys.down && game.player.y < canvas.height - PADDLE_HEIGHT) {
+          game.player.y += game.player.speed;
+        }
+
+        game.ai.reactionDelay++;
+
+        if (game.ai.reactionDelay >= 8) {
+          game.ai.reactionDelay = 0;
+          const imprecision = (Math.random() - 0.5) * 60;
+          game.ai.targetY = game.ball.y + imprecision;
+        }
+
+        const aiCenter = game.ai.y + PADDLE_HEIGHT / 2;
+        const deadzone = 35;
+
+        if (aiCenter < game.ai.targetY - deadzone) {
+          game.ai.y += game.ai.speed;
+        } else if (aiCenter > game.ai.targetY + deadzone) {
+          game.ai.y -= game.ai.speed;
+        }
+        game.ai.y = Math.max(
+          0,
+          Math.min(canvas.height - PADDLE_HEIGHT, game.ai.y)
+        );
+
+        game.ball.x += game.ball.vx;
+        game.ball.y += game.ball.vy;
+
+        if (game.ball.y <= 0 || game.ball.y >= canvas.height - BALL_SIZE) {
+          game.ball.vy *= -1;
+          game.ball.y = Math.max(
+            0,
+            Math.min(canvas.height - BALL_SIZE, game.ball.y)
+          );
+        }
+
+        const playerPaddleX = 30;
+        if (
+          game.ball.vx < 0 &&
+          checkPaddleCollision(playerPaddleX, game.player.y, true)
+        ) {
+          game.ball.vx *= -1;
+          game.ball.x = playerPaddleX + PADDLE_WIDTH + 1;
+          const hitPos =
+            (game.ball.y - game.player.y + BALL_SIZE / 2) / PADDLE_HEIGHT - 0.5;
+          game.ball.vy = hitPos * 8;
+          game.ball.speed = Math.min(game.ball.speed + 0.2, MAX_BALL_SPEED);
+          game.ball.vx = game.ball.speed;
+        }
+
+        const aiPaddleX = canvas.width - 30 - PADDLE_WIDTH;
+        if (
+          game.ball.vx > 0 &&
+          checkPaddleCollision(aiPaddleX, game.ai.y, false)
+        ) {
+          game.ball.vx *= -1;
+          game.ball.x = aiPaddleX - BALL_SIZE - 1;
+          const hitPos =
+            (game.ball.y - game.ai.y + BALL_SIZE / 2) / PADDLE_HEIGHT - 0.5;
+          game.ball.vy = hitPos * 8;
+          game.ball.speed = Math.min(game.ball.speed + 0.2, MAX_BALL_SPEED);
+          game.ball.vx = -game.ball.speed;
+        }
+
+        if (game.ball.x < -BALL_SIZE) {
+          game.ai.score++;
+          aiScoreEl.textContent = game.ai.score;
+          if (game.ai.score >= WINNING_SCORE) {
+            gameRunning = false;
+          } else {
+            resetBall(1);
+          }
+        }
+        if (game.ball.x > canvas.width + BALL_SIZE) {
+          game.player.score++;
+          playerScoreEl.textContent = game.player.score;
+          if (game.player.score >= WINNING_SCORE) {
+            gameRunning = false;
+          } else {
+            resetBall(-1);
+          }
+        }
+      }
+
+      function draw() {
+        ctx.fillStyle = "#0a0a0a";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.setLineDash([10, 10]);
+        ctx.strokeStyle = "#333";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(canvas.width / 2, 0);
+        ctx.lineTo(canvas.width / 2, canvas.height);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = "#4ecdc4";
+        ctx.fillRect(30, game.player.y, PADDLE_WIDTH, PADDLE_HEIGHT);
+
+        ctx.fillStyle = "#c44569";
+        ctx.fillRect(
+          canvas.width - 30 - PADDLE_WIDTH,
+          game.ai.y,
+          PADDLE_WIDTH,
+          PADDLE_HEIGHT
+        );
+
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(
+          game.ball.x + BALL_SIZE / 2,
+          game.ball.y + BALL_SIZE / 2,
+          BALL_SIZE / 2,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+
+        if (
+          !gameRunning &&
+          (game.player.score >= WINNING_SCORE || game.ai.score >= WINNING_SCORE)
+        ) {
+          ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          ctx.font = "bold 36px Inter, sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillStyle =
+            game.player.score >= WINNING_SCORE ? "#4ecdc4" : "#c44569";
+          ctx.fillText(
+            game.player.score >= WINNING_SCORE ? "YOU WIN!" : "AI WINS!",
+            canvas.width / 2,
+            canvas.height / 2 - 10
+          );
+
+          ctx.font = "16px Inter, sans-serif";
+          ctx.fillStyle = "#888";
+          ctx.fillText(
+            "Press Restart to play again",
+            canvas.width / 2,
+            canvas.height / 2 + 25
+          );
+        }
+      }
+
+      function gameLoop() {
+        update();
+        draw();
+        animationId = requestAnimationFrame(gameLoop);
+      }
+
+      function startGame() {
+        gameOverlay.classList.add("active");
+        document.body.style.overflow = "hidden";
+        resetGame();
+        if (!animationId) {
+          gameLoop();
+        }
+      }
+
+      function closeGame() {
+        gameOverlay.classList.remove("active");
+        document.body.style.overflow = "";
+        gameRunning = false;
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+          animationId = null;
+        }
+      }
+
+      heroPhoto.addEventListener("click", startGame);
+      closeBtn.addEventListener("click", closeGame);
+      restartBtn.addEventListener("click", resetGame);
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowUp" || e.key === "w" || e.key === "W") {
+          game.keys.up = true;
+          e.preventDefault();
+        }
+        if (e.key === "ArrowDown" || e.key === "s" || e.key === "S") {
+          game.keys.down = true;
+          e.preventDefault();
+        }
+        if (e.key === "Escape") {
+          closeGame();
+        }
       });
 
-      // Pong Game
-const gameOverlay = document.getElementById("gameOverlay");
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-const playerScoreEl = document.getElementById("playerScore");
-const aiScoreEl = document.getElementById("aiScore");
-const restartBtn = document.getElementById("restartBtn");
-const closeBtn = document.getElementById("closeGame");
-const heroPhoto = document.getElementById("heroPhoto");
+      document.addEventListener("keyup", (e) => {
+        if (e.key === "ArrowUp" || e.key === "w" || e.key === "W") {
+          game.keys.up = false;
+        }
+        if (e.key === "ArrowDown" || e.key === "s" || e.key === "S") {
+          game.keys.down = false;
+        }
+      });
 
-const WINNING_SCORE = 5;
-const PADDLE_WIDTH = 10;
-const PADDLE_HEIGHT = 80;
-const BALL_SIZE = 12;
-const MAX_BALL_SPEED = 12; // Cap the ball speed to prevent tunneling
+      const touchUp = document.getElementById("touchUp");
+      const touchDown = document.getElementById("touchDown");
 
-let gameRunning = false;
-let animationId = null;
+      touchUp.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        game.keys.up = true;
+      });
 
-const game = {
-  player: {
-    y: canvas.height / 2 - PADDLE_HEIGHT / 2,
-    score: 0,
-    speed: 8,
-  },
-  ai: {
-    y: canvas.height / 2 - PADDLE_HEIGHT / 2,
-    score: 0,
-    speed: 2.5, // Reduced from 4
-    reactionDelay: 0,
-    targetY: canvas.height / 2,
-  },
-  ball: {
-    x: canvas.width / 2,
-    y: canvas.height / 2,
-    vx: 5,
-    vy: 3,
-    speed: 5,
-  },
-  keys: {
-    up: false,
-    down: false,
-  },
-};
+      touchUp.addEventListener("touchend", (e) => {
+        e.preventDefault();
+        game.keys.up = false;
+      });
 
-function resetBall(direction = 1) {
-  game.ball.x = canvas.width / 2;
-  game.ball.y = canvas.height / 2;
-  game.ball.speed = 5;
-  game.ball.vx = game.ball.speed * direction;
-  game.ball.vy = (Math.random() - 0.5) * 6;
-}
+      touchDown.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        game.keys.down = true;
+      });
 
-function resetGame() {
-  game.player.score = 0;
-  game.ai.score = 0;
-  game.player.y = canvas.height / 2 - PADDLE_HEIGHT / 2;
-  game.ai.y = canvas.height / 2 - PADDLE_HEIGHT / 2;
-  game.ai.targetY = canvas.height / 2;
-  playerScoreEl.textContent = "0";
-  aiScoreEl.textContent = "0";
-  resetBall(1);
-  gameRunning = true;
-}
+      touchDown.addEventListener("touchend", (e) => {
+        e.preventDefault();
+        game.keys.down = false;
+      });
 
-// Improved collision detection that accounts for ball velocity
-function checkPaddleCollision(paddleX, paddleY, isLeftPaddle) {
-  const ball = game.ball;
-  const ballRadius = BALL_SIZE / 2;
-  const ballCenterX = ball.x + ballRadius;
-  const ballCenterY = ball.y + ballRadius;
+      canvas.addEventListener(
+        "touchmove",
+        (e) => {
+          e.preventDefault();
+          const touch = e.touches[0];
+          const rect = canvas.getBoundingClientRect();
+          const touchY = touch.clientY - rect.top;
+          const scale = canvas.height / rect.height;
+          game.player.y = touchY * scale - PADDLE_HEIGHT / 2;
+          game.player.y = Math.max(
+            0,
+            Math.min(canvas.height - PADDLE_HEIGHT, game.player.y)
+          );
+        },
+        { passive: false }
+      );
 
-  // Previous position
-  const prevBallCenterX = ballCenterX - ball.vx;
-
-  const paddleLeft = paddleX;
-  const paddleRight = paddleX + PADDLE_WIDTH;
-  const paddleTop = paddleY;
-  const paddleBottom = paddleY + PADDLE_HEIGHT;
-
-  if (isLeftPaddle) {
-    // Check if ball crossed the paddle's right edge this frame
-    if (
-      prevBallCenterX - ballRadius >= paddleRight &&
-      ballCenterX - ballRadius <= paddleRight &&
-      ballCenterY + ballRadius >= paddleTop &&
-      ballCenterY - ballRadius <= paddleBottom
-    ) {
-      return true;
-    }
-    // Also check current overlap
-    if (
-      ballCenterX - ballRadius <= paddleRight &&
-      ballCenterX + ballRadius >= paddleLeft &&
-      ballCenterY + ballRadius >= paddleTop &&
-      ballCenterY - ballRadius <= paddleBottom
-    ) {
-      return true;
-    }
-  } else {
-    // Check if ball crossed the paddle's left edge this frame
-    if (
-      prevBallCenterX + ballRadius <= paddleLeft &&
-      ballCenterX + ballRadius >= paddleLeft &&
-      ballCenterY + ballRadius >= paddleTop &&
-      ballCenterY - ballRadius <= paddleBottom
-    ) {
-      return true;
-    }
-    // Also check current overlap
-    if (
-      ballCenterX + ballRadius >= paddleLeft &&
-      ballCenterX - ballRadius <= paddleRight &&
-      ballCenterY + ballRadius >= paddleTop &&
-      ballCenterY - ballRadius <= paddleBottom
-    ) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-function update() {
-  if (!gameRunning) return;
-
-  // Player movement
-  if (game.keys.up && game.player.y > 0) {
-    game.player.y -= game.player.speed;
-  }
-  if (game.keys.down && game.player.y < canvas.height - PADDLE_HEIGHT) {
-    game.player.y += game.player.speed;
-  }
-
-  // AI movement - less precise, with delayed reactions
-  game.ai.reactionDelay++;
-
-  // Only update target every few frames and add some randomness
-  if (game.ai.reactionDelay >= 8) {
-    game.ai.reactionDelay = 0;
-    // Add imprecision - AI doesn't perfectly track the ball
-    const imprecision = (Math.random() - 0.5) * 60;
-    game.ai.targetY = game.ball.y + imprecision;
-  }
-
-  const aiCenter = game.ai.y + PADDLE_HEIGHT / 2;
-  const deadzone = 35; // Increased from 20 - AI is less precise
-
-  if (aiCenter < game.ai.targetY - deadzone) {
-    game.ai.y += game.ai.speed;
-  } else if (aiCenter > game.ai.targetY + deadzone) {
-    game.ai.y -= game.ai.speed;
-  }
-  game.ai.y = Math.max(
-    0,
-    Math.min(canvas.height - PADDLE_HEIGHT, game.ai.y)
-  );
-
-  // Ball movement
-  game.ball.x += game.ball.vx;
-  game.ball.y += game.ball.vy;
-
-  // Ball collision with top/bottom
-  if (game.ball.y <= 0 || game.ball.y >= canvas.height - BALL_SIZE) {
-    game.ball.vy *= -1;
-    game.ball.y = Math.max(0, Math.min(canvas.height - BALL_SIZE, game.ball.y));
-  }
-
-  // Ball collision with player paddle (left side)
-  const playerPaddleX = 30;
-  if (game.ball.vx < 0 && checkPaddleCollision(playerPaddleX, game.player.y, true)) {
-    game.ball.vx *= -1;
-    game.ball.x = playerPaddleX + PADDLE_WIDTH + 1;
-    const hitPos =
-      (game.ball.y - game.player.y + BALL_SIZE / 2) / PADDLE_HEIGHT - 0.5;
-    game.ball.vy = hitPos * 8;
-    game.ball.speed = Math.min(game.ball.speed + 0.2, MAX_BALL_SPEED);
-    game.ball.vx = game.ball.speed;
-  }
-
-  // Ball collision with AI paddle (right side)
-  const aiPaddleX = canvas.width - 30 - PADDLE_WIDTH;
-  if (game.ball.vx > 0 && checkPaddleCollision(aiPaddleX, game.ai.y, false)) {
-    game.ball.vx *= -1;
-    game.ball.x = aiPaddleX - BALL_SIZE - 1;
-    const hitPos =
-      (game.ball.y - game.ai.y + BALL_SIZE / 2) / PADDLE_HEIGHT - 0.5;
-    game.ball.vy = hitPos * 8;
-    game.ball.speed = Math.min(game.ball.speed + 0.2, MAX_BALL_SPEED);
-    game.ball.vx = -game.ball.speed;
-  }
-
-  // Scoring
-  if (game.ball.x < -BALL_SIZE) {
-    game.ai.score++;
-    aiScoreEl.textContent = game.ai.score;
-    if (game.ai.score >= WINNING_SCORE) {
-      gameRunning = false;
-    } else {
-      resetBall(1);
-    }
-  }
-  if (game.ball.x > canvas.width + BALL_SIZE) {
-    game.player.score++;
-    playerScoreEl.textContent = game.player.score;
-    if (game.player.score >= WINNING_SCORE) {
-      gameRunning = false;
-    } else {
-      resetBall(-1);
-    }
-  }
-}
-
-function draw() {
-  // Clear canvas
-  ctx.fillStyle = "#0a0a0a";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // Draw center line
-  ctx.setLineDash([10, 10]);
-  ctx.strokeStyle = "#333";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(canvas.width / 2, 0);
-  ctx.lineTo(canvas.width / 2, canvas.height);
-  ctx.stroke();
-  ctx.setLineDash([]);
-
-  // Draw paddles
-  ctx.fillStyle = "#4ecdc4";
-  ctx.fillRect(30, game.player.y, PADDLE_WIDTH, PADDLE_HEIGHT);
-
-  ctx.fillStyle = "#c44569";
-  ctx.fillRect(
-    canvas.width - 30 - PADDLE_WIDTH,
-    game.ai.y,
-    PADDLE_WIDTH,
-    PADDLE_HEIGHT
-  );
-
-  // Draw ball
-  ctx.fillStyle = "#ffffff";
-  ctx.beginPath();
-  ctx.arc(
-    game.ball.x + BALL_SIZE / 2,
-    game.ball.y + BALL_SIZE / 2,
-    BALL_SIZE / 2,
-    0,
-    Math.PI * 2
-  );
-  ctx.fill();
-
-  // Draw win/lose message
-  if (
-    !gameRunning &&
-    (game.player.score >= WINNING_SCORE || game.ai.score >= WINNING_SCORE)
-  ) {
-    ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.font = "bold 36px Inter, sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillStyle =
-      game.player.score >= WINNING_SCORE ? "#4ecdc4" : "#c44569";
-    ctx.fillText(
-      game.player.score >= WINNING_SCORE ? "YOU WIN!" : "AI WINS!",
-      canvas.width / 2,
-      canvas.height / 2 - 10
-    );
-
-    ctx.font = "16px Inter, sans-serif";
-    ctx.fillStyle = "#888";
-    ctx.fillText(
-      "Press Restart to play again",
-      canvas.width / 2,
-      canvas.height / 2 + 25
-    );
-  }
-}
-
-function gameLoop() {
-  update();
-  draw();
-  animationId = requestAnimationFrame(gameLoop);
-}
-
-function startGame() {
-  gameOverlay.classList.add("active");
-  document.body.style.overflow = "hidden";
-  resetGame();
-  if (!animationId) {
-    gameLoop();
-  }
-}
-
-function closeGame() {
-  gameOverlay.classList.remove("active");
-  document.body.style.overflow = "";
-  gameRunning = false;
-  if (animationId) {
-    cancelAnimationFrame(animationId);
-    animationId = null;
-  }
-}
-
-// Event listeners
-heroPhoto.addEventListener("click", startGame);
-closeBtn.addEventListener("click", closeGame);
-restartBtn.addEventListener("click", resetGame);
-
-document.addEventListener("keydown", (e) => {
-  if (e.key === "ArrowUp" || e.key === "w" || e.key === "W") {
-    game.keys.up = true;
-    e.preventDefault();
-  }
-  if (e.key === "ArrowDown" || e.key === "s" || e.key === "S") {
-    game.keys.down = true;
-    e.preventDefault();
-  }
-  if (e.key === "Escape") {
-    closeGame();
-  }
-});
-
-document.addEventListener("keyup", (e) => {
-  if (e.key === "ArrowUp" || e.key === "w" || e.key === "W") {
-    game.keys.up = false;
-  }
-  if (e.key === "ArrowDown" || e.key === "s" || e.key === "S") {
-    game.keys.down = false;
-  }
-});
-
-// Touch controls
-const touchUp = document.getElementById("touchUp");
-const touchDown = document.getElementById("touchDown");
-
-touchUp.addEventListener("touchstart", (e) => {
-  e.preventDefault();
-  game.keys.up = true;
-});
-
-touchUp.addEventListener("touchend", (e) => {
-  e.preventDefault();
-  game.keys.up = false;
-});
-
-touchDown.addEventListener("touchstart", (e) => {
-  e.preventDefault();
-  game.keys.down = true;
-});
-
-touchDown.addEventListener("touchend", (e) => {
-  e.preventDefault();
-  game.keys.down = false;
-});
-
-// Also allow touch directly on canvas
-canvas.addEventListener(
-  "touchmove",
-  (e) => {
-    e.preventDefault();
-    const touch = e.touches[0];
-    const rect = canvas.getBoundingClientRect();
-    const touchY = touch.clientY - rect.top;
-    const scale = canvas.height / rect.height;
-    game.player.y = touchY * scale - PADDLE_HEIGHT / 2;
-    game.player.y = Math.max(
-      0,
-      Math.min(canvas.height - PADDLE_HEIGHT, game.player.y)
-    );
-  },
-  { passive: false }
-);
-
-// Console hint
-console.log(
-  "%c🎮 Welcome, player!",
-  "color: #2563eb; font-size: 16px; font-weight: bold;"
-);
-console.log(
-  "%c Click the photo to play a game...",
-  "color: #888; font-size: 12px;"
-);
+      console.log(
+        "%c🎮 Welcome, player!",
+        "color: #2563eb; font-size: 16px; font-weight: bold;"
+      );
+      console.log(
+        "%c Click the photo to play a game...",
+        "color: #888; font-size: 12px;"
+      );
     </script>
   </body>
 </html>
