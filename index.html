@@ -1,1229 +1,1339 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gino Brancazio</title>
-  
-  <!-- Social Sharing Meta Tags -->
-  <meta name="description" content="Game designer & tech nerd connecting people through play experiences." />
-  <meta property="og:title" content="Gino Brancazio" />
-  <meta property="og:description" content="Game designer & technologist connecting people through play experiences." />
-  <meta property="og:image" content="/gino profile.jpeg" />
-  <meta property="og:url" content="https://www.ginobrancazio.com" />
-  <meta property="og:type" content="website" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Gino Brancazio" />
-  <meta name="twitter:description" content="Game designer & technologist connecting people through play experiences." />
-  <meta name="twitter:image" content="/gino profile.jpeg" />
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500&display=swap"
-    rel="stylesheet"
-  />
-  <style>
-    *,
-    *::before,
-    *::after {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gino Brancazio</title>
 
-    :root {
-      --bg: #f0f1f3;
-      --bg-secondary: #ffffff;
-      --text: #1a1a1a;
-      --text-muted: #5a5a5a;
-      --accent-cyan: #4ecdc4;
-      --accent-pink: #c44569;
-      --accent-coral: #e84545;
-      --gradient-start: #2563eb;
-      --gradient-end: #a855f7;
-      --border: #d1d5db;
-      --grid-color: rgba(0, 0, 0, 0.03);
-    }
+    <!-- Social Sharing Meta Tags -->
+    <meta
+      name="description"
+      content="Game designer & tech nerd connecting people through play experiences."
+    />
+    <meta property="og:title" content="Gino Brancazio" />
+    <meta
+      property="og:description"
+      content="Game designer & technologist connecting people through play experiences."
+    />
+    <meta property="og:image" content="/gino profile.jpeg" />
+    <meta property="og:url" content="https://www.ginobrancazio.com" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Gino Brancazio" />
+    <meta
+      name="twitter:description"
+      content="Game designer & technologist connecting people through play experiences."
+    />
+    <meta name="twitter:image" content="/gino profile.jpeg" />
 
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      font-family: "Inter", system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-      background-image: linear-gradient(
-          var(--grid-color) 1px,
-          transparent 1px
-        ),
-        linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
-      background-size: 40px 40px;
-    }
-
-    .mono {
-      font-family: "JetBrains Mono", monospace;
-    }
-
-    /* Navigation */
-    nav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1.5rem 3rem;
-      background: rgba(240, 241, 243, 0.9);
-      backdrop-filter: blur(10px);
-      z-index: 100;
-    }
-
-    .nav-logo {
-      font-weight: 600;
-      font-size: 0.85rem;
-      letter-spacing: 0.15em;
-      color: var(--text);
-      text-decoration: none;
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 2.5rem;
-      list-style: none;
-    }
-
-    .nav-links a {
-      font-size: 0.75rem;
-      font-weight: 500;
-      letter-spacing: 0.1em;
-      color: var(--text);
-      text-decoration: none;
-      text-transform: uppercase;
-      transition: color 0.2s;
-    }
-
-    .nav-links a:hover {
-      color: var(--accent-cyan);
-    }
-
-    /* Hero Section */
-    .hero {
-      min-height: auto;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      align-items: center;
-      padding: 8rem 5rem 6rem;
-      gap: 4rem;
-      position: relative;
-    }
-
-    .hero-content {
-      position: relative;
-    }
-
-    .decor-square {
-      position: absolute;
-      width: 12px;
-      height: 12px;
-      background: var(--accent-pink);
-    }
-
-    .decor-square.top {
-      top: -40px;
-      left: 120px;
-    }
-
-    .decor-diamond {
-      position: absolute;
-      width: 10px;
-      height: 10px;
-      background: var(--accent-cyan);
-      transform: rotate(45deg);
-      bottom: 80px;
-      left: 300px;
-    }
-
-    .hero-label {
-      font-size: 0.75rem;
-      letter-spacing: 0.25em;
-      color: var(--accent-coral);
-      margin-bottom: 1rem;
-      text-transform: uppercase;
-      font-weight: 600;
-    }
-
-    .hero-name {
-      font-size: clamp(3.5rem, 8vw, 6rem);
-      font-weight: 900;
-      line-height: 1;
-      margin-bottom: 2rem;
-      background: linear-gradient(
-        135deg,
-        var(--gradient-start) 0%,
-        var(--gradient-end) 100%
-      );
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .hero-name span {
-      display: block;
-    }
-
-    .hero-tagline {
-      font-size: 1rem;
-      color: var(--text-muted);
-      max-width: 450px;
-      line-height: 1.8;
-    }
-
-    .hero-tagline a {
-      color: var(--accent-cyan);
-      text-decoration: none;
-    }
-
-    .hero-tagline a:hover {
-      text-decoration: underline;
-    }
-
-    /* Photo container */
-    .hero-photo-container {
-      position: relative;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .photo-frame {
-      position: relative;
-      width: 100%;
-      max-width: 480px;
-      min-height: 400px;
-      background: var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .photo-frame::before,
-    .photo-frame::after,
-    .photo-frame .corner-bl,
-    .photo-frame .corner-br {
-      content: "";
-      position: absolute;
-      width: 60px;
-      height: 60px;
-      border: 3px solid;
-      pointer-events: none;
-    }
-
-    .photo-frame::before {
-      top: -15px;
-      left: -15px;
-      border-color: var(--accent-cyan);
-      border-right: none;
-      border-bottom: none;
-    }
-
-    .photo-frame::after {
-      top: -15px;
-      right: -15px;
-      border-color: var(--accent-cyan);
-      border-left: none;
-      border-bottom: none;
-    }
-
-    .photo-frame .corner-bl {
-      bottom: -15px;
-      left: -15px;
-      border-color: var(--accent-pink);
-      border-right: none;
-      border-top: none;
-    }
-
-    .photo-frame .corner-br {
-      bottom: -15px;
-      right: -15px;
-      border-color: var(--accent-pink);
-      border-left: none;
-      border-top: none;
-    }
-
-    /* Easter egg hint - custom cursor */
-    .hero-photo {
-      width: 100%;
-      height: auto;
-      display: block;
-      cursor: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><text y="24" font-size="24">🎮</text></svg>') 16 16, pointer;
-      transition: transform 0.3s;
-    }
-
-    .hero-photo:hover {
-      transform: scale(1.02);
-    }
-
-    .photo-hint {
-      position: absolute;
-      bottom: -45px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      opacity: 0;
-      transition: opacity 0.3s;
-      white-space: nowrap;
-      font-family: "JetBrains Mono", monospace;
-    }
-
-    .photo-frame:hover .photo-hint {
-      opacity: 1;
-    }
-
-    .scroll-indicator {
-      position: absolute;
-      bottom: 2rem;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.5rem;
-      color: var(--accent-cyan);
-      font-size: 0.7rem;
-      letter-spacing: 0.2em;
-      cursor: pointer;
-      animation: bounce 2s infinite;
-    }
-
-    .scroll-indicator::after {
-      content: "↓";
-      font-size: 1rem;
-    }
-
-    @keyframes bounce {
-      0%,
-      100% {
-        transform: translateX(-50%) translateY(0);
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
       }
-      50% {
-        transform: translateX(-50%) translateY(5px);
+
+      :root {
+        --bg: #f0f1f3;
+        --bg-secondary: #ffffff;
+        --text: #1a1a1a;
+        --text-muted: #5a5a5a;
+        --accent-cyan: #4ecdc4;
+        --accent-pink: #c44569;
+        --accent-coral: #e84545;
+        --gradient-start: #2563eb;
+        --gradient-end: #a855f7;
+        --border: #d1d5db;
+        --grid-color: rgba(0, 0, 0, 0.03);
       }
-    }
 
-    /* Section Styles */
-    section {
-      padding: 6rem 5rem;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
+      html {
+        scroll-behavior: smooth;
+      }
 
-    .section-header {
-      font-size: 0.875rem;
-      color: var(--accent-coral);
-      margin-bottom: 3rem;
-      letter-spacing: 0.05em;
-    }
+      body {
+        font-family: "Inter", system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+        background-image: linear-gradient(
+            var(--grid-color) 1px,
+            transparent 1px
+          ),
+          linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+        background-size: 40px 40px;
+      }
 
-    /* Projects */
-    .projects-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 2rem;
-    }
+      .mono {
+        font-family: "JetBrains Mono", monospace;
+      }
 
-    /* Scroll animation for project cards */
-    .project-card {
-      background: var(--bg-secondary);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      transition: transform 0.2s, box-shadow 0.2s, opacity 0.6s ease-out;
-      position: relative;
-      opacity: 0;
-      transform: translateY(30px);
-    }
-
-    .project-card.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* Staggered animation delays */
-    .project-card:nth-child(1) { transition-delay: 0s; }
-    .project-card:nth-child(2) { transition-delay: 0.1s; }
-    .project-card:nth-child(3) { transition-delay: 0.2s; }
-    .project-card:nth-child(4) { transition-delay: 0.3s; }
-
-    .project-card::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: linear-gradient(
-        90deg,
-        var(--gradient-start),
-        var(--gradient-end)
-      );
-      transform: scaleX(0);
-      transition: transform 0.3s;
-      z-index: 1;
-    }
-
-    .project-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-    }
-
-    .project-card.visible:hover {
-      transform: translateY(-4px);
-    }
-
-    .project-card:hover::before {
-      transform: scaleX(1);
-    }
-
-    .project-image {
-      width: 100%;
-      height: 200px;
-      object-fit: cover;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .project-content {
-      padding: 2rem;
-      display: flex;
-      flex-direction: column;
-      flex-grow: 1;
-    }
-
-    .project-title {
-      font-size: 1.5rem;
-      font-weight: 700;
-      margin-bottom: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .project-title::before {
-      content: "▸";
-      color: var(--accent-cyan);
-    }
-
-    .project-description {
-      color: var(--text-muted);
-      font-size: 1rem;
-      flex-grow: 1;
-      line-height: 1.7;
-    }
-
-    .project-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-top: 1.5rem;
-    }
-
-    .tag {
-      font-size: 0.75rem;
-      padding: 0.35rem 0.85rem;
-      background: var(--bg);
-      border-radius: 9999px;
-      color: var(--text-muted);
-    }
-
-    .project-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-top: 1.5rem;
-      color: var(--gradient-start);
-      text-decoration: none;
-      font-size: 0.9rem;
-      font-weight: 500;
-    }
-
-    .project-link:hover {
-      text-decoration: underline;
-    }
-
-    .project-link.coming-soon {
-      color: var(--text-muted);
-      font-style: italic;
-    }
-
-    /* About */
-    .about-content {
-      font-size: 1.1rem;
-      color: var(--text-muted);
-      max-width: 700px;
-      line-height: 1.9;
-    }
-
-    .about-content p {
-      margin-bottom: 1.5rem;
-    }
-
-    .about-content strong {
-      color: var(--text);
-      font-weight: 600;
-    }
-
-    .about-content a {
-      color: var(--accent-cyan);
-      text-decoration: none;
-    }
-
-    .about-content a:hover {
-      text-decoration: underline;
-    }
-
-    /* Footer */
-    footer {
-      padding: 3rem 5rem;
-      text-align: center;
-      border-top: 1px solid var(--border);
-    }
-
-    .social-links {
-      display: flex;
-      justify-content: center;
-      gap: 2rem;
-      margin-bottom: 2rem;
-    }
-
-    .social-links a {
-      color: var(--text-muted);
-      text-decoration: none;
-      font-size: 0.8rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      transition: color 0.2s;
-    }
-
-    .social-links a:hover {
-      color: var(--accent-cyan);
-    }
-
-    .copyright {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-    }
-
-    /* Game Modal */
-    .game-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.9);
-      z-index: 10000;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.3s, visibility 0.3s;
-    }
-
-    .game-overlay.active {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    .game-header {
-      text-align: center;
-      margin-bottom: 1rem;
-    }
-
-    .game-title {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: white;
-      margin-bottom: 0.5rem;
-    }
-
-    .game-subtitle {
-      font-size: 0.85rem;
-      color: #888;
-    }
-
-    .game-scores {
-      display: flex;
-      gap: 3rem;
-      margin-bottom: 1rem;
-      font-family: "JetBrains Mono", monospace;
-    }
-
-    .score {
-      text-align: center;
-    }
-
-    .score-label {
-      font-size: 0.7rem;
-      color: #888;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-    }
-
-    .score-value {
-      font-size: 2rem;
-      font-weight: 700;
-      color: white;
-    }
-
-    .score-value.player {
-      color: var(--accent-cyan);
-    }
-
-    .score-value.ai {
-      color: var(--accent-pink);
-    }
-
-    #gameCanvas {
-      border: 2px solid #333;
-      border-radius: 4px;
-    }
-
-    .game-controls {
-      margin-top: 1.5rem;
-      text-align: center;
-    }
-
-    .game-instructions {
-      font-size: 0.8rem;
-      color: #666;
-      margin-bottom: 1rem;
-    }
-
-    .game-btn {
-      background: var(--gradient-start);
-      color: white;
-      border: none;
-      padding: 0.75rem 2rem;
-      font-size: 0.85rem;
-      font-weight: 600;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-      margin: 0 0.5rem;
-    }
-
-    .game-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
-    }
-
-    .game-btn.secondary {
-      background: #333;
-    }
-
-    .game-btn.secondary:hover {
-      background: #444;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    }
-
-    .game-message {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-      color: white;
-      pointer-events: none;
-    }
-
-    .game-message h2 {
-      font-size: 2rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .game-message p {
-      color: #888;
-    }
-
-    /* Responsive */
-    @media (max-width: 900px) {
+      /* Navigation */
       nav {
-        padding: 1rem 1.5rem;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem 3rem;
+        background: rgba(240, 241, 243, 0.9);
+        backdrop-filter: blur(10px);
+        z-index: 100;
+      }
+
+      .nav-logo {
+        font-weight: 600;
+        font-size: 0.85rem;
+        letter-spacing: 0.15em;
+        color: var(--text);
+        text-decoration: none;
       }
 
       .nav-links {
-        display: none;
+        display: flex;
+        gap: 2.5rem;
+        list-style: none;
       }
 
+      .nav-links a {
+        font-size: 0.75rem;
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        color: var(--text);
+        text-decoration: none;
+        text-transform: uppercase;
+        transition: color 0.2s;
+      }
+
+      .nav-links a:hover {
+        color: var(--accent-cyan);
+      }
+
+      /* Hero Section */
       .hero {
-        grid-template-columns: 1fr;
-        padding: 7rem 2rem 4rem;
-        text-align: center;
+        min-height: auto;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: center;
+        padding: 8rem 5rem 6rem;
+        gap: 4rem;
+        position: relative;
       }
 
       .hero-content {
-        order: 2;
+        position: relative;
       }
 
-      .hero-photo-container {
-        order: 1;
+      .decor-square {
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        background: var(--accent-pink);
+      }
+
+      .decor-square.top {
+        top: -40px;
+        left: 120px;
+      }
+
+      .decor-diamond {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background: var(--accent-cyan);
+        transform: rotate(45deg);
+        bottom: 80px;
+        left: 300px;
+      }
+
+      .hero-label {
+        font-size: 0.75rem;
+        letter-spacing: 0.25em;
+        color: var(--accent-coral);
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+        font-weight: 600;
+      }
+
+      .hero-name {
+        font-size: clamp(3.5rem, 8vw, 6rem);
+        font-weight: 900;
+        line-height: 1;
+        margin-bottom: 2rem;
+        background: linear-gradient(
+          135deg,
+          var(--gradient-start) 0%,
+          var(--gradient-end) 100%
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .hero-name span {
+        display: block;
       }
 
       .hero-tagline {
-        margin: 0 auto;
+        font-size: 1rem;
+        color: var(--text-muted);
+        max-width: 450px;
+        line-height: 1.8;
       }
 
-      .decor-square,
-      .decor-diamond {
-        display: none;
+      .hero-tagline a {
+        color: var(--accent-cyan);
+        text-decoration: none;
+      }
+
+      .hero-tagline a:hover {
+        text-decoration: underline;
+      }
+
+      /* Photo container */
+      .hero-photo-container {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
       }
 
       .photo-frame {
-        min-height: 300px;
+        position: relative;
+        width: 100%;
+        max-width: 480px;
+        min-height: 400px;
+        background: var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
-      section {
-        padding: 4rem 2rem;
+      .photo-frame::before,
+      .photo-frame::after,
+      .photo-frame .corner-bl,
+      .photo-frame .corner-br {
+        content: "";
+        position: absolute;
+        width: 60px;
+        height: 60px;
+        border: 3px solid;
+        pointer-events: none;
       }
 
-      .projects-grid {
-        grid-template-columns: 1fr;
+      .photo-frame::before {
+        top: -15px;
+        left: -15px;
+        border-color: var(--accent-cyan);
+        border-right: none;
+        border-bottom: none;
       }
 
-      .project-image {
-        height: 180px;
+      .photo-frame::after {
+        top: -15px;
+        right: -15px;
+        border-color: var(--accent-cyan);
+        border-left: none;
+        border-bottom: none;
       }
 
-      footer {
-        padding: 2rem 1.5rem;
+      .photo-frame .corner-bl {
+        bottom: -15px;
+        left: -15px;
+        border-color: var(--accent-pink);
+        border-right: none;
+        border-top: none;
       }
 
-      #gameCanvas {
-        max-width: 100%;
+      .photo-frame .corner-br {
+        bottom: -15px;
+        right: -15px;
+        border-color: var(--accent-pink);
+        border-left: none;
+        border-top: none;
+      }
+
+      /* Easter egg hint - custom cursor */
+      .hero-photo {
+        width: 100%;
         height: auto;
+        display: block;
+        cursor: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><text y="24" font-size="24">🎮</text></svg>')
+            16 16,
+          pointer;
+        transition: transform 0.3s;
+      }
+
+      .hero-photo:hover {
+        transform: scale(1.02);
       }
 
       .photo-hint {
+        position: absolute;
+        bottom: -45px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        opacity: 0;
+        transition: opacity 0.3s;
+        white-space: nowrap;
+        font-family: "JetBrains Mono", monospace;
+      }
+
+      .photo-frame:hover .photo-hint {
+        opacity: 1;
+      }
+
+      .scroll-indicator {
+        position: absolute;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--accent-cyan);
+        font-size: 0.7rem;
+        letter-spacing: 0.2em;
+        cursor: pointer;
+        animation: bounce 2s infinite;
+      }
+
+      .scroll-indicator::after {
+        content: "↓";
+        font-size: 1rem;
+      }
+
+      @keyframes bounce {
+        0%,
+        100% {
+          transform: translateX(-50%) translateY(0);
+        }
+        50% {
+          transform: translateX(-50%) translateY(5px);
+        }
+      }
+
+      /* Section Styles */
+      section {
+        padding: 6rem 5rem;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .section-header {
+        font-size: 0.875rem;
+        color: var(--accent-coral);
+        margin-bottom: 3rem;
+        letter-spacing: 0.05em;
+      }
+
+      /* Projects */
+      .projects-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2rem;
+      }
+
+      /* Scroll animation for project cards */
+      .project-card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.2s, box-shadow 0.2s, opacity 0.6s ease-out;
+        position: relative;
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      .project-card.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* Staggered animation delays */
+      .project-card:nth-child(1) {
+        transition-delay: 0s;
+      }
+      .project-card:nth-child(2) {
+        transition-delay: 0.1s;
+      }
+      .project-card:nth-child(3) {
+        transition-delay: 0.2s;
+      }
+      .project-card:nth-child(4) {
+        transition-delay: 0.3s;
+      }
+
+      .project-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(
+          90deg,
+          var(--gradient-start),
+          var(--gradient-end)
+        );
+        transform: scaleX(0);
+        transition: transform 0.3s;
+        z-index: 1;
+      }
+
+      .project-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+      }
+
+      .project-card.visible:hover {
+        transform: translateY(-4px);
+      }
+
+      .project-card:hover::before {
+        transform: scaleX(1);
+      }
+
+      .project-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .project-content {
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+      }
+
+      .project-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .project-title::before {
+        content: "▸";
+        color: var(--accent-cyan);
+      }
+
+      .project-description {
+        color: var(--text-muted);
+        font-size: 1rem;
+        flex-grow: 1;
+        line-height: 1.7;
+      }
+
+      .project-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1.5rem;
+      }
+
+      .tag {
+        font-size: 0.75rem;
+        padding: 0.35rem 0.85rem;
+        background: var(--bg);
+        border-radius: 9999px;
+        color: var(--text-muted);
+      }
+
+      .project-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 1.5rem;
+        color: var(--gradient-start);
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+
+      .project-link:hover {
+        text-decoration: underline;
+      }
+
+      .project-link.coming-soon {
+        color: var(--text-muted);
+        font-style: italic;
+      }
+
+      /* About */
+      .about-content {
+        font-size: 1.1rem;
+        color: var(--text-muted);
+        max-width: 700px;
+        line-height: 1.9;
+      }
+
+      .about-content p {
+        margin-bottom: 1.5rem;
+      }
+
+      .about-content strong {
+        color: var(--text);
+        font-weight: 600;
+      }
+
+      .about-content a {
+        color: var(--accent-cyan);
+        text-decoration: none;
+      }
+
+      .about-content a:hover {
+        text-decoration: underline;
+      }
+
+      /* Footer */
+      footer {
+        padding: 3rem 5rem;
+        text-align: center;
+        border-top: 1px solid var(--border);
+      }
+
+      .social-links {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .social-links a {
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 0.8rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        transition: color 0.2s;
+      }
+
+      .social-links a:hover {
+        color: var(--accent-cyan);
+      }
+
+      .copyright {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+      }
+
+      /* Game Modal */
+      .game-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s, visibility 0.3s;
+      }
+
+      .game-overlay.active {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .game-header {
+        text-align: center;
+        margin-bottom: 1rem;
+      }
+
+      .game-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 0.5rem;
+      }
+
+      .game-subtitle {
+        font-size: 0.85rem;
+        color: #888;
+      }
+
+      .game-scores {
+        display: flex;
+        gap: 3rem;
+        margin-bottom: 1rem;
+        font-family: "JetBrains Mono", monospace;
+      }
+
+      .score {
+        text-align: center;
+      }
+
+      .score-label {
+        font-size: 0.7rem;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+      }
+
+      .score-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: white;
+      }
+
+      .score-value.player {
+        color: var(--accent-cyan);
+      }
+
+      .score-value.ai {
+        color: var(--accent-pink);
+      }
+
+      #gameCanvas {
+        border: 2px solid #333;
+        border-radius: 4px;
+      }
+
+      .game-controls {
+        margin-top: 1.5rem;
+        text-align: center;
+      }
+
+      .game-instructions {
+        font-size: 0.8rem;
+        color: #666;
+        margin-bottom: 1rem;
+      }
+
+      .game-btn {
+        background: var(--gradient-start);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        margin: 0 0.5rem;
+      }
+
+      .game-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+      }
+
+      .game-btn.secondary {
+        background: #333;
+      }
+
+      .game-btn.secondary:hover {
+        background: #444;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      }
+
+      .game-message {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        color: white;
+        pointer-events: none;
+      }
+
+      .game-message h2 {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .game-message p {
+        color: #888;
+      }
+
+      /* Touch Controls */
+      .touch-controls {
         display: none;
+        justify-content: center;
+        gap: 2rem;
+        margin-top: 1rem;
       }
-    }
-  </style>
-</head>
-<body>
-  <!-- Game Overlay -->
-  <div class="game-overlay" id="gameOverlay">
-    <div class="game-header">
-      <h2 class="game-title">🏓 PONG</h2>
-      <p class="game-subtitle">You found the easter egg!</p>
-    </div>
-    <div class="game-scores">
-      <div class="score">
-        <div class="score-label">You</div>
-        <div class="score-value player" id="playerScore">0</div>
-      </div>
-      <div class="score">
-        <div class="score-label">AI</div>
-        <div class="score-value ai" id="aiScore">0</div>
-      </div>
-    </div>
-    <canvas id="gameCanvas" width="600" height="400"></canvas>
-    <div class="game-controls">
-      <p class="game-instructions">
-        Use ↑ ↓ arrow keys or W S to move • First to 5 wins
-      </p>
-      <button class="game-btn" id="restartBtn">Restart</button>
-      <button class="game-btn secondary" id="closeGame">Close</button>
-    </div>
-  </div>
 
-  <!-- Navigation -->
-  <nav>
-    <a href="#" class="nav-logo">GINO BRANCAZIO</a>
-    <ul class="nav-links">
-      <li><a href="#projects">Projects</a></li>
-      <li><a href="#about">About</a></li>
-      <li><a href="https://www.linkedin.com/in/ginobrancazio/">LinkedIn</a></li>
-    </ul>
-  </nav>
-
-  <!-- Hero -->
-  <section class="hero">
-    <div class="hero-content">
-      <div class="decor-square top"></div>
-      <div class="decor-diamond"></div>
-      <h1 class="hero-name">
-        <span>Gino</span>
-        <span>Brancazio</span>
-      </h1>
-      <p class="hero-tagline mono">
-        Game designer & tech nerd connecting people through play experiences.
-        <a href="https://www.linkedin.com/in/ginobrancazio/">Get in touch</a>.
-      </p>
-    </div>
-    <div class="hero-photo-container">
-      <div class="photo-frame">
-        <div class="corner-bl"></div>
-        <div class="corner-br"></div>
-        <img
-          src="/gino profile.jpeg"
-          alt="Gino Brancazio"
-          class="hero-photo"
-          id="heroPhoto"
-        />
-        <span class="photo-hint">🎮 Click to play</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- Projects -->
-  <section id="projects">
-    <p class="section-header mono">// PROJECTS</p>
-    <div class="projects-grid">
-      <article class="project-card">
-        <img
-          src="/dw_game.png"
-          alt="DownWords game screenshot"
-          class="project-image"
-        />
-        <div class="project-content">
-          <h2 class="project-title">DownWords</h2>
-          <p class="project-description">
-            A daily word puzzle game available on web and iOS. Players across
-            the world race to unscramble six words connected by a theme, earning
-            points for finding bonus words. Create custom leagues to compete
-            against friends and family.
-          </p>
-          <div class="project-tags">
-            <span class="tag">iOS</span>
-            <span class="tag">Web</span>
-            <span class="tag">Word Game</span>
-            <span class="tag">Daily Puzzle</span>
-          </div>
-          <a href="https://apps.apple.com/us/app/downwords-daily-word-game/id6756895326" class="project-link"
-            >Play DownWords →</a
-          >
-        </div>
-      </article>
-
-      <article class="project-card">
-        <img
-          src="/driftbound.jpg"
-          alt="DriftBound concept art"
-          class="project-image"
-        />
-        <div class="project-content">
-          <h2 class="project-title">DriftBound</h2>
-          <p class="project-description">
-            A tool to connect people through playing tabletop role playing games
-            online. Bringing the magic of TTRPG sessions to those who otherwise can't play.
-          </p>
-          <div class="project-tags">
-            <span class="tag">OpenAI</span>
-            <span class="tag">TTRPG</span>
-            <span class="tag">Multiplayer</span>
-            <span class="tag">Dice</span>
-          </div>
-          <span class="project-link coming-soon">Coming Soon</span>
-        </div>
-      </article>
-
-      <article class="project-card">
-        <img
-          src="/pixelkeep.png"
-          alt="Tourists and Trebuchets game screenshot"
-          class="project-image"
-        />
-        <div class="project-content">
-          <h2 class="project-title">Tourists & Trebuchets</h2>
-          <p class="project-description">
-            The winning game design for the 2025 Welsh ICE games jam. Built with
-            a brilliant team under the name Pixel Keep, Tourists & Trebuchets is a castle
-            management simulator where you balance tourism with medieval
-            defence.
-          </p>
-          <div class="project-tags">
-            <span class="tag">Game Jam</span>
-            <span class="tag">Simulation</span>
-            <span class="tag">Pixel Keep</span>
-            <span class="tag">Winner</span>
-          </div>
-        </div>
-      </article>
-
-      <article class="project-card">
-        <img
-          src="/ghostel.png"
-          alt="Tinkerbot Games board games"
-          class="project-image"
-        />
-        <div class="project-content">
-          <h2 class="project-title">Tinkerbot Games</h2>
-          <p class="project-description">
-           Cofounded Tinkerbot Games, designing and
-            publishing a number of tabletop board games for ten years that sold
-            internationally through retail and Kickstarter campaigns.
-          </p>
-          <div class="project-tags">
-            <span class="tag">Board Games</span>
-            <span class="tag">Kickstarter</span>
-            <span class="tag">Publishing</span>
-          </div>
-          <a href="https://boardgamegeek.com/boardgamepublisher/29395/tinkerbot-games" class="project-link"
-            >View Tinkerbot →</a
-          >
-        </div>
-      </article>
-    </div>
-  </section>
-
-  <!-- About -->
-  <section id="about">
-    <p class="section-header mono">// ABOUT ME</p>
-    <div class="about-content">
-      <p>
-        <strong>Hello!</strong> I'm a tech nerd and game designer based in
-        Cardiff. I specialise in building things that connect people.
-      </p>
-      <p>
-        I've spent 10 years designing and publishing board games in the tabletop
-        industry, but now I'm combining my game design experience with my career
-        in tech to build games and technology that bring people together.
-      </p>
-      <p>
-        When I'm not working in tech, you'll find me cosplaying as the greatest
-        superhero of all time: Doc Ock
-      </p>
-      <p>
-        I'm also a member of a Historical European Martial Arts (HEMA) academy,
-        focusing on traditional longsword techniques inspired by Renaissance
-        master Achille Marozzo.
-      </p>
-      <p>
-        Currently interested in learning more about the video game world. Always
-        open to interesting conversations and collaboration opportunities.
-      </p>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer>
-    <div class="social-links">
-      <a href="https://www.linkedin.com/in/ginobrancazio/">LinkedIn</a>
-    </div>
-    <p class="copyright mono">
-      &copy; 2026 Gino Brancazio.
-    </p>
-     <p class="copyright mono">
-      Built in a gluten free environment.
-    </p>
-  </footer>
-
-  <script>
-    function scrollToProjects() {
-      document.getElementById("projects").scrollIntoView();
-    }
-
-    // Scroll-triggered animations for project cards
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: "0px 0px -50px 0px"
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("visible");
-          observer.unobserve(entry.target);
+      @media (pointer: coarse) {
+        .touch-controls {
+          display: flex;
         }
+
+        .game-instructions {
+          display: none;
+        }
+      }
+
+      .touch-btn {
+        width: 80px;
+        height: 80px;
+        font-size: 2rem;
+        background: #222;
+        color: white;
+        border: 2px solid var(--accent-cyan);
+        border-radius: 12px;
+        cursor: pointer;
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: manipulation;
+      }
+
+      .touch-btn:active {
+        background: var(--accent-cyan);
+        color: #0a0a0a;
+      }
+
+      /* Responsive */
+      @media (max-width: 900px) {
+        nav {
+          padding: 1rem 1.5rem;
+        }
+
+        .nav-links {
+          display: none;
+        }
+
+        .hero {
+          grid-template-columns: 1fr;
+          padding: 7rem 2rem 4rem;
+          text-align: center;
+        }
+
+        .hero-content {
+          order: 2;
+        }
+
+        .hero-photo-container {
+          order: 1;
+        }
+
+        .hero-tagline {
+          margin: 0 auto;
+        }
+
+        .decor-square,
+        .decor-diamond {
+          display: none;
+        }
+
+        .photo-frame {
+          min-height: 300px;
+        }
+
+        section {
+          padding: 4rem 2rem;
+        }
+
+        .projects-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .project-image {
+          height: 180px;
+        }
+
+        footer {
+          padding: 2rem 1.5rem;
+        }
+
+        #gameCanvas {
+          max-width: 100%;
+          height: auto;
+        }
+
+        .photo-hint {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Game Overlay -->
+    <div class="game-overlay" id="gameOverlay">
+      <div class="game-header">
+        <h2 class="game-title">🏓 PONG</h2>
+        <p class="game-subtitle">You found the easter egg!</p>
+      </div>
+      <div class="game-scores">
+        <div class="score">
+          <div class="score-label">You</div>
+          <div class="score-value player" id="playerScore">0</div>
+        </div>
+        <div class="score">
+          <div class="score-label">AI</div>
+          <div class="score-value ai" id="aiScore">0</div>
+        </div>
+      </div>
+      <canvas id="gameCanvas" width="600" height="400"></canvas>
+      <div class="game-controls">
+        <p class="game-instructions">
+          Use ↑ ↓ arrow keys or W S to move • First to 5 wins
+        </p>
+        <div class="touch-controls" id="touchControls">
+          <button class="touch-btn" id="touchUp">↑</button>
+          <button class="touch-btn" id="touchDown">↓</button>
+        </div>
+        <button class="game-btn" id="restartBtn">Restart</button>
+        <button class="game-btn secondary" id="closeGame">Close</button>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav>
+      <a href="#" class="nav-logo">GINO BRANCAZIO</a>
+      <ul class="nav-links">
+        <li><a href="#projects">Projects</a></li>
+        <li><a href="#about">About</a></li>
+        <li>
+          <a href="https://www.linkedin.com/in/ginobrancazio/">LinkedIn</a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-content">
+        <div class="decor-square top"></div>
+        <div class="decor-diamond"></div>
+        <h1 class="hero-name">
+          <span>Gino</span>
+          <span>Brancazio</span>
+        </h1>
+        <p class="hero-tagline mono">
+          Game designer & tech nerd connecting people through play experiences.
+          <a href="https://www.linkedin.com/in/ginobrancazio/">Get in touch</a>.
+        </p>
+      </div>
+      <div class="hero-photo-container">
+        <div class="photo-frame">
+          <div class="corner-bl"></div>
+          <div class="corner-br"></div>
+          <img
+            src="/gino profile.jpeg"
+            alt="Gino Brancazio"
+            class="hero-photo"
+            id="heroPhoto"
+          />
+          <span class="photo-hint">🎮 Click to play</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Projects -->
+    <section id="projects">
+      <p class="section-header mono">// PROJECTS</p>
+      <div class="projects-grid">
+        <article class="project-card">
+          <img
+            src="/dw_game.png"
+            alt="DownWords game screenshot"
+            class="project-image"
+          />
+          <div class="project-content">
+            <h2 class="project-title">DownWords</h2>
+            <p class="project-description">
+              A daily word puzzle game available on web and iOS. Players across
+              the world race to unscramble six words connected by a theme,
+              earning points for finding bonus words. Create custom leagues to
+              compete against friends and family.
+            </p>
+            <div class="project-tags">
+              <span class="tag">iOS</span>
+              <span class="tag">Web</span>
+              <span class="tag">Word Game</span>
+              <span class="tag">Daily Puzzle</span>
+            </div>
+            <a
+              href="https://apps.apple.com/us/app/downwords-daily-word-game/id6756895326"
+              class="project-link"
+              >Play DownWords →</a
+            >
+          </div>
+        </article>
+
+        <article class="project-card">
+          <img
+            src="/driftbound.jpg"
+            alt="DriftBound concept art"
+            class="project-image"
+          />
+          <div class="project-content">
+            <h2 class="project-title">DriftBound</h2>
+            <p class="project-description">
+              A tool to connect people through playing tabletop role playing
+              games online. Bringing the magic of TTRPG sessions to those who
+              otherwise can't play.
+            </p>
+            <div class="project-tags">
+              <span class="tag">OpenAI</span>
+              <span class="tag">TTRPG</span>
+              <span class="tag">Multiplayer</span>
+              <span class="tag">Dice</span>
+            </div>
+            <span class="project-link coming-soon">Coming Soon</span>
+          </div>
+        </article>
+
+        <article class="project-card">
+          <img
+            src="/pixelkeep.png"
+            alt="Tourists and Trebuchets game screenshot"
+            class="project-image"
+          />
+          <div class="project-content">
+            <h2 class="project-title">Tourists & Trebuchets</h2>
+            <p class="project-description">
+              The winning game design for the 2025 Welsh ICE games jam. Built
+              with a brilliant team under the name Pixel Keep, Tourists &
+              Trebuchets is a castle management simulator where you balance
+              tourism with medieval defence.
+            </p>
+            <div class="project-tags">
+              <span class="tag">Game Jam</span>
+              <span class="tag">Simulation</span>
+              <span class="tag">Pixel Keep</span>
+              <span class="tag">Winner</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="project-card">
+          <img
+            src="/ghostel.png"
+            alt="Tinkerbot Games board games"
+            class="project-image"
+          />
+          <div class="project-content">
+            <h2 class="project-title">Tinkerbot Games</h2>
+            <p class="project-description">
+              Cofounded Tinkerbot Games, designing and publishing a number of
+              tabletop board games for ten years that sold internationally
+              through retail and Kickstarter campaigns.
+            </p>
+            <div class="project-tags">
+              <span class="tag">Board Games</span>
+              <span class="tag">Kickstarter</span>
+              <span class="tag">Publishing</span>
+            </div>
+            <a
+              href="https://boardgamegeek.com/boardgamepublisher/29395/tinkerbot-games"
+              class="project-link"
+              >View Tinkerbot →</a
+            >
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section id="about">
+      <p class="section-header mono">// ABOUT ME</p>
+      <div class="about-content">
+        <p>
+          <strong>Hello!</strong> I'm a tech nerd and game designer based in
+          Cardiff. I specialise in building things that connect people.
+        </p>
+        <p>
+          I've spent 10 years designing and publishing board games in the
+          tabletop industry, but now I'm combining my game design experience
+          with my career in tech to build games and technology that bring people
+          together.
+        </p>
+        <p>
+          When I'm not working in tech, you'll find me cosplaying as the
+          greatest superhero of all time: Doc Ock
+        </p>
+        <p>
+          I'm also a member of a Historical European Martial Arts (HEMA)
+          academy, focusing on traditional longsword techniques inspired by
+          Renaissance master Achille Marozzo.
+        </p>
+        <p>
+          Currently interested in learning more about the video game world.
+          Always open to interesting conversations and collaboration
+          opportunities.
+        </p>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <div class="social-links">
+        <a href="https://www.linkedin.com/in/ginobrancazio/">LinkedIn</a>
+      </div>
+      <p class="copyright mono">&copy; 2026 Gino Brancazio.</p>
+      <p class="copyright mono">Built in a gluten free environment.</p>
+    </footer>
+
+    <script>
+      function scrollToProjects() {
+        document.getElementById("projects").scrollIntoView();
+      }
+
+      // Scroll-triggered animations for project cards
+      const observerOptions = {
+        threshold: 0.1,
+        rootMargin: "0px 0px -50px 0px",
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      }, observerOptions);
+
+      document.querySelectorAll(".project-card").forEach((card) => {
+        observer.observe(card);
       });
-    }, observerOptions);
 
-    document.querySelectorAll(".project-card").forEach((card) => {
-      observer.observe(card);
-    });
+      // Pong Game
+      const gameOverlay = document.getElementById("gameOverlay");
+      const canvas = document.getElementById("gameCanvas");
+      const ctx = canvas.getContext("2d");
+      const playerScoreEl = document.getElementById("playerScore");
+      const aiScoreEl = document.getElementById("aiScore");
+      const restartBtn = document.getElementById("restartBtn");
+      const closeBtn = document.getElementById("closeGame");
+      const heroPhoto = document.getElementById("heroPhoto");
 
-    // Pong Game
-    const gameOverlay = document.getElementById("gameOverlay");
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
-    const playerScoreEl = document.getElementById("playerScore");
-    const aiScoreEl = document.getElementById("aiScore");
-    const restartBtn = document.getElementById("restartBtn");
-    const closeBtn = document.getElementById("closeGame");
-    const heroPhoto = document.getElementById("heroPhoto");
+      const WINNING_SCORE = 5;
+      const PADDLE_WIDTH = 10;
+      const PADDLE_HEIGHT = 80;
+      const BALL_SIZE = 12;
 
-    const WINNING_SCORE = 5;
-    const PADDLE_WIDTH = 10;
-    const PADDLE_HEIGHT = 80;
-    const BALL_SIZE = 12;
+      let gameRunning = false;
+      let animationId = null;
 
-    let gameRunning = false;
-    let animationId = null;
+      const game = {
+        player: {
+          y: canvas.height / 2 - PADDLE_HEIGHT / 2,
+          score: 0,
+          speed: 8,
+        },
+        ai: {
+          y: canvas.height / 2 - PADDLE_HEIGHT / 2,
+          score: 0,
+          speed: 4,
+        },
+        ball: {
+          x: canvas.width / 2,
+          y: canvas.height / 2,
+          vx: 5,
+          vy: 3,
+          speed: 5,
+        },
+        keys: {
+          up: false,
+          down: false,
+        },
+      };
 
-    const game = {
-      player: {
-        y: canvas.height / 2 - PADDLE_HEIGHT / 2,
-        score: 0,
-        speed: 8,
-      },
-      ai: {
-        y: canvas.height / 2 - PADDLE_HEIGHT / 2,
-        score: 0,
-        speed: 4,
-      },
-      ball: {
-        x: canvas.width / 2,
-        y: canvas.height / 2,
-        vx: 5,
-        vy: 3,
-        speed: 5,
-      },
-      keys: {
-        up: false,
-        down: false,
-      },
-    };
-
-    function resetBall(direction = 1) {
-      game.ball.x = canvas.width / 2;
-      game.ball.y = canvas.height / 2;
-      game.ball.speed = 5;
-      game.ball.vx = game.ball.speed * direction;
-      game.ball.vy = (Math.random() - 0.5) * 6;
-    }
-
-    function resetGame() {
-      game.player.score = 0;
-      game.ai.score = 0;
-      game.player.y = canvas.height / 2 - PADDLE_HEIGHT / 2;
-      game.ai.y = canvas.height / 2 - PADDLE_HEIGHT / 2;
-      playerScoreEl.textContent = "0";
-      aiScoreEl.textContent = "0";
-      resetBall(1);
-      gameRunning = true;
-    }
-
-    function update() {
-      if (!gameRunning) return;
-
-      // Player movement
-      if (game.keys.up && game.player.y > 0) {
-        game.player.y -= game.player.speed;
-      }
-      if (game.keys.down && game.player.y < canvas.height - PADDLE_HEIGHT) {
-        game.player.y += game.player.speed;
+      function resetBall(direction = 1) {
+        game.ball.x = canvas.width / 2;
+        game.ball.y = canvas.height / 2;
+        game.ball.speed = 5;
+        game.ball.vx = game.ball.speed * direction;
+        game.ball.vy = (Math.random() - 0.5) * 6;
       }
 
-      // AI movement
-      const aiCenter = game.ai.y + PADDLE_HEIGHT / 2;
-      const ballCenter = game.ball.y;
-      if (aiCenter < ballCenter - 20) {
-        game.ai.y += game.ai.speed;
-      } else if (aiCenter > ballCenter + 20) {
-        game.ai.y -= game.ai.speed;
-      }
-      game.ai.y = Math.max(
-        0,
-        Math.min(canvas.height - PADDLE_HEIGHT, game.ai.y)
-      );
-
-      // Ball movement
-      game.ball.x += game.ball.vx;
-      game.ball.y += game.ball.vy;
-
-      // Ball collision with top/bottom
-      if (game.ball.y <= 0 || game.ball.y >= canvas.height - BALL_SIZE) {
-        game.ball.vy *= -1;
+      function resetGame() {
+        game.player.score = 0;
+        game.ai.score = 0;
+        game.player.y = canvas.height / 2 - PADDLE_HEIGHT / 2;
+        game.ai.y = canvas.height / 2 - PADDLE_HEIGHT / 2;
+        playerScoreEl.textContent = "0";
+        aiScoreEl.textContent = "0";
+        resetBall(1);
+        gameRunning = true;
       }
 
-      // Ball collision with player paddle
-      if (
-        game.ball.x <= 30 + PADDLE_WIDTH &&
-        game.ball.x >= 30 &&
-        game.ball.y + BALL_SIZE >= game.player.y &&
-        game.ball.y <= game.player.y + PADDLE_HEIGHT
-      ) {
-        game.ball.vx *= -1;
-        game.ball.x = 30 + PADDLE_WIDTH;
-        const hitPos =
-          (game.ball.y - game.player.y + BALL_SIZE / 2) / PADDLE_HEIGHT - 0.5;
-        game.ball.vy = hitPos * 8;
-        game.ball.speed += 0.3;
-        game.ball.vx =
-          game.ball.vx > 0 ? game.ball.speed : -game.ball.speed;
-      }
+      function update() {
+        if (!gameRunning) return;
 
-      // Ball collision with AI paddle
-      if (
-        game.ball.x + BALL_SIZE >= canvas.width - 30 - PADDLE_WIDTH &&
-        game.ball.x <= canvas.width - 30 &&
-        game.ball.y + BALL_SIZE >= game.ai.y &&
-        game.ball.y <= game.ai.y + PADDLE_HEIGHT
-      ) {
-        game.ball.vx *= -1;
-        game.ball.x = canvas.width - 30 - PADDLE_WIDTH - BALL_SIZE;
-        const hitPos =
-          (game.ball.y - game.ai.y + BALL_SIZE / 2) / PADDLE_HEIGHT - 0.5;
-        game.ball.vy = hitPos * 8;
-        game.ball.speed += 0.3;
-        game.ball.vx =
-          game.ball.vx > 0 ? game.ball.speed : -game.ball.speed;
-      }
+        // Player movement
+        if (game.keys.up && game.player.y > 0) {
+          game.player.y -= game.player.speed;
+        }
+        if (game.keys.down && game.player.y < canvas.height - PADDLE_HEIGHT) {
+          game.player.y += game.player.speed;
+        }
 
-      // Scoring
-      if (game.ball.x < 0) {
-        game.ai.score++;
-        aiScoreEl.textContent = game.ai.score;
-        if (game.ai.score >= WINNING_SCORE) {
-          gameRunning = false;
-        } else {
-          resetBall(1);
+        // AI movement
+        const aiCenter = game.ai.y + PADDLE_HEIGHT / 2;
+        const ballCenter = game.ball.y;
+        if (aiCenter < ballCenter - 20) {
+          game.ai.y += game.ai.speed;
+        } else if (aiCenter > ballCenter + 20) {
+          game.ai.y -= game.ai.speed;
+        }
+        game.ai.y = Math.max(
+          0,
+          Math.min(canvas.height - PADDLE_HEIGHT, game.ai.y)
+        );
+
+        // Ball movement
+        game.ball.x += game.ball.vx;
+        game.ball.y += game.ball.vy;
+
+        // Ball collision with top/bottom
+        if (game.ball.y <= 0 || game.ball.y >= canvas.height - BALL_SIZE) {
+          game.ball.vy *= -1;
+        }
+
+        // Ball collision with player paddle
+        if (
+          game.ball.x <= 30 + PADDLE_WIDTH &&
+          game.ball.x >= 30 &&
+          game.ball.y + BALL_SIZE >= game.player.y &&
+          game.ball.y <= game.player.y + PADDLE_HEIGHT
+        ) {
+          game.ball.vx *= -1;
+          game.ball.x = 30 + PADDLE_WIDTH;
+          const hitPos =
+            (game.ball.y - game.player.y + BALL_SIZE / 2) / PADDLE_HEIGHT - 0.5;
+          game.ball.vy = hitPos * 8;
+          game.ball.speed += 0.3;
+          game.ball.vx = game.ball.vx > 0 ? game.ball.speed : -game.ball.speed;
+        }
+
+        // Ball collision with AI paddle
+        if (
+          game.ball.x + BALL_SIZE >= canvas.width - 30 - PADDLE_WIDTH &&
+          game.ball.x <= canvas.width - 30 &&
+          game.ball.y + BALL_SIZE >= game.ai.y &&
+          game.ball.y <= game.ai.y + PADDLE_HEIGHT
+        ) {
+          game.ball.vx *= -1;
+          game.ball.x = canvas.width - 30 - PADDLE_WIDTH - BALL_SIZE;
+          const hitPos =
+            (game.ball.y - game.ai.y + BALL_SIZE / 2) / PADDLE_HEIGHT - 0.5;
+          game.ball.vy = hitPos * 8;
+          game.ball.speed += 0.3;
+          game.ball.vx = game.ball.vx > 0 ? game.ball.speed : -game.ball.speed;
+        }
+
+        // Scoring
+        if (game.ball.x < 0) {
+          game.ai.score++;
+          aiScoreEl.textContent = game.ai.score;
+          if (game.ai.score >= WINNING_SCORE) {
+            gameRunning = false;
+          } else {
+            resetBall(1);
+          }
+        }
+        if (game.ball.x > canvas.width) {
+          game.player.score++;
+          playerScoreEl.textContent = game.player.score;
+          if (game.player.score >= WINNING_SCORE) {
+            gameRunning = false;
+          } else {
+            resetBall(-1);
+          }
         }
       }
-      if (game.ball.x > canvas.width) {
-        game.player.score++;
-        playerScoreEl.textContent = game.player.score;
-        if (game.player.score >= WINNING_SCORE) {
-          gameRunning = false;
-        } else {
-          resetBall(-1);
-        }
-      }
-    }
 
-    function draw() {
-      // Clear canvas
-      ctx.fillStyle = "#0a0a0a";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Draw center line
-      ctx.setLineDash([10, 10]);
-      ctx.strokeStyle = "#333";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(canvas.width / 2, 0);
-      ctx.lineTo(canvas.width / 2, canvas.height);
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      // Draw paddles
-      ctx.fillStyle = "#4ecdc4";
-      ctx.fillRect(30, game.player.y, PADDLE_WIDTH, PADDLE_HEIGHT);
-
-      ctx.fillStyle = "#c44569";
-      ctx.fillRect(
-        canvas.width - 30 - PADDLE_WIDTH,
-        game.ai.y,
-        PADDLE_WIDTH,
-        PADDLE_HEIGHT
-      );
-
-      // Draw ball
-      ctx.fillStyle = "#ffffff";
-      ctx.beginPath();
-      ctx.arc(
-        game.ball.x + BALL_SIZE / 2,
-        game.ball.y + BALL_SIZE / 2,
-        BALL_SIZE / 2,
-        0,
-        Math.PI * 2
-      );
-      ctx.fill();
-
-      // Draw win/lose message
-      if (!gameRunning && (game.player.score >= WINNING_SCORE || game.ai.score >= WINNING_SCORE)) {
-        ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+      function draw() {
+        // Clear canvas
+        ctx.fillStyle = "#0a0a0a";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        ctx.font = "bold 36px Inter, sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillStyle = game.player.score >= WINNING_SCORE ? "#4ecdc4" : "#c44569";
-        ctx.fillText(
-          game.player.score >= WINNING_SCORE ? "YOU WIN!" : "AI WINS!",
-          canvas.width / 2,
-          canvas.height / 2 - 10
+        // Draw center line
+        ctx.setLineDash([10, 10]);
+        ctx.strokeStyle = "#333";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(canvas.width / 2, 0);
+        ctx.lineTo(canvas.width / 2, canvas.height);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Draw paddles
+        ctx.fillStyle = "#4ecdc4";
+        ctx.fillRect(30, game.player.y, PADDLE_WIDTH, PADDLE_HEIGHT);
+
+        ctx.fillStyle = "#c44569";
+        ctx.fillRect(
+          canvas.width - 30 - PADDLE_WIDTH,
+          game.ai.y,
+          PADDLE_WIDTH,
+          PADDLE_HEIGHT
         );
 
-        ctx.font = "16px Inter, sans-serif";
-        ctx.fillStyle = "#888";
-        ctx.fillText(
-          "Press Restart to play again",
-          canvas.width / 2,
-          canvas.height / 2 + 25
+        // Draw ball
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(
+          game.ball.x + BALL_SIZE / 2,
+          game.ball.y + BALL_SIZE / 2,
+          BALL_SIZE / 2,
+          0,
+          Math.PI * 2
         );
+        ctx.fill();
+
+        // Draw win/lose message
+        if (
+          !gameRunning &&
+          (game.player.score >= WINNING_SCORE ||
+            game.ai.score >= WINNING_SCORE)
+        ) {
+          ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          ctx.font = "bold 36px Inter, sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillStyle =
+            game.player.score >= WINNING_SCORE ? "#4ecdc4" : "#c44569";
+          ctx.fillText(
+            game.player.score >= WINNING_SCORE ? "YOU WIN!" : "AI WINS!",
+            canvas.width / 2,
+            canvas.height / 2 - 10
+          );
+
+          ctx.font = "16px Inter, sans-serif";
+          ctx.fillStyle = "#888";
+          ctx.fillText(
+            "Press Restart to play again",
+            canvas.width / 2,
+            canvas.height / 2 + 25
+          );
+        }
       }
-    }
 
-    function gameLoop() {
-      update();
-      draw();
-      animationId = requestAnimationFrame(gameLoop);
-    }
-
-    function startGame() {
-      gameOverlay.classList.add("active");
-      document.body.style.overflow = "hidden";
-      resetGame();
-      if (!animationId) {
-        gameLoop();
+      function gameLoop() {
+        update();
+        draw();
+        animationId = requestAnimationFrame(gameLoop);
       }
-    }
 
-    function closeGame() {
-      gameOverlay.classList.remove("active");
-      document.body.style.overflow = "";
-      gameRunning = false;
-      if (animationId) {
-        cancelAnimationFrame(animationId);
-        animationId = null;
+      function startGame() {
+        gameOverlay.classList.add("active");
+        document.body.style.overflow = "hidden";
+        resetGame();
+        if (!animationId) {
+          gameLoop();
+        }
       }
-    }
 
-    // Event listeners
-    heroPhoto.addEventListener("click", startGame);
-    closeBtn.addEventListener("click", closeGame);
-    restartBtn.addEventListener("click", resetGame);
+      function closeGame() {
+        gameOverlay.classList.remove("active");
+        document.body.style.overflow = "";
+        gameRunning = false;
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+          animationId = null;
+        }
+      }
 
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowUp" || e.key === "w" || e.key === "W") {
+      // Event listeners
+      heroPhoto.addEventListener("click", startGame);
+      closeBtn.addEventListener("click", closeGame);
+      restartBtn.addEventListener("click", resetGame);
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowUp" || e.key === "w" || e.key === "W") {
+          game.keys.up = true;
+          e.preventDefault();
+        }
+        if (e.key === "ArrowDown" || e.key === "s" || e.key === "S") {
+          game.keys.down = true;
+          e.preventDefault();
+        }
+        if (e.key === "Escape") {
+          closeGame();
+        }
+      });
+
+      document.addEventListener("keyup", (e) => {
+        if (e.key === "ArrowUp" || e.key === "w" || e.key === "W") {
+          game.keys.up = false;
+        }
+        if (e.key === "ArrowDown" || e.key === "s" || e.key === "S") {
+          game.keys.down = false;
+        }
+      });
+
+      // Touch controls
+      const touchUp = document.getElementById("touchUp");
+      const touchDown = document.getElementById("touchDown");
+
+      touchUp.addEventListener("touchstart", (e) => {
+        e.preventDefault();
         game.keys.up = true;
-        e.preventDefault();
-      }
-      if (e.key === "ArrowDown" || e.key === "s" || e.key === "S") {
-        game.keys.down = true;
-        e.preventDefault();
-      }
-      if (e.key === "Escape") {
-        closeGame();
-      }
-    });
+      });
 
-    document.addEventListener("keyup", (e) => {
-      if (e.key === "ArrowUp" || e.key === "w" || e.key === "W") {
+      touchUp.addEventListener("touchend", (e) => {
+        e.preventDefault();
         game.keys.up = false;
-      }
-      if (e.key === "ArrowDown" || e.key === "s" || e.key === "S") {
-        game.keys.down = false;
-      }
-    });
+      });
 
-    // Console hint
-    console.log(
-      "%c🎮 Welcome, player!",
-      "color: #2563eb; font-size: 16px; font-weight: bold;"
-    );
-    console.log(
-      "%c Click the photo to play a game...",
-      "color: #888; font-size: 12px;"
-    );
-  </script>
-</body>
+      touchDown.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        game.keys.down = true;
+      });
+
+      touchDown.addEventListener("touchend", (e) => {
+        e.preventDefault();
+        game.keys.down = false;
+      });
+
+      // Also allow touch directly on canvas
+      canvas.addEventListener(
+        "touchmove",
+        (e) => {
+          e.preventDefault();
+          const touch = e.touches[0];
+          const rect = canvas.getBoundingClientRect();
+          const touchY = touch.clientY - rect.top;
+          const scale = canvas.height / rect.height;
+          game.player.y = touchY * scale - PADDLE_HEIGHT / 2;
+          game.player.y = Math.max(
+            0,
+            Math.min(canvas.height - PADDLE_HEIGHT, game.player.y)
+          );
+        },
+        { passive: false }
+      );
+
+      // Console hint
+      console.log(
+        "%c🎮 Welcome, player!",
+        "color: #2563eb; font-size: 16px; font-weight: bold;"
+      );
+      console.log(
+        "%c Click the photo to play a game...",
+        "color: #888; font-size: 12px;"
+      );
+    </script>
+  </body>
 </html>
