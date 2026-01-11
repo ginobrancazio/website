@@ -119,6 +119,78 @@
         color: var(--accent-cyan);
       }
 
+      /* Writing */
+.writing-section {
+  padding: 2rem 5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.writing-card {
+  display: block;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent-cyan);
+  border-radius: 8px;
+  padding: 2rem 2.5rem;
+  text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.writing-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.writing-label {
+  font-size: 0.75rem;
+  color: var(--accent-coral);
+  letter-spacing: 0.05em;
+}
+
+.writing-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0.75rem 0;
+}
+
+.writing-title em {
+  font-style: italic;
+  color: var(--gradient-start);
+}
+
+.writing-excerpt {
+  color: var(--text-muted);
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.writing-cta {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--gradient-start);
+}
+
+.writing-card:hover .writing-cta {
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .writing-section {
+    padding: 2rem;
+  }
+
+  .writing-card {
+    padding: 1.5rem;
+  }
+
+  .writing-title {
+    font-size: 1.25rem;
+  }
+}
+      
       /* Hero Section */
       .hero {
         min-height: auto;
@@ -950,7 +1022,53 @@
         </article>
       </div>
     </section>
+    
+    <!-- Writing -->
+<section id="writing" class="writing-section">
+        <p class="section-header mono">// LATEST WRITING</p>
 
+  <a
+    href="https://www.linkedin.com/feed/update/urn:li:activity:7407755507828162560/"
+    class="writing-card"
+    target="_blank"
+    rel="noopener"
+  >
+    <h3 class="writing-title">Your startup is <em>not</em> a rocket ship</h3>
+    <p class="writing-excerpt">
+      Why building a company feels more like navigating rapids in a plastic
+      boat than flying to the moon.
+    </p>
+    <span class="writing-cta">Read on LinkedIn →</span>
+  </a>
+   <br>
+   <a
+    href="https://www.linkedin.com/pulse/snakes-ladders-terrible-game-heres-how-improve-gino-brancazio-nrhme/?trackingId=z1SpHaGKQhS1Ev2%2FfhORsg%3D%3D"
+    class="writing-card"
+    target="_blank"
+    rel="noopener"
+  >
+    <h3 class="writing-title">Snakes and ladders is a <em>terrible</em> game</h3>
+    <p class="writing-excerpt">
+      Here's how to fix it.
+    </p>
+    <span class="writing-cta">Read on LinkedIn →</span>
+  </a>
+  <br>
+   <a
+    href="https://www.linkedin.com/pulse/journey-matters-gino-brancazio-ixd3e/?trackingId=z1SpHaGKQhS1Ev2%2FfhORsg%3D%3D"
+    class="writing-card"
+    target="_blank"
+    rel="noopener"
+  >
+    <h3 class="writing-title">The journey matters more than you think</h3>
+    <p class="writing-excerpt">
+      Crafting a good journey has more impact than the end result.
+    </p>
+    <span class="writing-cta">Read on LinkedIn →</span>
+  </a>
+  
+</section>
+    
     <!-- About -->
     <section id="about">
       <p class="section-header mono">// ABOUT ME</p>
@@ -981,6 +1099,8 @@
         </p>
       </div>
     </section>
+    
+    
 
     <!-- Footer -->
     <footer>
