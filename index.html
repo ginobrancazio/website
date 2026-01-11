@@ -1136,324 +1136,389 @@
       });
 
       // Pong Game
-      const gameOverlay = document.getElementById("gameOverlay");
-      const canvas = document.getElementById("gameCanvas");
-      const ctx = canvas.getContext("2d");
-      const playerScoreEl = document.getElementById("playerScore");
-      const aiScoreEl = document.getElementById("aiScore");
-      const restartBtn = document.getElementById("restartBtn");
-      const closeBtn = document.getElementById("closeGame");
-      const heroPhoto = document.getElementById("heroPhoto");
+const gameOverlay = document.getElementById("gameOverlay");
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+const playerScoreEl = document.getElementById("playerScore");
+const aiScoreEl = document.getElementById("aiScore");
+const restartBtn = document.getElementById("restartBtn");
+const closeBtn = document.getElementById("closeGame");
+const heroPhoto = document.getElementById("heroPhoto");
 
-      const WINNING_SCORE = 5;
-      const PADDLE_WIDTH = 10;
-      const PADDLE_HEIGHT = 80;
-      const BALL_SIZE = 12;
+const WINNING_SCORE = 5;
+const PADDLE_WIDTH = 10;
+const PADDLE_HEIGHT = 80;
+const BALL_SIZE = 12;
+const MAX_BALL_SPEED = 12; // Cap the ball speed to prevent tunneling
 
-      let gameRunning = false;
-      let animationId = null;
+let gameRunning = false;
+let animationId = null;
 
-      const game = {
-        player: {
-          y: canvas.height / 2 - PADDLE_HEIGHT / 2,
-          score: 0,
-          speed: 8,
-        },
-        ai: {
-          y: canvas.height / 2 - PADDLE_HEIGHT / 2,
-          score: 0,
-          speed: 4,
-        },
-        ball: {
-          x: canvas.width / 2,
-          y: canvas.height / 2,
-          vx: 5,
-          vy: 3,
-          speed: 5,
-        },
-        keys: {
-          up: false,
-          down: false,
-        },
-      };
+const game = {
+  player: {
+    y: canvas.height / 2 - PADDLE_HEIGHT / 2,
+    score: 0,
+    speed: 8,
+  },
+  ai: {
+    y: canvas.height / 2 - PADDLE_HEIGHT / 2,
+    score: 0,
+    speed: 2.5, // Reduced from 4
+    reactionDelay: 0,
+    targetY: canvas.height / 2,
+  },
+  ball: {
+    x: canvas.width / 2,
+    y: canvas.height / 2,
+    vx: 5,
+    vy: 3,
+    speed: 5,
+  },
+  keys: {
+    up: false,
+    down: false,
+  },
+};
 
-      function resetBall(direction = 1) {
-        game.ball.x = canvas.width / 2;
-        game.ball.y = canvas.height / 2;
-        game.ball.speed = 5;
-        game.ball.vx = game.ball.speed * direction;
-        game.ball.vy = (Math.random() - 0.5) * 6;
-      }
+function resetBall(direction = 1) {
+  game.ball.x = canvas.width / 2;
+  game.ball.y = canvas.height / 2;
+  game.ball.speed = 5;
+  game.ball.vx = game.ball.speed * direction;
+  game.ball.vy = (Math.random() - 0.5) * 6;
+}
 
-      function resetGame() {
-        game.player.score = 0;
-        game.ai.score = 0;
-        game.player.y = canvas.height / 2 - PADDLE_HEIGHT / 2;
-        game.ai.y = canvas.height / 2 - PADDLE_HEIGHT / 2;
-        playerScoreEl.textContent = "0";
-        aiScoreEl.textContent = "0";
-        resetBall(1);
-        gameRunning = true;
-      }
+function resetGame() {
+  game.player.score = 0;
+  game.ai.score = 0;
+  game.player.y = canvas.height / 2 - PADDLE_HEIGHT / 2;
+  game.ai.y = canvas.height / 2 - PADDLE_HEIGHT / 2;
+  game.ai.targetY = canvas.height / 2;
+  playerScoreEl.textContent = "0";
+  aiScoreEl.textContent = "0";
+  resetBall(1);
+  gameRunning = true;
+}
 
-      function update() {
-        if (!gameRunning) return;
+// Improved collision detection that accounts for ball velocity
+function checkPaddleCollision(paddleX, paddleY, isLeftPaddle) {
+  const ball = game.ball;
+  const ballRadius = BALL_SIZE / 2;
+  const ballCenterX = ball.x + ballRadius;
+  const ballCenterY = ball.y + ballRadius;
 
-        // Player movement
-        if (game.keys.up && game.player.y > 0) {
-          game.player.y -= game.player.speed;
-        }
-        if (game.keys.down && game.player.y < canvas.height - PADDLE_HEIGHT) {
-          game.player.y += game.player.speed;
-        }
+  // Previous position
+  const prevBallCenterX = ballCenterX - ball.vx;
 
-        // AI movement
-        const aiCenter = game.ai.y + PADDLE_HEIGHT / 2;
-        const ballCenter = game.ball.y;
-        if (aiCenter < ballCenter - 20) {
-          game.ai.y += game.ai.speed;
-        } else if (aiCenter > ballCenter + 20) {
-          game.ai.y -= game.ai.speed;
-        }
-        game.ai.y = Math.max(
-          0,
-          Math.min(canvas.height - PADDLE_HEIGHT, game.ai.y)
-        );
+  const paddleLeft = paddleX;
+  const paddleRight = paddleX + PADDLE_WIDTH;
+  const paddleTop = paddleY;
+  const paddleBottom = paddleY + PADDLE_HEIGHT;
 
-        // Ball movement
-        game.ball.x += game.ball.vx;
-        game.ball.y += game.ball.vy;
+  if (isLeftPaddle) {
+    // Check if ball crossed the paddle's right edge this frame
+    if (
+      prevBallCenterX - ballRadius >= paddleRight &&
+      ballCenterX - ballRadius <= paddleRight &&
+      ballCenterY + ballRadius >= paddleTop &&
+      ballCenterY - ballRadius <= paddleBottom
+    ) {
+      return true;
+    }
+    // Also check current overlap
+    if (
+      ballCenterX - ballRadius <= paddleRight &&
+      ballCenterX + ballRadius >= paddleLeft &&
+      ballCenterY + ballRadius >= paddleTop &&
+      ballCenterY - ballRadius <= paddleBottom
+    ) {
+      return true;
+    }
+  } else {
+    // Check if ball crossed the paddle's left edge this frame
+    if (
+      prevBallCenterX + ballRadius <= paddleLeft &&
+      ballCenterX + ballRadius >= paddleLeft &&
+      ballCenterY + ballRadius >= paddleTop &&
+      ballCenterY - ballRadius <= paddleBottom
+    ) {
+      return true;
+    }
+    // Also check current overlap
+    if (
+      ballCenterX + ballRadius >= paddleLeft &&
+      ballCenterX - ballRadius <= paddleRight &&
+      ballCenterY + ballRadius >= paddleTop &&
+      ballCenterY - ballRadius <= paddleBottom
+    ) {
+      return true;
+    }
+  }
 
-        // Ball collision with top/bottom
-        if (game.ball.y <= 0 || game.ball.y >= canvas.height - BALL_SIZE) {
-          game.ball.vy *= -1;
-        }
+  return false;
+}
 
-        // Ball collision with player paddle
-        if (
-          game.ball.x <= 30 + PADDLE_WIDTH &&
-          game.ball.x >= 30 &&
-          game.ball.y + BALL_SIZE >= game.player.y &&
-          game.ball.y <= game.player.y + PADDLE_HEIGHT
-        ) {
-          game.ball.vx *= -1;
-          game.ball.x = 30 + PADDLE_WIDTH;
-          const hitPos =
-            (game.ball.y - game.player.y + BALL_SIZE / 2) / PADDLE_HEIGHT - 0.5;
-          game.ball.vy = hitPos * 8;
-          game.ball.speed += 0.3;
-          game.ball.vx = game.ball.vx > 0 ? game.ball.speed : -game.ball.speed;
-        }
+function update() {
+  if (!gameRunning) return;
 
-        // Ball collision with AI paddle
-        if (
-          game.ball.x + BALL_SIZE >= canvas.width - 30 - PADDLE_WIDTH &&
-          game.ball.x <= canvas.width - 30 &&
-          game.ball.y + BALL_SIZE >= game.ai.y &&
-          game.ball.y <= game.ai.y + PADDLE_HEIGHT
-        ) {
-          game.ball.vx *= -1;
-          game.ball.x = canvas.width - 30 - PADDLE_WIDTH - BALL_SIZE;
-          const hitPos =
-            (game.ball.y - game.ai.y + BALL_SIZE / 2) / PADDLE_HEIGHT - 0.5;
-          game.ball.vy = hitPos * 8;
-          game.ball.speed += 0.3;
-          game.ball.vx = game.ball.vx > 0 ? game.ball.speed : -game.ball.speed;
-        }
+  // Player movement
+  if (game.keys.up && game.player.y > 0) {
+    game.player.y -= game.player.speed;
+  }
+  if (game.keys.down && game.player.y < canvas.height - PADDLE_HEIGHT) {
+    game.player.y += game.player.speed;
+  }
 
-        // Scoring
-        if (game.ball.x < 0) {
-          game.ai.score++;
-          aiScoreEl.textContent = game.ai.score;
-          if (game.ai.score >= WINNING_SCORE) {
-            gameRunning = false;
-          } else {
-            resetBall(1);
-          }
-        }
-        if (game.ball.x > canvas.width) {
-          game.player.score++;
-          playerScoreEl.textContent = game.player.score;
-          if (game.player.score >= WINNING_SCORE) {
-            gameRunning = false;
-          } else {
-            resetBall(-1);
-          }
-        }
-      }
+  // AI movement - less precise, with delayed reactions
+  game.ai.reactionDelay++;
 
-      function draw() {
-        // Clear canvas
-        ctx.fillStyle = "#0a0a0a";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // Only update target every few frames and add some randomness
+  if (game.ai.reactionDelay >= 8) {
+    game.ai.reactionDelay = 0;
+    // Add imprecision - AI doesn't perfectly track the ball
+    const imprecision = (Math.random() - 0.5) * 60;
+    game.ai.targetY = game.ball.y + imprecision;
+  }
 
-        // Draw center line
-        ctx.setLineDash([10, 10]);
-        ctx.strokeStyle = "#333";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(canvas.width / 2, 0);
-        ctx.lineTo(canvas.width / 2, canvas.height);
-        ctx.stroke();
-        ctx.setLineDash([]);
+  const aiCenter = game.ai.y + PADDLE_HEIGHT / 2;
+  const deadzone = 35; // Increased from 20 - AI is less precise
 
-        // Draw paddles
-        ctx.fillStyle = "#4ecdc4";
-        ctx.fillRect(30, game.player.y, PADDLE_WIDTH, PADDLE_HEIGHT);
+  if (aiCenter < game.ai.targetY - deadzone) {
+    game.ai.y += game.ai.speed;
+  } else if (aiCenter > game.ai.targetY + deadzone) {
+    game.ai.y -= game.ai.speed;
+  }
+  game.ai.y = Math.max(
+    0,
+    Math.min(canvas.height - PADDLE_HEIGHT, game.ai.y)
+  );
 
-        ctx.fillStyle = "#c44569";
-        ctx.fillRect(
-          canvas.width - 30 - PADDLE_WIDTH,
-          game.ai.y,
-          PADDLE_WIDTH,
-          PADDLE_HEIGHT
-        );
+  // Ball movement
+  game.ball.x += game.ball.vx;
+  game.ball.y += game.ball.vy;
 
-        // Draw ball
-        ctx.fillStyle = "#ffffff";
-        ctx.beginPath();
-        ctx.arc(
-          game.ball.x + BALL_SIZE / 2,
-          game.ball.y + BALL_SIZE / 2,
-          BALL_SIZE / 2,
-          0,
-          Math.PI * 2
-        );
-        ctx.fill();
+  // Ball collision with top/bottom
+  if (game.ball.y <= 0 || game.ball.y >= canvas.height - BALL_SIZE) {
+    game.ball.vy *= -1;
+    game.ball.y = Math.max(0, Math.min(canvas.height - BALL_SIZE, game.ball.y));
+  }
 
-        // Draw win/lose message
-        if (
-          !gameRunning &&
-          (game.player.score >= WINNING_SCORE ||
-            game.ai.score >= WINNING_SCORE)
-        ) {
-          ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // Ball collision with player paddle (left side)
+  const playerPaddleX = 30;
+  if (game.ball.vx < 0 && checkPaddleCollision(playerPaddleX, game.player.y, true)) {
+    game.ball.vx *= -1;
+    game.ball.x = playerPaddleX + PADDLE_WIDTH + 1;
+    const hitPos =
+      (game.ball.y - game.player.y + BALL_SIZE / 2) / PADDLE_HEIGHT - 0.5;
+    game.ball.vy = hitPos * 8;
+    game.ball.speed = Math.min(game.ball.speed + 0.2, MAX_BALL_SPEED);
+    game.ball.vx = game.ball.speed;
+  }
 
-          ctx.font = "bold 36px Inter, sans-serif";
-          ctx.textAlign = "center";
-          ctx.fillStyle =
-            game.player.score >= WINNING_SCORE ? "#4ecdc4" : "#c44569";
-          ctx.fillText(
-            game.player.score >= WINNING_SCORE ? "YOU WIN!" : "AI WINS!",
-            canvas.width / 2,
-            canvas.height / 2 - 10
-          );
+  // Ball collision with AI paddle (right side)
+  const aiPaddleX = canvas.width - 30 - PADDLE_WIDTH;
+  if (game.ball.vx > 0 && checkPaddleCollision(aiPaddleX, game.ai.y, false)) {
+    game.ball.vx *= -1;
+    game.ball.x = aiPaddleX - BALL_SIZE - 1;
+    const hitPos =
+      (game.ball.y - game.ai.y + BALL_SIZE / 2) / PADDLE_HEIGHT - 0.5;
+    game.ball.vy = hitPos * 8;
+    game.ball.speed = Math.min(game.ball.speed + 0.2, MAX_BALL_SPEED);
+    game.ball.vx = -game.ball.speed;
+  }
 
-          ctx.font = "16px Inter, sans-serif";
-          ctx.fillStyle = "#888";
-          ctx.fillText(
-            "Press Restart to play again",
-            canvas.width / 2,
-            canvas.height / 2 + 25
-          );
-        }
-      }
+  // Scoring
+  if (game.ball.x < -BALL_SIZE) {
+    game.ai.score++;
+    aiScoreEl.textContent = game.ai.score;
+    if (game.ai.score >= WINNING_SCORE) {
+      gameRunning = false;
+    } else {
+      resetBall(1);
+    }
+  }
+  if (game.ball.x > canvas.width + BALL_SIZE) {
+    game.player.score++;
+    playerScoreEl.textContent = game.player.score;
+    if (game.player.score >= WINNING_SCORE) {
+      gameRunning = false;
+    } else {
+      resetBall(-1);
+    }
+  }
+}
 
-      function gameLoop() {
-        update();
-        draw();
-        animationId = requestAnimationFrame(gameLoop);
-      }
+function draw() {
+  // Clear canvas
+  ctx.fillStyle = "#0a0a0a";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      function startGame() {
-        gameOverlay.classList.add("active");
-        document.body.style.overflow = "hidden";
-        resetGame();
-        if (!animationId) {
-          gameLoop();
-        }
-      }
+  // Draw center line
+  ctx.setLineDash([10, 10]);
+  ctx.strokeStyle = "#333";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(canvas.width / 2, 0);
+  ctx.lineTo(canvas.width / 2, canvas.height);
+  ctx.stroke();
+  ctx.setLineDash([]);
 
-      function closeGame() {
-        gameOverlay.classList.remove("active");
-        document.body.style.overflow = "";
-        gameRunning = false;
-        if (animationId) {
-          cancelAnimationFrame(animationId);
-          animationId = null;
-        }
-      }
+  // Draw paddles
+  ctx.fillStyle = "#4ecdc4";
+  ctx.fillRect(30, game.player.y, PADDLE_WIDTH, PADDLE_HEIGHT);
 
-      // Event listeners
-      heroPhoto.addEventListener("click", startGame);
-      closeBtn.addEventListener("click", closeGame);
-      restartBtn.addEventListener("click", resetGame);
+  ctx.fillStyle = "#c44569";
+  ctx.fillRect(
+    canvas.width - 30 - PADDLE_WIDTH,
+    game.ai.y,
+    PADDLE_WIDTH,
+    PADDLE_HEIGHT
+  );
 
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "ArrowUp" || e.key === "w" || e.key === "W") {
-          game.keys.up = true;
-          e.preventDefault();
-        }
-        if (e.key === "ArrowDown" || e.key === "s" || e.key === "S") {
-          game.keys.down = true;
-          e.preventDefault();
-        }
-        if (e.key === "Escape") {
-          closeGame();
-        }
-      });
+  // Draw ball
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  ctx.arc(
+    game.ball.x + BALL_SIZE / 2,
+    game.ball.y + BALL_SIZE / 2,
+    BALL_SIZE / 2,
+    0,
+    Math.PI * 2
+  );
+  ctx.fill();
 
-      document.addEventListener("keyup", (e) => {
-        if (e.key === "ArrowUp" || e.key === "w" || e.key === "W") {
-          game.keys.up = false;
-        }
-        if (e.key === "ArrowDown" || e.key === "s" || e.key === "S") {
-          game.keys.down = false;
-        }
-      });
+  // Draw win/lose message
+  if (
+    !gameRunning &&
+    (game.player.score >= WINNING_SCORE || game.ai.score >= WINNING_SCORE)
+  ) {
+    ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Touch controls
-      const touchUp = document.getElementById("touchUp");
-      const touchDown = document.getElementById("touchDown");
+    ctx.font = "bold 36px Inter, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillStyle =
+      game.player.score >= WINNING_SCORE ? "#4ecdc4" : "#c44569";
+    ctx.fillText(
+      game.player.score >= WINNING_SCORE ? "YOU WIN!" : "AI WINS!",
+      canvas.width / 2,
+      canvas.height / 2 - 10
+    );
 
-      touchUp.addEventListener("touchstart", (e) => {
-        e.preventDefault();
-        game.keys.up = true;
-      });
+    ctx.font = "16px Inter, sans-serif";
+    ctx.fillStyle = "#888";
+    ctx.fillText(
+      "Press Restart to play again",
+      canvas.width / 2,
+      canvas.height / 2 + 25
+    );
+  }
+}
 
-      touchUp.addEventListener("touchend", (e) => {
-        e.preventDefault();
-        game.keys.up = false;
-      });
+function gameLoop() {
+  update();
+  draw();
+  animationId = requestAnimationFrame(gameLoop);
+}
 
-      touchDown.addEventListener("touchstart", (e) => {
-        e.preventDefault();
-        game.keys.down = true;
-      });
+function startGame() {
+  gameOverlay.classList.add("active");
+  document.body.style.overflow = "hidden";
+  resetGame();
+  if (!animationId) {
+    gameLoop();
+  }
+}
 
-      touchDown.addEventListener("touchend", (e) => {
-        e.preventDefault();
-        game.keys.down = false;
-      });
+function closeGame() {
+  gameOverlay.classList.remove("active");
+  document.body.style.overflow = "";
+  gameRunning = false;
+  if (animationId) {
+    cancelAnimationFrame(animationId);
+    animationId = null;
+  }
+}
 
-      // Also allow touch directly on canvas
-      canvas.addEventListener(
-        "touchmove",
-        (e) => {
-          e.preventDefault();
-          const touch = e.touches[0];
-          const rect = canvas.getBoundingClientRect();
-          const touchY = touch.clientY - rect.top;
-          const scale = canvas.height / rect.height;
-          game.player.y = touchY * scale - PADDLE_HEIGHT / 2;
-          game.player.y = Math.max(
-            0,
-            Math.min(canvas.height - PADDLE_HEIGHT, game.player.y)
-          );
-        },
-        { passive: false }
-      );
+// Event listeners
+heroPhoto.addEventListener("click", startGame);
+closeBtn.addEventListener("click", closeGame);
+restartBtn.addEventListener("click", resetGame);
 
-      // Console hint
-      console.log(
-        "%c🎮 Welcome, player!",
-        "color: #2563eb; font-size: 16px; font-weight: bold;"
-      );
-      console.log(
-        "%c Click the photo to play a game...",
-        "color: #888; font-size: 12px;"
-      );
+document.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowUp" || e.key === "w" || e.key === "W") {
+    game.keys.up = true;
+    e.preventDefault();
+  }
+  if (e.key === "ArrowDown" || e.key === "s" || e.key === "S") {
+    game.keys.down = true;
+    e.preventDefault();
+  }
+  if (e.key === "Escape") {
+    closeGame();
+  }
+});
+
+document.addEventListener("keyup", (e) => {
+  if (e.key === "ArrowUp" || e.key === "w" || e.key === "W") {
+    game.keys.up = false;
+  }
+  if (e.key === "ArrowDown" || e.key === "s" || e.key === "S") {
+    game.keys.down = false;
+  }
+});
+
+// Touch controls
+const touchUp = document.getElementById("touchUp");
+const touchDown = document.getElementById("touchDown");
+
+touchUp.addEventListener("touchstart", (e) => {
+  e.preventDefault();
+  game.keys.up = true;
+});
+
+touchUp.addEventListener("touchend", (e) => {
+  e.preventDefault();
+  game.keys.up = false;
+});
+
+touchDown.addEventListener("touchstart", (e) => {
+  e.preventDefault();
+  game.keys.down = true;
+});
+
+touchDown.addEventListener("touchend", (e) => {
+  e.preventDefault();
+  game.keys.down = false;
+});
+
+// Also allow touch directly on canvas
+canvas.addEventListener(
+  "touchmove",
+  (e) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    const touchY = touch.clientY - rect.top;
+    const scale = canvas.height / rect.height;
+    game.player.y = touchY * scale - PADDLE_HEIGHT / 2;
+    game.player.y = Math.max(
+      0,
+      Math.min(canvas.height - PADDLE_HEIGHT, game.player.y)
+    );
+  },
+  { passive: false }
+);
+
+// Console hint
+console.log(
+  "%c🎮 Welcome, player!",
+  "color: #2563eb; font-size: 16px; font-weight: bold;"
+);
+console.log(
+  "%c Click the photo to play a game...",
+  "color: #888; font-size: 12px;"
+);
     </script>
   </body>
 </html>
