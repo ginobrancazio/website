@@ -821,6 +821,40 @@
           display: none;
         }
       }
+      /* Team List */
+.team-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.team-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-right: 0.25rem;
+}
+
+.team-list a {
+  font-size: 0.85rem;
+  color: var(--gradient-start);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.team-list a:hover {
+  color: var(--accent-cyan);
+  text-decoration: underline;
+}
+
+.team-list span {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+      
     </style>
   </head>
   <body>
@@ -952,29 +986,38 @@
           </div>
         </article>
 
-        <article class="project-card">
-          <img
-            src="/pixelkeep.png"
-            alt="Tourists and Trebuchets game screenshot"
-            class="project-image"
-          />
-          <div class="project-content">
-            <h2 class="project-title">Tourists & Trebuchets</h2>
-            <p class="project-description">
-              <i>Castle management with a modern problem.</i><br />
-              Winner of the 2025 Welsh ICE Games Jam, Tourists & Trebuchets is a
-              castle management simulator built with a brilliant team under the
-              name Pixel Keep. Balance tourism with medieval defence as you try
-              to keep your castle standing and thriving.
-            </p>
-            <div class="project-tags">
-              <span class="tag">Game Jam</span>
-              <span class="tag">Simulation</span>
-              <span class="tag">Pixel Keep</span>
-            </div>
-            <span class="project-link coming-soon">Award Winner</span>
-          </div>
-        </article>
+    <article class="project-card">
+  <img
+    src="/pixelkeep.png"
+    alt="Tourists and Trebuchets game screenshot"
+    class="project-image"
+  />
+  <div class="project-content">
+    <h2 class="project-title">Tourists & Trebuchets</h2>
+    <p class="project-description">
+      <i>Castle management with a modern problem.</i><br />
+      Winner of the 2025 Welsh ICE Games Jam, Tourists & Trebuchets is a
+      castle management simulator built with a brilliant team under the
+      name Pixel Keep. Balance tourism with medieval defence as you try
+      to keep your castle standing and thriving.
+    </p>
+    <div class="project-tags">
+      <span class="tag">Game Jam</span>
+      <span class="tag">Simulation</span>
+      <span class="tag">Pixel Keep</span>
+    </div>
+    <div class="team-list">
+      <span class="team-label">Team:</span>
+      <a href="https://www.linkedin.com/in/ginobrancazio">Gino</a> <span>•</span>
+      <a href="https://jellybean42.itch.io/">Josh</a> <span>•</span>
+      <a href="https://www.instagram.com/bel.rae">Bel</a> <span>•</span>
+      <a href="#">Mac</a> <span>•</span>
+      <a href="#">Gabby</a> <span>•</span>
+      <a href="#">Jon</a>
+    </div>
+    <span class="project-link coming-soon">Award Winner</span>
+  </div>
+</article>
 
         <article class="project-card">
           <img
