@@ -458,7 +458,7 @@
 
       .project-image {
         width: 100%;
-        height: 200px;
+        height: 300px;
         object-fit: cover;
         border-bottom: 1px solid var(--border);
       }
@@ -534,7 +534,6 @@
       .about-content {
         font-size: 1.1rem;
         color: var(--text-muted);
-        max-width: 700px;
         line-height: 1.9;
       }
 
@@ -759,6 +758,40 @@
         color: #0a0a0a;
       }
 
+      /* Team List */
+      .team-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem 1rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border);
+      }
+
+      .team-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        font-weight: 500;
+        margin-right: 0.25rem;
+      }
+
+      .team-list a {
+        font-size: 0.85rem;
+        color: var(--gradient-start);
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+
+      .team-list a:hover {
+        color: var(--accent-cyan);
+        text-decoration: underline;
+      }
+
+      .team-list span {
+        color: var(--text-muted);
+        font-size: 0.75rem;
+      }
+
       /* Responsive */
       @media (max-width: 900px) {
         nav {
@@ -805,7 +838,7 @@
         }
 
         .project-image {
-          height: 180px;
+          height: 240px;
         }
 
         footer {
@@ -821,40 +854,6 @@
           display: none;
         }
       }
-      /* Team List */
-.team-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1rem;
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border);
-}
-
-.team-label {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  font-weight: 500;
-  margin-right: 0.25rem;
-}
-
-.team-list a {
-  font-size: 0.85rem;
-  color: var(--gradient-start);
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.team-list a:hover {
-  color: var(--accent-cyan);
-  text-decoration: underline;
-}
-
-.team-list span {
-  color: var(--text-muted);
-  font-size: 0.75rem;
-}
-      
     </style>
   </head>
   <body>
@@ -893,6 +892,7 @@
       <a href="#" class="nav-logo">GINO BRANCAZIO</a>
       <ul class="nav-links">
         <li><a href="#projects">Projects</a></li>
+        <li><a href="#writing">Writings</a></li>
         <li><a href="#about">About</a></li>
         <li>
           <a href="https://www.linkedin.com/in/ginobrancazio/">LinkedIn</a>
@@ -910,7 +910,8 @@
           <span>Brancazio</span>
         </h1>
         <p class="hero-tagline mono">
-          Game designer & tech nerd connecting people through play experiences.
+          Game designer & tech nerd connecting people through play
+          experiences.
           <a href="https://www.linkedin.com/in/ginobrancazio/">Get in touch</a>.
         </p>
       </div>
@@ -935,7 +936,7 @@
       <div class="projects-grid">
         <article class="project-card">
           <img
-            src="/dw_game.png"
+            src="/downwords3.png"
             alt="DownWords game screenshot"
             class="project-image"
           />
@@ -943,10 +944,10 @@
             <h2 class="project-title">DownWords</h2>
             <p class="project-description">
               <i>A daily word puzzle for competitive thinkers.</i><br />
-              DownWords is a daily word puzzle available on web and iOS. Players
-              around the world race to unscramble six themed words, earning
-              points for speed and uncovering bonus words. Custom leagues let
-              friends and families compete together.
+              DownWords is a daily word puzzle available on web and iOS.
+              Players around the world race to unscramble six themed words,
+              earning points for speed and uncovering bonus words. Custom
+              leagues let friends and families compete together.
             </p>
             <div class="project-tags">
               <span class="tag">iOS</span>
@@ -971,11 +972,15 @@
           <div class="project-content">
             <h2 class="project-title">DriftBound</h2>
             <p class="project-description">
-              <i>Connecting friends through a cooperative storytelling experience</i><br />
-              DriftBound is a collaborative, asynchronous choose-your-own-adventure experience 
-              designed to bring people together through shared storytelling. 
-              In each round, players submit their actions as part of a joint adventure. 
-              The Drift then weaves the group’s collective decisions into the narrative, 
+              <i
+                >Connecting friends through a cooperative storytelling
+                experience</i
+              ><br />
+              DriftBound is a collaborative, asynchronous
+              choose-your-own-adventure experience designed to bring people
+              together through shared storytelling. In each round, players
+              submit their actions as part of a joint adventure. The Drift then
+              weaves the group's collective decisions into the narrative,
               shaping the world and determining what unfolds next.
             </p>
             <div class="project-tags">
@@ -983,47 +988,48 @@
               <span class="tag">Asynchronous Gameplay</span>
               <span class="tag">Multiplayer</span>
             </div>
-              <a
-              href="https://driftbound.replit.app/"
-              class="project-link"
-              >
+            <a href="https://driftbound.replit.app/" class="project-link">
               Enter the Drift →
-              </a>
+            </a>
           </div>
         </article>
 
-    <article class="project-card">
-  <img
-    src="/pixelkeep.png"
-    alt="Tourists and Trebuchets game screenshot"
-    class="project-image"
-  />
-  <div class="project-content">
-    <h2 class="project-title">Tourists & Trebuchets</h2>
-    <p class="project-description">
-      <i>Castle management with a modern problem.</i><br />
-      Winner of the 2025 Welsh ICE Games Jam, Tourists & Trebuchets is a
-      castle management simulator built with a brilliant team under the
-      name Pixel Keep. Balance tourism with medieval defence as you try
-      to keep your castle standing and thriving.
-    </p>
-    <div class="project-tags">
-      <span class="tag">Game Jam</span>
-      <span class="tag">Simulation</span>
-      <span class="tag">Pixel Keep</span>
-    </div>
-    <div class="team-list">
-      <span class="team-label">Team:</span>
-      <a href="https://www.linkedin.com/in/ginobrancazio">Gino</a> <span>•</span>
-      <a href="https://jellybean42.itch.io/">Josh</a> <span>•</span>
-      <a href="https://www.instagram.com/bel.rae">Bel</a> <span>•</span>
-      <a href="https://www.artstation.com/macauleyshaw">Mac</a> <span>•</span>
-      <a href="#">Gabby</a> <span>•</span>
-      <a href="#">Jon</a>
-    </div>
-    <span class="project-link coming-soon">2025 Welsh ICE Games Jam Award Winner</span>
-  </div>
-</article>
+        <article class="project-card">
+          <img
+            src="/pixelkeep.png"
+            alt="Tourists and Trebuchets game screenshot"
+            class="project-image"
+          />
+          <div class="project-content">
+            <h2 class="project-title">Tourists & Trebuchets</h2>
+            <p class="project-description">
+              <i>Castle management with a modern problem.</i><br />
+              Winner of the 2025 Welsh ICE Games Jam, Tourists & Trebuchets is
+              a castle management simulator built with a brilliant team under
+              the name Pixel Keep. Balance tourism with medieval defence as you
+              try to keep your castle standing and thriving.
+            </p>
+            <div class="project-tags">
+              <span class="tag">Game Jam</span>
+              <span class="tag">Simulation</span>
+              <span class="tag">Pixel Keep</span>
+            </div>
+            <div class="team-list">
+              <span class="team-label">Team:</span>
+              <a href="https://www.linkedin.com/in/ginobrancazio">Gino</a>
+              <span>•</span>
+              <a href="https://jellybean42.itch.io/">Josh</a> <span>•</span>
+              <a href="https://www.instagram.com/bel.rae">Bel</a> <span>•</span>
+              <a href="https://www.artstation.com/macauleyshaw">Mac</a>
+              <span>•</span>
+              <a href="#">Gabby</a> <span>•</span>
+              <a href="#">Jon</a>
+            </div>
+            <span class="project-link coming-soon"
+              >2025 Welsh ICE Games Jam Award Winner</span
+            >
+          </div>
+        </article>
 
         <article class="project-card">
           <img
@@ -1085,8 +1091,8 @@
         </p>
       </div>
     </section>
-
- <!-- Writing -->
+    
+    <!-- Writing -->
     <section id="writing" class="writing-section">
       <p class="section-header mono">// LATEST WRITING</p>
 
@@ -1125,7 +1131,9 @@
         target="_blank"
         rel="noopener"
       >
-        <h3 class="writing-title">Amazon warehouses are  <em>disorganised chaos...</em></h3>
+        <h3 class="writing-title">
+          Amazon warehouses are <em>disorganised chaos...</em>
+        </h3>
         <p class="writing-excerpt">
           ...because that is <b>exactly</b> how they want it to be.
         </p>
@@ -1138,14 +1146,18 @@
         target="_blank"
         rel="noopener"
       >
-        <h3 class="writing-title">The <em>journey</em> matters more than you think</h3>
+        <h3 class="writing-title">
+          The <em>journey</em> matters more than you think
+        </h3>
         <p class="writing-excerpt">
           Why crafting a strong journey often matters more than the end result.
         </p>
         <span class="writing-cta">Read on LinkedIn →</span>
       </a>
     </section>
+
     
+
     <!-- Footer -->
     <footer>
       <div class="social-links">
@@ -1283,7 +1295,10 @@
         if (game.keys.up && game.player.y > 0) {
           game.player.y -= game.player.speed;
         }
-        if (game.keys.down && game.player.y < canvas.height - PADDLE_HEIGHT) {
+        if (
+          game.keys.down &&
+          game.player.y < canvas.height - PADDLE_HEIGHT
+        ) {
           game.player.y += game.player.speed;
         }
 
@@ -1311,7 +1326,10 @@
         game.ball.x += game.ball.vx;
         game.ball.y += game.ball.vy;
 
-        if (game.ball.y <= 0 || game.ball.y >= canvas.height - BALL_SIZE) {
+        if (
+          game.ball.y <= 0 ||
+          game.ball.y >= canvas.height - BALL_SIZE
+        ) {
           game.ball.vy *= -1;
           game.ball.y = Math.max(
             0,
@@ -1327,9 +1345,16 @@
           game.ball.vx *= -1;
           game.ball.x = playerPaddleX + PADDLE_WIDTH + 1;
           const hitPos =
-            (game.ball.y - game.player.y + BALL_SIZE / 2) / PADDLE_HEIGHT - 0.5;
+            (game.ball.y -
+              game.player.y +
+              BALL_SIZE / 2) /
+              PADDLE_HEIGHT -
+            0.5;
           game.ball.vy = hitPos * 8;
-          game.ball.speed = Math.min(game.ball.speed + 0.2, MAX_BALL_SPEED);
+          game.ball.speed = Math.min(
+            game.ball.speed + 0.2,
+            MAX_BALL_SPEED
+          );
           game.ball.vx = game.ball.speed;
         }
 
@@ -1341,9 +1366,16 @@
           game.ball.vx *= -1;
           game.ball.x = aiPaddleX - BALL_SIZE - 1;
           const hitPos =
-            (game.ball.y - game.ai.y + BALL_SIZE / 2) / PADDLE_HEIGHT - 0.5;
+            (game.ball.y -
+              game.ai.y +
+              BALL_SIZE / 2) /
+              PADDLE_HEIGHT -
+            0.5;
           game.ball.vy = hitPos * 8;
-          game.ball.speed = Math.min(game.ball.speed + 0.2, MAX_BALL_SPEED);
+          game.ball.speed = Math.min(
+            game.ball.speed + 0.2,
+            MAX_BALL_SPEED
+          );
           game.ball.vx = -game.ball.speed;
         }
 
@@ -1404,7 +1436,8 @@
 
         if (
           !gameRunning &&
-          (game.player.score >= WINNING_SCORE || game.ai.score >= WINNING_SCORE)
+          (game.player.score >= WINNING_SCORE ||
+            game.ai.score >= WINNING_SCORE)
         ) {
           ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
           ctx.fillRect(0, 0, canvas.width, canvas.height);
