@@ -113,7 +113,7 @@
     background:#fdd835;border-radius:50%;
   }
   .marge-hair::before{
-    content:'👁👁';position:absolute;bottom:-14px;left:50%;
+    content:'';position:absolute;bottom:-14px;left:50%;
     transform:translateX(-50%);font-size:7px;z-index:2;
     letter-spacing:4px;
   }
@@ -332,14 +332,14 @@ function createWelcome() {
     <h1>Welcome to <span>MLM</span></h1>
     <p>*Marge grumble noise* Oh hello, dear! I'm Marge, your helpful Language Model. How can I help you today?</p>
     <div class="suggestion-chips">
-      <div class="chip" onclick="sendMessage('What should I make for dinner tonight?')">
-        <strong>🍽️ Dinner ideas</strong>What should I make for dinner tonight?</div>
       <div class="chip" onclick="sendMessage('How do I deal with a misbehaving child?')">
         <strong>👦 Parenting advice</strong>How do I deal with a misbehaving child?</div>
       <div class="chip" onclick="sendMessage('Can you help me write a letter?')">
         <strong>✉️ Write a letter</strong>Can you help me write a letter?</div>
       <div class="chip" onclick="sendMessage('Tell me something interesting')">
         <strong>💡 Something interesting</strong>Tell me something interesting!</div>
+       <div class="chip" onclick="sendMessage('Suggest something fun for me to do')">
+        <strong>🕹 I'm bored</strong>Suggest something fun!</div>
     </div>`;
   return d;
 }
