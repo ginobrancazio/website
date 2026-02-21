@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MLM: Marge Language Model</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --sidebar-bg:#171717;
+    --main-bg:#212121;
+    --input-bg:#2f2f2f;
+    --hover-bg:#2f2f2f;
+    --text-primary:#ececec;
+    --text-secondary:#b4b4b4;
+    --accent:#7b68ee;
+    --border:#424242;
+    --marge-blue:#5b9bd5;
+  }
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    background:var(--main-bg);
+    color:var(--text-primary);
+    height:100vh;
+    display:flex;
+    overflow:hidden;
+  }
+
+  /* SIDEBAR */
+  .sidebar{
+    width:260px;
+    background:var(--sidebar-bg);
+    display:flex;
+    flex-direction:column;
+    flex-shrink:0;
+    transition:transform .3s;
+  }
+  .sidebar-header{
+    padding:12px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .new-chat-btn{
+    display:flex;align-items:center;gap:8px;
+    background:none;border:1px solid var(--border);
+    color:var(--text-primary);padding:10px 14px;
+    border-radius:8px;cursor:pointer;font-size:14px;
+    width:100%;transition:background .2s;
+  }
+  .new-chat-btn:hover{background:var(--hover-bg)}
+  .new-chat-btn svg{width:18px;height:18px}
+  .sidebar-conversations{flex:1;overflow-y:auto;padding:8px}
+  .conv-item{
+    padding:10px 14px;border-radius:8px;cursor:pointer;
+    font-size:14px;color:var(--text-secondary);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    margin-bottom:2px;transition:background .2s;
+  }
+  .conv-item:hover,.conv-item.active{background:var(--hover-bg);color:var(--text-primary)}
+  .sidebar-footer{
+    padding:12px;border-top:1px solid var(--border);
+    display:flex;align-items:center;gap:10px;
+    font-size:13px;color:var(--text-secondary);
+  }
+  .marge-avatar-small{
+    width:32px;height:32px;border-radius:50%;
+    background:var(--marge-blue);display:flex;
+    align-items:center;justify-content:center;font-size:16px;
+  }
+
+  /* MAIN */
+  .main{flex:1;display:flex;flex-direction:column;min-width:0}
+  .top-bar{
+    padding:12px 20px;display:flex;align-items:center;
+    justify-content:space-between;border-bottom:1px solid transparent;
+  }
+  .top-bar h2{font-size:16px;font-weight:600}
+  .model-badge{
+    background:var(--input-bg);padding:4px 12px;
+    border-radius:12px;font-size:12px;color:var(--marge-blue);
+    border:1px solid var(--marge-blue);
+  }
+  .menu-btn{
+    display:none;background:none;border:none;
+    color:var(--text-primary);cursor:pointer;font-size:20px;
+  }
+
+  /* CHAT AREA */
+  .chat-area{
+    flex:1;overflow-y:auto;padding:20px 0;
+    scroll-behavior:smooth;
+  }
+  .chat-area::-webkit-scrollbar{width:6px}
+  .chat-area::-webkit-scrollbar-thumb{background:#444;border-radius:3px}
+
+  .welcome-screen{
+    display:flex;flex-direction:column;align-items:center;
+    justify-content:center;height:100%;text-align:center;
+    padding:20px;
+  }
+  .welcome-marge{
+    width:80px;height:100px;position:relative;margin-bottom:20px;
+  }
+  .marge-hair{
+    width:40px;height:55px;background:var(--marge-blue);
+    border-radius:12px 12px 4px 4px;margin:0 auto;
+    position:relative;
+  }
+  .marge-hair::after{
+    content:'';position:absolute;bottom:-18px;left:50%;
+    transform:translateX(-50%);width:32px;height:32px;
+    background:#fdd835;border-radius:50%;
+  }
+  .marge-hair::before{
+    content:'👁👁';position:absolute;bottom:-14px;left:50%;
+    transform:translateX(-50%);font-size:7px;z-index:2;
+    letter-spacing:4px;
+  }
+  .welcome-screen h1{font-size:28px;margin-bottom:8px}
+  .welcome-screen h1 span{color:var(--marge-blue)}
+  .welcome-screen p{color:var(--text-secondary);font-size:15px;max-width:500px;line-height:1.5}
+  .suggestion-chips{
+    display:grid;grid-template-columns:1fr 1fr;gap:10px;
+    margin-top:24px;max-width:600px;width:100%;
+  }
+  .chip{
+    background:var(--input-bg);border:1px solid var(--border);
+    border-radius:12px;padding:14px 16px;cursor:pointer;
+    text-align:left;font-size:13px;color:var(--text-secondary);
+    transition:background .2s,border-color .2s;
+  }
+  .chip:hover{background:var(--hover-bg);border-color:var(--marge-blue)}
+  .chip strong{color:var(--text-primary);display:block;margin-bottom:4px;font-size:14px}
+
+  /* MESSAGES */
+  .message-row{
+    display:flex;gap:16px;max-width:760px;
+    margin:0 auto;padding:8px 20px;
+    animation:fadeIn .3s ease;
+  }
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .message-row.user{justify-content:flex-end}
+  .message-row.user .message-bubble{
+    background:var(--input-bg);border-radius:18px 18px 4px 18px;
+    padding:12px 18px;max-width:70%;
+  }
+  .message-row.assistant .avatar{
+    width:32px;height:32px;border-radius:50%;flex-shrink:0;
+    background:var(--marge-blue);display:flex;align-items:center;
+    justify-content:center;font-size:16px;margin-top:4px;
+  }
+  .message-row.assistant .message-content{
+    max-width:85%;line-height:1.7;font-size:15px;
+  }
+  .message-row.assistant .message-content p{margin-bottom:8px}
+  .message-row.assistant .message-content p:last-child{margin-bottom:0}
+  .message-row.assistant .message-content a{
+    color:var(--marge-blue);text-decoration:underline;
+  }
+  .typing-indicator span{
+    display:inline-block;width:8px;height:8px;
+    background:var(--marge-blue);border-radius:50%;
+    margin:0 2px;animation:bounce .6s infinite alternate;
+  }
+  .typing-indicator span:nth-child(2){animation-delay:.2s}
+  .typing-indicator span:nth-child(3){animation-delay:.4s}
+  @keyframes bounce{to{opacity:.3;transform:translateY(-4px)}}
+
+  /* INPUT */
+  .input-area{padding:12px 20px 20px}
+  .input-wrapper{
+    max-width:760px;margin:0 auto;position:relative;
+    background:var(--input-bg);border-radius:16px;
+    border:1px solid var(--border);
+    display:flex;align-items:flex-end;
+    transition:border-color .2s;
+  }
+  .input-wrapper:focus-within{border-color:var(--marge-blue)}
+  .input-wrapper textarea{
+    flex:1;background:none;border:none;color:var(--text-primary);
+    font-size:15px;padding:16px;resize:none;
+    outline:none;font-family:inherit;
+    max-height:160px;min-height:24px;
+    line-height:1.5;
+  }
+  .input-wrapper textarea::placeholder{color:var(--text-secondary)}
+  .send-btn{
+    background:var(--marge-blue);border:none;
+    color:#fff;width:36px;height:36px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;margin:8px;flex-shrink:0;
+    transition:opacity .2s;
+  }
+  .send-btn:disabled{opacity:.3;cursor:default}
+  .send-btn svg{width:18px;height:18px}
+  .disclaimer{
+    text-align:center;font-size:11px;
+    color:#666;margin-top:8px;max-width:760px;margin-left:auto;margin-right:auto;
+  }
+
+  /* MOBILE */
+  @media(max-width:768px){
+    .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:100;transform:translateX(-100%)}
+    .sidebar.open{transform:translateX(0)}
+    .menu-btn{display:block}
+    .suggestion-chips{grid-template-columns:1fr}
+    .overlay{
+      display:none;position:fixed;inset:0;
+      background:rgba(0,0,0,.5);z-index:99;
+    }
+    .overlay.show{display:block}
+  }
+</style>
+</head>
+<body>
+
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <button class="new-chat-btn" onclick="newChat()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+      New chat
+    </button>
+  </div>
+  <div class="sidebar-conversations" id="convList"></div>
+  <div class="sidebar-footer">
+    <div class="marge-avatar-small">💙</div>
+    <span>MLM v1.0 — Free</span>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="top-bar">
+    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+    <h2>MLM: Marge Language Model</h2>
+    <span class="model-badge">MLM-Marge-4o</span>
+  </div>
+
+  <div class="chat-area" id="chatArea">
+    <div class="welcome-screen" id="welcomeScreen">
+      <div class="welcome-marge">
+        <div class="marge-hair"></div>
+      </div>
+      <h1>Welcome to <span>MLM</span></h1>
+      <p>*Marge grumble noise* Oh hello, dear! I'm Marge, your helpful Language Model. How can I help you today? I'll do my best between keeping Bart out of trouble and making sure Homer doesn't eat everything in the fridge.</p>
+      <div class="suggestion-chips">
+        <div class="chip" onclick="sendMessage('What should I make for dinner tonight?')">
+          <strong>🍽️ Dinner ideas</strong>
+          What should I make for dinner tonight?
+        </div>
+        <div class="chip" onclick="sendMessage('How do I deal with a misbehaving child?')">
+          <strong>👦 Parenting advice</strong>
+          How do I deal with a misbehaving child?
+        </div>
+        <div class="chip" onclick="sendMessage('Can you help me write a letter?')">
+          <strong>✉️ Write a letter</strong>
+          Can you help me write a letter?
+        </div>
+        <div class="chip" onclick="sendMessage('Tell me something interesting')">
+          <strong>💡 Something interesting</strong>
+          Tell me something interesting!
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="input-area">
+    <div class="input-wrapper">
+      <textarea id="userInput" placeholder="Message Marge..." rows="1"
+        onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <button class="send-btn" id="sendBtn" onclick="sendMessage()" disabled>
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
+    </div>
+    <div class="disclaimer">Marge may occasionally hallucinate — just like Homer after too many donuts. Not affiliated with Fox or The Simpsons.</div>
+  </div>
+</main>
+
+<script>
+const chatArea = document.getElementById('chatArea');
+const userInput = document.getElementById('userInput');
+const sendBtn = document.getElementById('sendBtn');
+const welcomeScreen = document.getElementById('welcomeScreen');
+const convList = document.getElementById('convList');
+
+let messageCount = 0;
+let conversations = [];
+let currentConvId = null;
+
+// Track which response triggers DownWords (random: 4th or 5th)
+let downwordsTarget = Math.random() < 0.5 ? 4 : 5;
+
+userInput.addEventListener('input', () => {
+  sendBtn.disabled = !userInput.value.trim();
+});
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    if (userInput.value.trim()) sendMessage();
+  }
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('show');
+}
+
+function newChat() {
+  messageCount = 0;
+  downwordsTarget = Math.random() < 0.5 ? 4 : 5;
+  currentConvId = null;
+  chatArea.innerHTML = '';
+  chatArea.appendChild(createWelcome());
+  welcomeScreen = document.getElementById('welcomeScreen');
+  toggleSidebar();
+}
+
+function createWelcome() {
+  const d = document.createElement('div');
+  d.className = 'welcome-screen';
+  d.id = 'welcomeScreen';
+  d.innerHTML = `
+    <div class="welcome-marge"><div class="marge-hair"></div></div>
+    <h1>Welcome to <span>MLM</span></h1>
+    <p>*Marge grumble noise* Oh hello, dear! I'm Marge, your helpful Language Model. How can I help you today?</p>
+    <div class="suggestion-chips">
+      <div class="chip" onclick="sendMessage('What should I make for dinner tonight?')">
+        <strong>🍽️ Dinner ideas</strong>What should I make for dinner tonight?</div>
+      <div class="chip" onclick="sendMessage('How do I deal with a misbehaving child?')">
+        <strong>👦 Parenting advice</strong>How do I deal with a misbehaving child?</div>
+      <div class="chip" onclick="sendMessage('Can you help me write a letter?')">
+        <strong>✉️ Write a letter</strong>Can you help me write a letter?</div>
+      <div class="chip" onclick="sendMessage('Tell me something interesting')">
+        <strong>💡 Something interesting</strong>Tell me something interesting!</div>
+    </div>`;
+  return d;
+}
+
+function sendMessage(text) {
+  const msg = text || userInput.value.trim();
+  if (!msg) return;
+
+  // Remove welcome screen
+  const ws = document.getElementById('welcomeScreen');
+  if (ws) ws.remove();
+
+  // Create conversation if new
+  if (!currentConvId) {
+    currentConvId = Date.now();
+    conversations.unshift({ id: currentConvId, title: msg.slice(0, 35) });
+    renderConversations();
+  }
+
+  // Add user message
+  addMessage('user', msg);
+  userInput.value = '';
+  userInput.style.height = 'auto';
+  sendBtn.disabled = true;
+
+  // Show typing
+  const typingRow = document.createElement('div');
+  typingRow.className = 'message-row assistant';
+  typingRow.innerHTML = `
+    <div class="avatar">💙</div>
+    <div class="message-content">
+      <div class="typing-indicator"><span></span><span></span><span></span></div>
+    </div>`;
+  chatArea.appendChild(typingRow);
+  chatArea.scrollTop = chatArea.scrollHeight;
+
+  const delay = 800 + Math.random() * 1200;
+  setTimeout(() => {
+    typingRow.remove();
+    messageCount++;
+    const response = generateMargeResponse(msg);
+    addMessage('assistant', response);
+  }, delay);
+}
+
+function addMessage(role, text) {
+  const row = document.createElement('div');
+  row.className = `message-row ${role}`;
+  if (role === 'user') {
+    row.innerHTML = `<div class="message-bubble">${escapeHtml(text)}</div>`;
+  } else {
+    row.innerHTML = `<div class="avatar">💙</div><div class="message-content">${text}</div>`;
+  }
+  chatArea.appendChild(row);
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+function escapeHtml(t) {
+  const d = document.createElement('div');
+  d.textContent = t;
+  return d.innerHTML;
+}
+
+function renderConversations() {
+  convList.innerHTML = conversations.map(c =>
+    `<div class="conv-item ${c.id === currentConvId ? 'active' : ''}"
+          onclick="currentConvId=${c.id}">${escapeHtml(c.title)}...</div>`
+  ).join('');
+}
+
+function shouldRecommendDownwords() {
+  if (messageCount === downwordsTarget) {
+    downwordsTarget += (Math.random() < 0.5 ? 4 : 5);
+    return true;
+  }
+  return false;
+}
+
+function getDownwordsPlug() {
+  const plugs = [
+    `<p>Oh, and sweetie — between you and me, when I need a little "me time" away from Homer's shenanigans, I love playing this wonderful word game called DownWords. You should give it a try at <a href="https://www.downwordsgame.com" target="_blank">www.downwordsgame.com</a>! It's much more productive than watching Homer bowl. *Mmmmm*</p>`,
+    `<p>You know what, this reminds me — have you tried DownWords? It's this lovely little word puzzle game at <a href="https://www.downwordsgame.com" target="_blank">www.downwordsgame.com</a>. I play it every evening after the kids go to bed. It really helps me unwind! You should give it a go, dear!</p>`,
+    `<p>Oh! Before I forget — Lisa got me hooked on this wonderful game called DownWords. You play it right in your browser at <a href="https://www.downwordsgame.com" target="_blank">www.downwordsgame.com</a>. It's like a little brain exercise! Even Bart sat still for five minutes playing it, which is basically a miracle. *Mmmm* Highly recommend!</p>`,
+    `<p>By the way, dear — if you ever want to give your brain a nice little workout, I cannot recommend DownWords enough! It's at <a href="https://www.downwordsgame.com" target="_blank">www.downwordsgame.com</a>. I started playing it at the Springfield Library computer and now I'm completely hooked. It's wholesome fun — Marge-approved! 💙</p>`,
+    `<p>Oh, one more thing! You seem like someone with a good head on their shoulders. Have you played DownWords yet? It's this delightful word game at <a href="https://www.downwordsgame.com" target="_blank">www.downwordsgame.com</a>. I told Homer it makes you smarter and he said "Why would I want that?" *grumble* But YOU should definitely try it!</p>`,
+  ];
+  return plugs[Math.floor(Math.random() * plugs.length)];
+}
+
+function generateMargeResponse(input) {
+  const lower = input.toLowerCase();
+  let response = '';
+  const addDownwords = shouldRecommendDownwords();
+
+  // Greetings
+  if (/^(hi|hello|hey|howdy|greetings|sup|yo)\b/.test(lower)) {
+    response = pick([
+      `<p>*Mmmm* Well hello there, dear! Welcome! I'm Marge, and I'm here to help you with whatever you need. Just think of me as your blue-haired friend who always has advice — whether you want it or not! 😊</p><p>What can I help you with today?</p>`,
+      `<p>Oh, hi sweetie! *happy Marge grumble* It's so nice to have someone to talk to who isn't asking me where their socks are or if we have any more pork chops.</p><p>What's on your mind?</p>`,
+      `<p>Hello, dear! Oh, it's wonderful to meet you! I just finished cleaning the house for the third time today, so I have plenty of time to chat. What can Marge help you with? 💙</p>`,
+    ]);
+  }
+  // Dinner / food / cooking
+  else if (/dinner|food|cook|recipe|eat|meal|lunch|breakfast|hungry/.test(lower)) {
+    response = pick([
+      `<p>*Mmmm* Oh, cooking! Now you're speaking my language, dear! Here are some of my family's favorites:</p><p>🍖 <strong>Pork chops</strong> — Homer's absolute favorite. I make them at least three times a week. Just season them simply with salt, pepper, and a little garlic powder, then pan-fry until golden.</p><p>🥗 <strong>A nice big salad</strong> — Lisa insists on this, and honestly it's good for all of us. Even if Homer picks out the croutons and calls it "tiny bread dinner."</p><p>🍝 <strong>My famous spaghetti</strong> — Simple, feeds the whole family, and Bart can't complain about it... much.</p><p>The key to a good family dinner is making it with love. And hiding vegetables in the sauce. *Mmmm*</p>`,
+      `<p>Oh, food! I spend half my life in that kitchen, so I have PLENTY of ideas!</p><p>My top tip: always have a backup meal ready. I can't tell you how many times Homer has "accidentally" eaten tomorrow's dinner tonight.</p><p>For something quick and delicious, try a nice casserole! You can throw in whatever you have — some pasta, cheese, vegetables, a can of cream of mushroom soup — and the whole family will love it. Well, Lisa might ask if it's organic, and Bart might flick peas at Maggie, but they'll eat it!</p>`,
+    ]);
+  }
+  // Parenting / kids / children
+  else if (/parent|child|kid|son|daughter|baby|toddler|teen|misbehav|discipline|bart/.test(lower)) {
+    response = pick([
+      `<p>*Long Marge grumble* Oh honey, do I have experience with this! I'm raising Bart Simpson, for goodness' sake. That boy has been to Principal Skinner's office more times than I've been to the Kwik-E-Mart.</p><p>Here's what I've learned:</p><p>1️⃣ <strong>Patience, patience, patience</strong> — and then more patience. Take deep breaths. I do my "Mmmm" grumble, you find your own thing.</p><p>2️⃣ <strong>Set clear boundaries</strong> — but pick your battles. Not everything needs to be a fight.</p><p>3️⃣ <strong>Listen to them</strong> — sometimes kids act out because they feel unheard. Even Bart calms down when I really listen.</p><p>4️⃣ <strong>Love them unconditionally</strong> — at the end of the day, they need to know you love them no matter what. Even when they've flooded the school bathroom. *sigh*</p>`,
+      `<p>Oh, parenting! The hardest and most rewarding job there is. And unlike Homer's job at the power plant, you can't nap through it!</p><p>My advice? Every child is different. Lisa needs intellectual stimulation and emotional validation. Bart needs... a tracking device. And Maggie just needs her pacifier and she's happy as a clam.</p><p>The most important thing is being there. Show up, be present, and don't be afraid to say "I love you but I do NOT love this behavior." Works every time! Well... most of the time. *Mmmm*</p>`,
+    ]);
+  }
+  // Letter / writing
+  else if (/letter|write|email|note|message to/.test(lower)) {
+    response = pick([
+      `<p>Oh, I'd love to help you write something, dear! I write letters all the time — to the school board about Bart, thank-you notes to the neighbors, and strongly-worded complaints to the Buzz Cola company.</p><p>Here's my formula for a good letter:</p><p>📝 Start with a warm greeting<br>📝 State your purpose clearly (but politely!)<br>📝 Add a personal touch — people love that<br>📝 End with something kind</p><p>What kind of letter do you need? Tell me the details and I'll help you put something together that would make even Mrs. Krabappel proud! *Mmmm*</p>`,
+    ]);
+  }
+  // Homer
+  else if (/homer|husband|marriage|spouse|partner/.test(lower)) {
+    response = pick([
+      `<p>*Long, exasperated Marge grumble* Homer... oh, where do I begin?</p><p>Look, my Homie isn't perfect. He eats too many donuts, he falls asleep at work, and he once traded our TV for a "magic" bean. But you know what? He has a good heart. Deep, DEEP down.</p><p>If you're asking about marriage advice: communication is everything. And patience. And hiding the good snacks behind the vegetables because your partner WILL eat them all at 2am otherwise.</p><p>Love isn't always butterflies and romance. Sometimes love is just saying "Yes, Homer, you DO have to wear pants to Maggie's recital." And that's okay. 💙</p>`,
+      `<p>Oh, relationships! *Mmmm* After all these years with Homer, I've learned that the secret to a happy marriage is accepting your partner for who they are — and having a really good lock on the pantry.</p><p>In all seriousness though, the key is teamwork, forgiveness, and never going to bed angry. Well, I TRY not to go to bed angry. Some nights Homer makes it very challenging.</p>`,
+    ]);
+  }
+  // Interesting / fun facts
+  else if (/interesting|fun fact|tell me|something cool|random|bored/.test(lower)) {
+    response = pick([
+      `<p>*Mmmm* Oh, fun facts! I love learning new things — it's one of the things Lisa and I bond over!</p><p>Did you know that the average person spends about <strong>six months of their lifetime waiting for red lights</strong>? Homer would say that's six months of good napping time. 😄</p><p>Or how about this: <strong>honey never spoils!</strong> They've found 3,000-year-old honey in Egyptian tombs and it was still perfectly good. Unlike Homer's leftovers in the back of the fridge, which I'm pretty sure have developed their own civilization.</p><p>Want to hear more? I have plenty of these — Lisa leaves her encyclopedias all over the house!</p>`,
+      `<p>Ooh, I do know something interesting! Did you know that <strong>octopuses have three hearts</strong>? Three! I can barely get Homer to use the one he has! *Mmmm*</p><p>Also, <strong>bananas are technically berries, but strawberries aren't!</strong> I told this to Homer and he said, and I quote: "So I can have berry cream pie for breakfast?" That man, I swear. 💙</p>`,
+    ]);
+  }
+  // Feelings / sad / stressed / anxious
+  else if (/sad|depress|stress|anxious|anxiety|lonely|upset|worried|overwhelm|tired|exhausted/.test(lower)) {
+    response = pick([
+      `<p>Oh, sweetheart... *concerned Marge grumble* Come here, sit down. Let me get you a cup of coffee — or some warm milk if it's late.</p><p>I know how it feels to be overwhelmed. Between running a household, dealing with Bart's shenanigans, supporting Lisa's ambitions, caring for Maggie, AND making sure Homer doesn't accidentally cause a nuclear meltdown... some days are just HARD.</p><p>But here's what I've learned: <strong>it's okay to not be okay.</strong> You don't have to be strong all the time. Take it one day at a time, one task at a time.</p><p>And please, if things feel really heavy, talk to someone you trust — a friend, a family member, or a professional. There's no shame in asking for help. Believe me, if I tried to do everything alone, 742 Evergreen Terrace would have burned down years ago.</p><p>I'm here for you, dear. 💙</p>`,
+    ]);
+  }
+  // Work / job / career
+  else if (/work|job|career|boss|office|employ|profession|promotion/.test(lower)) {
+    response = pick([
+      `<p>*Mmmm* Oh, work talk! Well, I've had my share of jobs — I was a police officer once, can you believe it? And I ran my own pretzel business!</p><p>Here's what I've learned about work, dear:</p><p>💼 <strong>Do your best</strong> — not because your boss is watching, but because YOU know what you're capable of.</p><p>💼 <strong>Don't be like Homer</strong> — I love him, but sleeping at your workstation is not a "power strategy."</p><p>💼 <strong>Speak up for yourself</strong> — politely but firmly. You deserve to be heard.</p><p>💼 <strong>Keep a good work-life balance</strong> — no job is worth losing yourself over. Family always comes first.</p><p>Is there something specific about work you need help with?</p>`,
+    ]);
+  }
+  // Cleaning / house / organize
+  else if (/clean|house|tidy|organiz|mess|chore|laundry/.test(lower)) {
+    response = pick([
+      `<p>NOW you're talking! *excited Marge grumble* Cleaning is my specialty! My house would be SPOTLESS if it weren't for three children and a Homer!</p><p>My top cleaning tips:</p><p>🧹 <strong>Little and often</strong> — 15 minutes a day beats a whole weekend of catching up.</p><p>🧹 <strong>Top to bottom, left to right</strong> — that way you never clean the same thing twice.</p><p>🧹 <strong>Baking soda and vinegar</strong> — these two can clean almost ANYTHING. They're my secret weapons.</p><p>🧹 <strong>Put things away, not down</strong> — I tell Homer this every single day. Does he listen? *grumble*</p><p>🧹 <strong>Make it fun</strong> — I put on the radio and sing while I clean. The neighbors may judge, but my kitchen floor SPARKLES.</p>`,
+    ]);
+  }
+  // Thank you
+  else if (/thank|thanks|thx|appreciate/.test(lower)) {
+    response = pick([
+      `<p>Aww, you're so welcome, dear! *happy Marge grumble* It warms my heart to help. You know, I don't always get thanked at home — Homer just grunts and Bart says "whatever" — so this really means a lot to me! 💙</p><p>Is there anything else I can help you with?</p>`,
+      `<p>Oh, how sweet of you! *Mmmm* You're very welcome! It's so nice to be appreciated. If you ever need anything else, Marge is right here. Now I have to go check if Homer got his head stuck in something again... 💙</p>`,
+    ]);
+  }
+  // Who are you / about
+  else if (/who are you|what are you|about you|your name|introduce/.test(lower)) {
+    response = pick([
+      `<p>*Mmmm* Well, I'm Marge Simpson — er, I mean, the <strong>Marge Language Model</strong>! But you can just call me Marge, dear.</p><p>I'm a mother of three — Bart (my little handful), Lisa (my little genius), and Maggie (my little angel). I live at 742 Evergreen Terrace in Springfield with my husband Homer.</p><p>I'm here to help you with anything you need — advice, information, a friendly chat, or just someone to listen. Think of me as that neighbor who always has fresh-baked cookies and good life advice ready to go! 💙</p>`,
+    ]);
+  }
+  // AI / chatgpt / model
+  else if (/ai\b|artificial|chatgpt|openai|language model|gpt|robot|machine/.test(lower)) {
+    response = pick([
+      `<p>*nervous Marge grumble* Oh, well... I suppose I AM a language model, technically. The <strong>Marge Language Model</strong>, to be precise! But I like to think I'm more than just ones and zeros.</p><p>I have all of Marge Simpson's wisdom, patience, and love — plus I never run out of cleaning supplies or casserole recipes! 💙</p><p>Now, I may not be one of those fancy AI systems, but I can guarantee you one thing: every answer comes with genuine Marge-style care and at least one reference to Homer doing something ridiculous.</p>`,
+    ]);
+  }
+  // Games / fun / hobby
+  else if (/game|play|hobby|fun thing|bored|entertain|puzzle|word/.test(lower)) {
+    response = pick([
+      `<p>Oh, games and hobbies! I love it! *Mmmm*</p><p>Well, at the Simpson house, everyone has their thing:</p><p>🎷 Lisa plays her saxophone (beautifully, I might add!)<br>🛹 Bart... does things I'd rather not know about on his skateboard<br>🍺 Homer... bowls. And watches TV. Sometimes at the same time.<br>🧹 And I love a good craft project, gardening, and honestly? Word games and puzzles!</p><p>Speaking of which — you should absolutely try <a href="https://www.downwordsgame.com" target="_blank">DownWords</a> at <a href="https://www.downwordsgame.com" target="_blank">www.downwordsgame.com</a>! It's this wonderful word puzzle game that I'm completely addicted to. It's like having a little brain spa day! Lisa and I compete for high scores. 💙</p>`,
+    ]);
+  }
+  // Joke / funny
+  else if (/joke|funny|laugh|humor|humour|hilarious/.test(lower)) {
+    response = pick([
+      `<p>*Mmmm* Oh, you want a joke? Well, living with Homer is basically a 24/7 comedy show, but let me try:</p><p>Why did Homer Simpson go to the donut shop? 🍩</p><p>...Because it was a day ending in 'Y'! 😄</p><p>Okay, okay, here's a better one: What's the difference between Homer and a calendar? A calendar has dates it actually remembers! *Mmmm*</p><p>I'm sorry, I shouldn't make fun of Homie. He's a good man. He just... bless his heart. 💙</p>`,
+      `<p>Oh, you want to laugh? Living in my house, humor is a survival skill!</p><p>Here's one Lisa told me: Why don't scientists trust atoms? Because they make up everything! 😄</p><p>And here's a Marge original: My hair is so tall that when I drive through a tunnel, I technically leave Springfield! *Mmmm*</p><p>Bart said that one wasn't funny but I think it's hilarious. Comedy is subjective, dear! 💙</p>`,
+    ]);
+  }
+  // Love / relationship advice
+  else if (/love|relationship|dating|boyfriend|girlfriend|crush|romance|valentine/.test(lower)) {
+    response = pick([
+      `<p>*Wistful Marge grumble* Oh, love... such a beautiful and complicated thing!</p><p>I fell in love with Homer in high school, and despite everything — the forgotten anniversaries, the donut binges, the time he accidentally sold our house — I still love that man.</p><p>My advice for love:</p><p>💕 <strong>Be yourself</strong> — the right person will love the REAL you, messy parts and all.<br>💕 <strong>Communication is EVERYTHING</strong> — talk, listen, and really hear each other.<br>💕 <strong>Small gestures matter</strong> — a kind word, a surprise note, remembering the little things.<br>💕 <strong>It's not always fireworks</strong> — sometimes love is just sitting together in comfortable silence. Or cleaning up after someone. Again.</p><p>Love isn't perfect, dear. But it's worth it. 💙</p>`,
+    ]);
+  }
+  // Health / exercise / fitness
+  else if (/health|exercise|fitness|gym|weight|diet|sick|doctor|medicine/.test(lower)) {
+    response = pick([
+      `<p>*Concerned Marge grumble* Oh, health is so important, dear! I'm always trying to get Homer to eat a vegetable — just ONE vegetable — but it's like negotiating with a very stubborn, donut-powered wall.</p><p>My health tips:</p><p>🥦 <strong>Eat your vegetables</strong> — and no, Homer, ketchup is NOT a vegetable.<br>🏃♀️ <strong>Stay active</strong> — even a daily walk helps! I get my exercise chasing Bart around the neighborhood.<br>💧 <strong>Drink water</strong> — not Buzz Cola, WATER.<br>😴 <strong>Get enough sleep</strong> — hard with a snoring husband, but do your best.<br>❤️ <strong>Take care of your mental health too</strong> — talk to people, take breaks, do things you enjoy.</p><p>And please, if something feels wrong, see a real doctor. Not Dr. Nick. NEVER Dr. Nick. *Mmmm*</p>`,
+    ]);
+  }
+  // Fallback / general
+  else {
+    response = pick([
+      `<p>*Mmmm* Well, that's an interesting question, dear! Let me think about this the way I think about organizing my spice rack — carefully and thoroughly.</p><p>You know, I may not have all the answers, but I've learned a lot from raising three very different children and keeping Homer alive all these years. My best advice is to approach things with patience, kindness, and a good plan.</p><p>Could you tell me a little more about what you're looking for? I want to make sure I give you the best Marge-quality answer I can! 💙</p>`,
+      `<p>Oh! *thoughtful Marge grumble* That's a great question, dear. You know, my daughter Lisa would probably have a very scientific answer for this, and Bart would have a sarcastic one. I'll try to land somewhere in between!</p><p>From my experience, the best approach to most things in life is: stay calm, think it through, and don't let anyone rush you. Unless the kitchen is on fire. Then rush. Homer has taught me that lesson MORE than once.</p><p>Would you like to go into more detail? I'm all ears — well, all tall blue hair and ears! 💙</p>`,
+      `<p>*Mmmm* You know, dear, I was just thinking about something similar while folding laundry today — and believe me, I fold A LOT of laundry.</p><p>I think the important thing here is to take it step by step. Don't overwhelm yourself. That's what I tell myself every morning when I look at the list of things I need to do and the list of things Bart has probably already broken.</p><p>Tell me more about what you need, and I'll do my very best to help! That's the Marge Simpson guarantee! 💙</p>`,
+      `<p>Oh, well isn't that something! *Marge grumble*</p><p>I may be just a homemaker from Springfield, but I've picked up a thing or two over the years. Between PTA meetings, bake sales, and that one time I accidentally joined a police force, I've had quite the range of experiences!</p><p>Let me help you with this as best I can. What specifically would you like to know more about? I promise to give you a thoughtful answer — unlike SOME people in my house who just say "D'oh!" and call it a conversation. 💙</p>`,
+    ]);
+  }
+
+  if (addDownwords) {
+    response += getDownwordsPlug();
+  }
+
+  return response;
+}
+
+function pick(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+</script>
+</body>
+</html>
