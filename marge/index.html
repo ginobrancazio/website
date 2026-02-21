@@ -1,5 +1,12 @@
 <html lang="en">
 <head>
+ <script async src="https://www.googletagmanager.com/gtag/js?id=G-6R3CEQKVLF"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-6R3CEQKVLF');
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MLM: Marge Language Model</title>
@@ -364,6 +371,11 @@ function sendMessage(text) {
   userInput.style.height = 'auto';
   sendBtn.disabled = true;
 
+ gtag('event', 'mlm_message_sent', {
+  event_category: 'chat',
+  event_label: msg.slice(0, 100),
+});
+
   // Show typing
   const typingRow = document.createElement('div');
   typingRow.className = 'message-row assistant';
@@ -413,6 +425,10 @@ function shouldRecommendDownwords() {
   if (messageCount === downwordsTarget) {
     downwordsTarget += (Math.random() < 0.5 ? 4 : 5);
     return true;
+   gtag('event', 'mlm_downwords_shown', {
+  event_category: 'promotion',
+  event_label: 'downwords_recommendation',
+});
   }
   return false;
 }
@@ -557,6 +573,17 @@ function generateMargeResponse(input) {
 function pick(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
+
+ document.addEventListener('click', function(e) {
+  const link = e.target.closest('a[href*="downwordsgame.com"]');
+  if (link) {
+    gtag('event', 'mlm_downwords_click', {
+      event_category: 'outbound',
+      event_label: link.href,
+      transport_type: 'beacon',
+    });
+  }
+});
 </script>
 </body>
 </html>
