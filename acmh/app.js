@@ -801,3 +801,43 @@ async function handleNewsletterSubmit(e) {
     status.style.color = "#f56565";
   }
 }
+
+// Add this to your setupEventListeners function or at the end of app.js
+
+// Image modal functionality
+function setupImageModal() {
+  const modal = document.getElementById('imageModal');
+  const modalImg = document.getElementById('modalImage');
+  
+  if (!modal || !modalImg) return;
+  
+  // Add click handlers to all screenshot images
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.screenshot-item') || e.target.closest('.screenshot-card')) {
+      const img = e.target.closest('.screenshot-item, .screenshot-card').querySelector('img');
+      if (img) {
+        modal.classList.add('active');
+        modalImg.src = img.src;
+        modalImg.alt = img.alt;
+        document.body.style.overflow = 'hidden';
+      }
+    }
+  });
+  
+  // Close modal on click
+  modal.addEventListener('click', () => {
+    modal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+  });
+  
+  // Close on escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('active')) {
+      modal.classList.remove('active');
+      document.body.style.overflow = 'auto';
+    }
+  });
+}
+
+// Call this in your initializeApp function
+setupImageModal();
