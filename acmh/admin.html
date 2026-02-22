@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin - Animal City Monster Hunters</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+  
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .admin-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 8rem 3rem 4rem;
+    }
+
+    .login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .login-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 3rem;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .login-title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .login-subtitle {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    .form-input,
+    .form-textarea,
+    .form-select {
+      width: 100%;
+      padding: 0.875rem;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus,
+    .form-select:focus {
+      outline: none;
+      border-color: var(--gradient-start);
+    }
+
+    .form-textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .form-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .form-checkbox input {
+      width: 18px;
+      height: 18px;
+    }
+
+    .error-message {
+      background: #fee;
+      border: 1px solid var(--accent-coral);
+      color: var(--accent-coral);
+      padding: 0.75rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+    }
+
+    .success-message {
+      background: #efe;
+      border: 1px solid var(--accent-green);
+      color: var(--accent-green);
+      padding: 0.75rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+    }
+
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 3rem;
+      padding-bottom: 2rem;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .admin-title {
+      font-size: 2.5rem;
+      font-weight: 900;
+    }
+
+    .admin-actions {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+      border-bottom: 2px solid var(--border);
+      overflow-x: auto;
+    }
+
+    .tab {
+      padding: 1rem 1.5rem;
+      background: none;
+      border: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .tab:hover {
+      color: var(--text);
+    }
+
+    .tab.active {
+      color: var(--gradient-start);
+      border-bottom-color: var(--gradient-start);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .form-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .form-card-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      color: var(--text);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .file-upload {
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .file-upload:hover {
+      border-color: var(--gradient-start);
+      background: var(--bg);
+    }
+
+    .file-upload input {
+      display: none;
+    }
+
+    .upload-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .upload-text {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .preview-image {
+      max-width: 200px;
+      margin-top: 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .node-editor {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-top: 1rem;
+    }
+
+    .node-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .node-item {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .node-info {
+      flex: 1;
+    }
+
+    .btn-small {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+    }
+
+    .btn-danger {
+      background: var(--accent-coral);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #d63031;
+    }
+
+    @media (max-width: 768px) {
+      .admin-container {
+        padding: 6rem 1.5rem 3rem;
+      }
+
+      .admin-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Login Screen -->
+  <div id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <div class="login-header">
+        <h1 class="login-title">Admin Login</h1>
+        <p class="login-subtitle">Animal City Monster Hunters</p>
+      </div>
+      
+      <div id="loginError" class="error-message" style="display: none;"></div>
+      
+      <form id="loginForm">
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input 
+            type="email" 
+            id="loginEmail" 
+            class="form-input" 
+            required 
+            autocomplete="email"
+          />
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input 
+            type="password" 
+            id="loginPassword" 
+            class="form-input" 
+            required 
+            autocomplete="current-password"
+          />
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%;">
+          Sign In
+        </button>
+      </form>
+      
+      <div style="text-align: center; margin-top: 1.5rem;">
+        <a href="index.html" style="color: var(--text-muted); font-size: 0.85rem;">
+          ← Back to Dev Journal
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Dashboard -->
+  <div id="adminDashboard" style="display: none;">
+    <nav>
+      <a href="index.html" class="nav-logo">← ACMH DEV JOURNAL</a>
+      <ul class="nav-links">
+        <li><a href="index.html">Public View</a></li>
+        <li><a href="#" id="logoutBtn" style="color: var(--accent-coral);">Logout</a></li>
+      </ul>
+    </nav>
+
+    <div class="admin-container">
+      <div class="admin-header">
+        <h1 class="admin-title">Admin Dashboard</h1>
+        <div class="admin-actions">
+          <span class="mono" style="color: var(--text-muted);">
+            Logged in as: <span id="userEmail"></span>
+          </span>
+        </div>
+      </div>
+
+      <div id="formMessage" style="display: none;"></div>
+
+      <!-- Navigation Tabs -->
+      <div class="tabs">
+        <button class="tab active" data-tab="game-info">Game Info</button>
+        <button class="tab" data-tab="expenses">Add Expense</button>
+        <button class="tab" data-tab="time">Log Time</button>
+        <button class="tab" data-tab="planned">Planned Expenses</button>
+        <button class="tab" data-tab="tasks">Add Task</button>
+        <button class="tab" data-tab="screenshots">Upload Screenshot</button>
+        <button class="tab" data-tab="updates">Dev Update</button>
+        <button class="tab" data-tab="flow">Game Flow</button>
+      </div>
+
+      <!-- Game Info Tab -->
+      <div id="game-info" class="tab-content active">
+        <div class="form-card">
+          <h2 class="form-card-title">Game Information</h2>
+          <form id="gameInfoForm">
+            <div class="form-group">
+              <label class="form-label">Game Description</label>
+              <textarea 
+                id="gameDescription" 
+                class="form-textarea"
+                placeholder="A brief description of the game for the hero section..."
+              ></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Project Description</label>
+              <textarea 
+                id="projectDescription" 
+                class="form-textarea"
+                placeholder="Detailed description of the project and development journey..."
+                rows="6"
+              ></textarea>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">YouTube Playlist ID</label>
+                <input 
+                  type="text" 
+                  id="youtubePlaylistId" 
+                  class="form-input"
+                  placeholder="PLxxxxxxxxxxxxxx"
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">LinkedIn Profile URL</label>
+                <input 
+                  type="url" 
+                  id="linkedinUrl" 
+                  class="form-input"
+                  placeholder="https://www.linkedin.com/in/..."
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Steam Wishlist URL</label>
+                <input 
+                  type="url" 
+                  id="wishlistUrl" 
+                  class="form-input"
+                  placeholder="https://store.steampowered.com/app/..."
+                />
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+              Save Game Info
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Add Expense Tab -->
+      <div id="expenses" class="tab-content">
+        <div class="form-card">
+          <h2 class="form-card-title">Record Expense</h2>
+          <form id="expenseForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Date</label>
+                <input 
+                  type="date" 
+                  id="expenseDate" 
+                  class="form-input"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Category</label>
+                <select id="expenseCategory" class="form-select" required>
+                  <option value="">Select category...</option>
+                  <option value="Art">Art</option>
+                  <option value="Music">Music</option>
+                  <option value="Sound Effects">Sound Effects</option>
+                  <option value="Tools">Tools & Software</option>
+                  <option value="Marketing">Marketing</option>
+                  <option value="Legal">Legal</option>
+                  <option value="Hardware">Hardware</option>
+                  <option value="Learning">Learning Resources</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Amount (£)</label>
+                <input 
+                  type="number" 
+                  id="expenseAmount" 
+                  class="form-input"
+                  step="0.01"
+                  min="0"
+                  required
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Description</label>
+              <input 
+                type="text" 
+                id="expenseDescription" 
+                class="form-input"
+                placeholder="What was this expense for?"
+                required
+              />
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+              Add Expense
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Log Time Tab -->
+      <div id="time" class="tab-content">
+        <div class="form-card">
+          <h2 class="form-card-title">Log Time Entry</h2>
+          <form id="timeForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Date</label>
+                <input 
+                  type="date" 
+                  id="timeDate" 
+                  class="form-input"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Category</label>
+                <select id="timeCategory" class="form-select" required>
+                  <option value="">Select category...</option>
+                  <option value="Design">Game Design</option>
+                  <option value="Programming">Programming</option>
+                  <option value="Art">Art & Animation</option>
+                  <option value="Audio">Audio Design</option>
+                  <option value="Testing">Testing & QA</option>
+                  <option value="Research">Research</option>
+                  <option value="Marketing">Marketing</option>
+                  <option value="Planning">Planning</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Hours</label>
+                <input 
+                  type="number" 
+                  id="timeHours" 
+                  class="form-input"
+                  step="0.5"
+                  min="0"
+                  required
+                  placeholder="0.0"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Description</label>
+              <input 
+                type="text" 
+                id="timeDescription" 
+                class="form-input"
+                placeholder="What did you work on?"
+              />
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+              Log Time
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Planned Expenses Tab -->
+      <div id="planned" class="tab-content">
+        <div class="form-card">
+          <h2 class="form-card-title">Add Planned Expense</h2>
+          <form id="plannedForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Item</label>
+                <input 
+                  type="text" 
+                  id="plannedItem" 
+                  class="form-input"
+                  required
+                  placeholder="What do you need to buy?"
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Category</label>
+                <select id="plannedCategory" class="form-select" required>
+                  <option value="">Select category...</option>
+                  <option value="Art">Art</option>
+                  <option value="Music">Music</option>
+                  <option value="Sound Effects">Sound Effects</option>
+                  <option value="Tools">Tools & Software</option>
+                  <option value="Marketing">Marketing</option>
+                  <option value="Legal">Legal</option>
+                  <option value="Hardware">Hardware</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Estimated Cost (£)</label>
+                <input 
+                  type="number" 
+                  id="plannedCost" 
+                  class="form-input"
+                  step="0.01"
+                  min="0"
+                  required
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Priority</label>
+                <select id="plannedPriority" class="form-select" required>
+                  <option value="High">High</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Low">Low</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Notes</label>
+              <textarea 
+                id="plannedNotes" 
+                class="form-textarea"
+                placeholder="Additional details about this expense..."
+              ></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+              Add Planned Expense
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Add Task Tab -->
+      <div id="tasks" class="tab-content">
+        <div class="form-card">
+          <h2 class="form-card-title">Add Task</h2>
+          <form id="taskForm">
+            <div class="form-group">
+              <label class="form-label">Task Title</label>
+              <input 
+                type="text" 
+                id="taskTitle" 
+                class="form-input"
+                required
+                placeholder="What needs to be done?"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Description</label>
+              <textarea 
+                id="taskDescription" 
+                class="form-textarea"
+                placeholder="Additional details about this task..."
+              ></textarea>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Category</label>
+                <select id="taskCategory" class="form-select" required>
+                  <option value="">Select category...</option>
+                  <option value="Level Design">Level Design</option>
+                  <option value="Programming">Programming</option>
+                  <option value="Art">Art & Animation</option>
+                  <option value="Audio">Audio</option>
+                  <option value="UI/UX">UI/UX</option>
+                  <option value="Testing">Testing</option>
+                  <option value="Marketing">Marketing</option>
+                  <option value="Documentation">Documentation</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Status</label>
+                <select id="taskStatus" class="form-select" required>
+                  <option value="To Do">To Do</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Done">Done</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Priority</label>
+                <select id="taskPriority" class="form-select" required>
+                  <option value="High">High</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Low">Low</option>
+                </select>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+              Add Task
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Upload Screenshot Tab -->
+      <div id="screenshots" class="tab-content">
+        <div class="form-card">
+          <h2 class="form-card-title">Upload Screenshot</h2>
+          <form id="screenshotForm">
+            <div class="form-group">
+              <label class="form-label">Screenshot Image</label>
+              <div class="file-upload" id="screenshotUpload">
+                <input 
+                  type="file" 
+                  id="screenshotFile" 
+                  accept="image/*"
+                  required
+                />
+                <div class="upload-icon">📷</div>
+                <div class="upload-text">Click to upload image</div>
+              </div>
+              <img id="screenshotPreview" class="preview-image" style="display: none;" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Title</label>
+              <input 
+                type="text" 
+                id="screenshotTitle" 
+                class="form-input"
+                required
+                placeholder="Give this screenshot a title"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Description</label>
+              <textarea 
+                id="screenshotDescription" 
+                class="form-textarea"
+                placeholder="Describe what's shown in this screenshot..."
+              ></textarea>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Category</label>
+                <select id="screenshotCategory" class="form-select" required>
+                  <option value="">Select category...</option>
+                  <option value="UI">UI</option>
+                  <option value="Gameplay">Gameplay</option>
+                  <option value="Character">Character</option>
+                  <option value="Environment">Environment</option>
+                  <option value="Animation">Animation</option>
+                  <option value="Effects">Effects</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Date</label>
+                <input 
+                  type="date" 
+                  id="screenshotDate" 
+                  class="form-input"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="form-checkbox">
+              <input 
+                type="checkbox" 
+                id="screenshotBeforeAfter"
+              />
+              <label class="form-label" style="margin: 0;">
+                This is part of a before/after comparison
+              </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+              <span id="uploadBtnText">Upload Screenshot</span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Dev Update Tab -->
+      <div id="updates" class="tab-content">
+        <div class="form-card">
+          <h2 class="form-card-title">Post Development Update</h2>
+          <form id="updateForm">
+            <div class="form-group">
+              <label class="form-label">Update Title</label>
+              <input 
+                type="text" 
+                id="updateTitle" 
+                class="form-input"
+                required
+                placeholder="What's the update about?"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Summary</label>
+              <textarea 
+                id="updateSummary" 
+                class="form-textarea"
+                placeholder="Brief summary (shown in preview)..."
+                rows="3"
+              ></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Full Content</label>
+              <textarea 
+                id="updateContent" 
+                class="form-textarea"
+                required
+                placeholder="Full update content..."
+                rows="8"
+              ></textarea>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Date</label>
+                <input 
+                  type="date" 
+                  id="updateDate" 
+                  class="form-input"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Tags (comma separated)</label>
+                <input 
+                  type="text" 
+                  id="updateTags" 
+                  class="form-input"
+                  placeholder="art, gameplay, milestone"
+                />
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+              Post Update
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Game Flow Tab -->
+      <div id="flow" class="tab-content">
+        <div class="form-card">
+          <h2 class="form-card-title">Game Flow Diagram Editor</h2>
+          
+          <div class="node-editor">
+            <h3 style="margin-bottom: 1rem;">Add Node</h3>
+            <form id="nodeForm">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Node Label</label>
+                  <input 
+                    type="text" 
+                    id="nodeLabel" 
+                    class="form-input"
+                    required
+                    placeholder="Main Menu"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Type</label>
+                  <select id="nodeType" class="form-select" required>
+                    <option value="Menu">Menu</option>
+                    <option value="Level">Level</option>
+                    <option value="Cutscene">Cutscene</option>
+                    <option value="Boss">Boss Fight</option>
+                    <option value="Shop">Shop</option>
+                    <option value="Tutorial">Tutorial</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">X Position</label>
+                  <input 
+                    type="number" 
+                    id="nodeX" 
+                    class="form-input"
+                    required
+                    placeholder="100"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Y Position</label>
+                  <input 
+                    type="number" 
+                    id="nodeY" 
+                    class="form-input"
+                    required
+                    placeholder="100"
+                  />
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-small">
+                Add Node
+              </button>
+            </form>
+
+            <div class="node-list" id="nodeList">
+              <!-- Nodes will be listed here -->
+            </div>
+          </div>
+
+          <div class="node-editor" style="margin-top: 2rem;">
+            <h3 style="margin-bottom: 1rem;">Add Connection</h3>
+            <form id="connectionForm">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">From Node</label>
+                  <select id="connectionFrom" class="form-select" required>
+                    <option value="">Select node...</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">To Node</label>
+                  <select id="connectionTo" class="form-select" required>
+                    <option value="">Select node...</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Label (optional)</label>
+                  <input 
+                    type="text" 
+                    id="connectionLabel" 
+                    class="form-input"
+                    placeholder="Victory, Defeat, etc."
+                  />
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-small">
+                Add Connection
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="firebase-config.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
