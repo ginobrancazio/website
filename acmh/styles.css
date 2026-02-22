@@ -342,6 +342,13 @@ nav {
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 2rem;
+  
+}
+
+.chart-container canvas {
+  max-height: 300px;   /* Smaller height */
+  max-width: 300px;    /* Smaller width */
+  margin: 0 auto;      /* Center */
 }
 
 .chart-title {
