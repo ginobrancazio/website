@@ -1156,3 +1156,19 @@ footer {
     flex-direction: column;
   }
 }
+
+.previous-entries {
+  border-top: 2px solid var(--border);
+  padding-top: 2rem;
+}
+
+.previous-entries .table-wrapper {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.previous-entries .data-table {
+  margin: 0;
+}
