@@ -1,149 +1,29 @@
 // Public-facing application JavaScript
 let charts = {};
-let flowDiagram = {
-  scale: 1,
-  offsetX: 0,
-  offsetY: 0,
-};
-
-// Constants
-const CHART_COLORS = [
-  "rgba(124, 58, 237, 0.8)",
-  "rgba(59, 130, 246, 0.8)",
-  "rgba(16, 185, 129, 0.8)",
-  "rgba(245, 158, 11, 0.8)",
-  "rgba(245, 101, 101, 0.8)",
-  "rgba(139, 92, 246, 0.8)",
-  "rgba(236, 72, 153, 0.8)",
-];
-
-const EMPTY_STATES = {
-  updates: "No updates yet. Check back soon!",
-  screenshots: "No screenshots yet. Check back soon!",
-  expenses: "No expenses recorded yet.",
-  plannedExpenses: "No planned expenses.",
-  tasks: "No tasks yet.",
-  flow: "No flow diagram yet",
-  youtube: "YouTube playlist not configured yet.",
-};
-
-const MIN_SCALE = 0.5;
-const MAX_SCALE = 2;
-const SCALE_STEP = 0.1;
-
-// Initialize Firebase (ensure this is called after Firebase scripts load)
-let db;
 
 // Initialize when DOM is ready
 document.addEventListener("DOMContentLoaded", () => {
-  // Initialize Firestore
-  if (typeof firebase !== "undefined" && firebase.firestore) {
-    db = firebase.firestore();
-    initializeApp();
-  } else {
-    console.error("Firebase not initialized");
-    showError("Failed to connect to database");
-  }
+  initializeApp();
 });
 
 async function initializeApp() {
   try {
-    // Load game info first to get playlist ID
-    const playlistId = await loadGameInfo();
-
-    // Load all other data
+    // Load all data
     await Promise.all([
+      loadGameInfo(),
       loadMetrics(),
       loadUpdates(),
       loadScreenshots(),
       loadBudget(),
       loadTasks(),
       loadGameFlow(),
+      loadYouTubePlaylist(),
     ]);
-
-    // Load YouTube with the playlist ID
-    loadYouTubePlaylist(playlistId);
 
     // Setup event listeners
     setupEventListeners();
-
-    // Setup image modal
-    setupImageModal();
   } catch (error) {
     console.error("Error initializing app:", error);
-    showError("Failed to load application data");
-  }
-}
-
-// Utility Functions
-function escapeHtml(text) {
-  const div = document.createElement("div");
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-function isValidEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-function showError(message) {
-  const existingToast = document.querySelector(".error-toast");
-  if (existingToast) existingToast.remove();
-
-  const toast = document.createElement("div");
-  toast.className = "error-toast";
-  toast.textContent = message;
-  toast.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: #f56565;
-    color: white;
-    padding: 16px 24px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    z-index: 10000;
-    animation: slideIn 0.3s ease;
-  `;
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 5000);
-}
-
-function showSuccess(message) {
-  const existingToast = document.querySelector(".success-toast");
-  if (existingToast) existingToast.remove();
-
-  const toast = document.createElement("div");
-  toast.className = "success-toast";
-  toast.textContent = message;
-  toast.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: #10b981;
-    color: white;
-    padding: 16px 24px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    z-index: 10000;
-    animation: slideIn 0.3s ease;
-  `;
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 5000);
-}
-
-function debounce(func, wait) {
-  let timeout;
-  return function executedFunction(...args) {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(this, args), wait);
-  };
-}
-
-function destroyChart(chartName) {
-  if (charts[chartName]) {
-    charts[chartName].destroy();
-    charts[chartName] = null;
   }
 }
 
@@ -157,14 +37,17 @@ async function loadGameInfo() {
 
       // Update hero description
       const gameDesc = document.getElementById("gameDescription");
-      if (gameDesc && data.gameDescription) {
-        gameDesc.textContent = data.gameDescription;
+      if (gameDesc) {
+        gameDesc.textContent =
+          data.gameDescription || "A unique gaming experience.";
       }
 
       // Update about section
       const projectDesc = document.getElementById("projectDescription");
-      if (projectDesc && data.projectDescription) {
-        projectDesc.textContent = data.projectDescription;
+      if (projectDesc) {
+        projectDesc.textContent =
+          data.projectDescription ||
+          "Follow along as I build this game from scratch.";
       }
 
       // Update wishlist button
@@ -174,21 +57,20 @@ async function loadGameInfo() {
       }
 
       // Update LinkedIn links
+      const linkedinLink = document.getElementById("linkedinLink");
+      const footerLinkedin = document.getElementById("footerLinkedin");
       if (data.linkedinUrl) {
-        const linkedinLink = document.getElementById("linkedinLink");
-        const footerLinkedin = document.getElementById("footerLinkedin");
         if (linkedinLink) linkedinLink.href = data.linkedinUrl;
         if (footerLinkedin) footerLinkedin.href = data.linkedinUrl;
       }
 
-      // Return playlist ID for later use
-      return data.youtubePlaylistId || null;
+      // Store playlist ID for later
+      if (data.youtubePlaylistId) {
+        window.youtubePlaylistId = data.youtubePlaylistId;
+      }
     }
-
-    return null;
   } catch (error) {
     console.error("Error loading game info:", error);
-    return null;
   }
 }
 
@@ -212,30 +94,27 @@ async function loadMetrics() {
     expenseSnapshot.forEach((doc) => expenses.push(doc.data()));
 
     // Calculate metrics
-    const totalHours = timeEntries.reduce((sum, e) => sum + (e.hours || 0), 0);
-    const totalSpent = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+    const totalHours = timeEntries.reduce((sum, e) => sum + e.hours, 0);
+    const totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
 
     // Get unique dates for days active
     const uniqueDates = new Set([
-      ...timeEntries.map((e) => e.date).filter(Boolean),
-      ...expenses.map((e) => e.date).filter(Boolean),
+      ...timeEntries.map((e) => e.date),
+      ...expenses.map((e) => e.date),
     ]);
     const daysActive = uniqueDates.size;
 
     // Calculate average hours per week
     const weeks = daysActive / 7;
-    const avgHours = weeks > 0 ? (totalHours / weeks).toFixed(1) : "0";
+    const avgHours = weeks > 0 ? (totalHours / weeks).toFixed(1) : 0;
 
     // Update metric cards
-    const totalHoursEl = document.getElementById("totalHours");
-    const totalSpentEl = document.getElementById("totalSpent");
-    const daysActiveEl = document.getElementById("daysActive");
-    const avgHoursEl = document.getElementById("avgHours");
-
-    if (totalHoursEl) totalHoursEl.textContent = totalHours.toFixed(1);
-    if (totalSpentEl) totalSpentEl.textContent = `£${totalSpent.toFixed(2)}`;
-    if (daysActiveEl) daysActiveEl.textContent = daysActive;
-    if (avgHoursEl) avgHoursEl.textContent = avgHours;
+    document.getElementById("totalHours").textContent =
+      totalHours.toFixed(1);
+    document.getElementById("totalSpent").textContent =
+      `£${totalSpent.toFixed(2)}`;
+    document.getElementById("daysActive").textContent = daysActive;
+    document.getElementById("avgHours").textContent = avgHours;
 
     // Create charts
     createTimeChart(timeEntries);
@@ -255,12 +134,10 @@ function createTimeChart(timeEntries) {
   // Group by date
   const dateMap = {};
   timeEntries.forEach((entry) => {
-    if (entry.date && entry.hours) {
-      if (!dateMap[entry.date]) {
-        dateMap[entry.date] = 0;
-      }
-      dateMap[entry.date] += entry.hours;
+    if (!dateMap[entry.date]) {
+      dateMap[entry.date] = 0;
     }
+    dateMap[entry.date] += entry.hours;
   });
 
   const dates = Object.keys(dateMap).sort();
@@ -274,7 +151,7 @@ function createTimeChart(timeEntries) {
     cumulative.push(sum);
   });
 
-  destroyChart("timeChart");
+  if (charts.timeChart) charts.timeChart.destroy();
 
   charts.timeChart = new Chart(ctx, {
     type: "line",
@@ -316,12 +193,10 @@ function createBudgetChart(expenses) {
   // Group by date
   const dateMap = {};
   expenses.forEach((expense) => {
-    if (expense.date && expense.amount) {
-      if (!dateMap[expense.date]) {
-        dateMap[expense.date] = 0;
-      }
-      dateMap[expense.date] += expense.amount;
+    if (!dateMap[expense.date]) {
+      dateMap[expense.date] = 0;
     }
+    dateMap[expense.date] += expense.amount;
   });
 
   const dates = Object.keys(dateMap).sort();
@@ -335,7 +210,7 @@ function createBudgetChart(expenses) {
     cumulative.push(sum);
   });
 
-  destroyChart("budgetChart");
+  if (charts.budgetChart) charts.budgetChart.destroy();
 
   charts.budgetChart = new Chart(ctx, {
     type: "line",
@@ -377,22 +252,16 @@ function createTimeCategoryChart(timeEntries) {
   // Group by category
   const categoryMap = {};
   timeEntries.forEach((entry) => {
-    if (entry.category && entry.hours) {
-      if (!categoryMap[entry.category]) {
-        categoryMap[entry.category] = 0;
-      }
-      categoryMap[entry.category] += entry.hours;
+    if (!categoryMap[entry.category]) {
+      categoryMap[entry.category] = 0;
     }
+    categoryMap[entry.category] += entry.hours;
   });
 
   const categories = Object.keys(categoryMap);
   const hours = categories.map((cat) => categoryMap[cat]);
 
-  if (categories.length === 0) {
-    return;
-  }
-
-  destroyChart("timeCategoryChart");
+  if (charts.timeCategoryChart) charts.timeCategoryChart.destroy();
 
   charts.timeCategoryChart = new Chart(ctx, {
     type: "doughnut",
@@ -401,7 +270,15 @@ function createTimeCategoryChart(timeEntries) {
       datasets: [
         {
           data: hours,
-          backgroundColor: CHART_COLORS,
+          backgroundColor: [
+            "rgba(124, 58, 237, 0.8)",
+            "rgba(59, 130, 246, 0.8)",
+            "rgba(16, 185, 129, 0.8)",
+            "rgba(245, 158, 11, 0.8)",
+            "rgba(245, 101, 101, 0.8)",
+            "rgba(139, 92, 246, 0.8)",
+            "rgba(236, 72, 153, 0.8)",
+          ],
         },
       ],
     },
@@ -425,22 +302,16 @@ function createBudgetCategoryChart(expenses) {
   // Group by category
   const categoryMap = {};
   expenses.forEach((expense) => {
-    if (expense.category && expense.amount) {
-      if (!categoryMap[expense.category]) {
-        categoryMap[expense.category] = 0;
-      }
-      categoryMap[expense.category] += expense.amount;
+    if (!categoryMap[expense.category]) {
+      categoryMap[expense.category] = 0;
     }
+    categoryMap[expense.category] += expense.amount;
   });
 
   const categories = Object.keys(categoryMap);
   const amounts = categories.map((cat) => categoryMap[cat]);
 
-  if (categories.length === 0) {
-    return;
-  }
-
-  destroyChart("budgetCategoryChart");
+  if (charts.budgetCategoryChart) charts.budgetCategoryChart.destroy();
 
   charts.budgetCategoryChart = new Chart(ctx, {
     type: "doughnut",
@@ -449,7 +320,15 @@ function createBudgetCategoryChart(expenses) {
       datasets: [
         {
           data: amounts,
-          backgroundColor: CHART_COLORS,
+          backgroundColor: [
+            "rgba(124, 58, 237, 0.8)",
+            "rgba(59, 130, 246, 0.8)",
+            "rgba(16, 185, 129, 0.8)",
+            "rgba(245, 158, 11, 0.8)",
+            "rgba(245, 101, 101, 0.8)",
+            "rgba(139, 92, 246, 0.8)",
+            "rgba(236, 72, 153, 0.8)",
+          ],
         },
       ],
     },
@@ -475,12 +354,11 @@ async function loadUpdates() {
       .get();
 
     const grid = document.getElementById("updatesGrid");
-    if (!grid) return;
-
     grid.innerHTML = "";
 
     if (snapshot.empty) {
-      grid.innerHTML = `<div class="empty-state">${EMPTY_STATES.updates}</div>`;
+      grid.innerHTML =
+        '<div class="empty-state">No updates yet. Check back soon!</div>';
       return;
     }
 
@@ -498,35 +376,24 @@ function createUpdateCard(update) {
   const card = document.createElement("div");
   card.className = "update-card";
 
-  const date = update.date
-    ? new Date(update.date).toLocaleDateString("en-GB", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      })
-    : "No date";
+  const date = new Date(update.date).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 
   const tags = update.tags
     ? update.tags
-        .map(
-          (tag) => `<span class="update-tag">${escapeHtml(tag)}</span>`
-        )
+        .map((tag) => `<span class="update-tag">${tag}</span>`)
         .join("")
     : "";
 
-  const title = escapeHtml(update.title || "Untitled");
-  const summary = update.summary
-    ? escapeHtml(update.summary)
-    : update.content
-      ? escapeHtml(update.content.substring(0, 150)) + "..."
-      : "";
-
   card.innerHTML = `
     <div class="update-header">
-      <h3 class="update-title">${title}</h3>
+      <h3 class="update-title">${update.title}</h3>
       <span class="update-date mono">${date}</span>
     </div>
-    <p class="update-summary">${summary}</p>
+    <p class="update-summary">${update.summary || update.content.substring(0, 150) + "..."}</p>
     <div class="update-footer">
       <div class="update-tags">${tags}</div>
     </div>
@@ -544,12 +411,11 @@ async function loadScreenshots() {
       .get();
 
     const grid = document.getElementById("screenshotsGrid");
-    if (!grid) return;
-
     grid.innerHTML = "";
 
     if (snapshot.empty) {
-      grid.innerHTML = `<div class="empty-state">${EMPTY_STATES.screenshots}</div>`;
+      grid.innerHTML =
+        '<div class="empty-state">No screenshots yet. Check back soon!</div>';
       return;
     }
 
@@ -569,26 +435,17 @@ async function loadScreenshots() {
 function createScreenshotItem(screenshot) {
   const item = document.createElement("div");
   item.className = "screenshot-item";
-  item.dataset.category = screenshot.category || "other";
-
+  item.dataset.category = screenshot.category;
   if (screenshot.isBeforeAfter) {
     item.dataset.beforeAfter = "true";
   }
 
-  const title = escapeHtml(screenshot.title || "Screenshot");
-  const description = escapeHtml(screenshot.description || "");
-  const category = escapeHtml(screenshot.category || "Other");
-
   item.innerHTML = `
-    <img 
-      src="${escapeHtml(screenshot.imageUrl)}" 
-      alt="${title}" 
-      loading="lazy" 
-    />
+    <img src="${screenshot.imageUrl}" alt="${screenshot.title}" loading="lazy" />
     <div class="screenshot-overlay">
-      <h4>${title}</h4>
-      <p>${description}</p>
-      <span class="screenshot-category">${category}</span>
+      <h4>${screenshot.title}</h4>
+      <p>${screenshot.description || ""}</p>
+      <span class="screenshot-category">${screenshot.category}</span>
     </div>
   `;
 
@@ -598,8 +455,6 @@ function createScreenshotItem(screenshot) {
 function setupGalleryFilters() {
   const filterBtns = document.querySelectorAll(".filter-btn");
   const items = document.querySelectorAll(".screenshot-item");
-
-  if (filterBtns.length === 0) return;
 
   filterBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -634,41 +489,30 @@ async function loadBudget() {
       .limit(20)
       .get();
 
-    const expensesTable = document.getElementById("expensesTable");
-    if (expensesTable) {
-      const tbody = expensesTable.querySelector("tbody");
-      if (tbody) {
-        tbody.innerHTML = "";
+    const expensesTable = document
+      .getElementById("expensesTable")
+      .querySelector("tbody");
+    expensesTable.innerHTML = "";
 
-        let totalSpent = 0;
+    let totalSpent = 0;
 
-        if (expensesSnapshot.empty) {
-          tbody.innerHTML = `<tr><td colspan="4" class="empty-state">${EMPTY_STATES.expenses}</td></tr>`;
-        } else {
-          expensesSnapshot.forEach((doc) => {
-            const expense = doc.data();
-            totalSpent += expense.amount || 0;
+    if (expensesSnapshot.empty) {
+      expensesTable.innerHTML =
+        '<tr><td colspan="4" class="empty-state">No expenses recorded yet.</td></tr>';
+    } else {
+      expensesSnapshot.forEach((doc) => {
+        const expense = doc.data();
+        totalSpent += expense.amount;
 
-            const row = document.createElement("tr");
-            const date = expense.date
-              ? new Date(expense.date).toLocaleDateString("en-GB")
-              : "N/A";
-            row.innerHTML = `
-              <td class="mono">${date}</td>
-              <td><span class="category-badge">${escapeHtml(expense.category || "Other")}</span></td>
-              <td>${escapeHtml(expense.description || "")}</td>
-              <td class="mono">£${(expense.amount || 0).toFixed(2)}</td>
-            `;
-            tbody.appendChild(row);
-          });
-        }
-
-        // Update budget spent
-        const budgetSpent = document.getElementById("budgetSpent");
-        if (budgetSpent) {
-          budgetSpent.textContent = `£${totalSpent.toFixed(2)}`;
-        }
-      }
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td class="mono">${new Date(expense.date).toLocaleDateString("en-GB")}</td>
+          <td><span class="category-badge">${expense.category}</span></td>
+          <td>${expense.description}</td>
+          <td class="mono">£${expense.amount.toFixed(2)}</td>
+        `;
+        expensesTable.appendChild(row);
+      });
     }
 
     // Load planned expenses
@@ -678,49 +522,39 @@ async function loadBudget() {
       .orderBy("createdAt", "desc")
       .get();
 
-    const plannedTable = document.getElementById("plannedTable");
-    if (plannedTable) {
-      const tbody = plannedTable.querySelector("tbody");
-      if (tbody) {
-        tbody.innerHTML = "";
+    const plannedTable = document
+      .getElementById("plannedTable")
+      .querySelector("tbody");
+    plannedTable.innerHTML = "";
 
-        let totalPlanned = 0;
+    let totalPlanned = 0;
 
-        if (plannedSnapshot.empty) {
-          tbody.innerHTML = `<tr><td colspan="4" class="empty-state">${EMPTY_STATES.plannedExpenses}</td></tr>`;
-        } else {
-          plannedSnapshot.forEach((doc) => {
-            const planned = doc.data();
-            totalPlanned += planned.estimatedCost || 0;
+    if (plannedSnapshot.empty) {
+      plannedTable.innerHTML =
+        '<tr><td colspan="4" class="empty-state">No planned expenses.</td></tr>';
+    } else {
+      plannedSnapshot.forEach((doc) => {
+        const planned = doc.data();
+        totalPlanned += planned.estimatedCost;
 
-            const row = document.createElement("tr");
-            row.innerHTML = `
-              <td><span class="priority-badge ${(planned.priority || "medium").toLowerCase()}">${escapeHtml(planned.priority || "Medium")}</span></td>
-              <td>${escapeHtml(planned.item || "")}</td>
-              <td><span class="category-badge">${escapeHtml(planned.category || "Other")}</span></td>
-              <td class="mono">£${(planned.estimatedCost || 0).toFixed(2)}</td>
-            `;
-            tbody.appendChild(row);
-          });
-        }
-
-        // Update budget summary
-        const budgetPlanned = document.getElementById("budgetPlanned");
-        const budgetTotal = document.getElementById("budgetTotal");
-        const budgetSpent = document.getElementById("budgetSpent");
-
-        if (budgetPlanned) {
-          budgetPlanned.textContent = `£${totalPlanned.toFixed(2)}`;
-        }
-
-        if (budgetTotal && budgetSpent) {
-          const spent = parseFloat(
-            budgetSpent.textContent.replace("£", "")
-          );
-          budgetTotal.textContent = `£${(spent + totalPlanned).toFixed(2)}`;
-        }
-      }
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><span class="priority-badge ${planned.priority.toLowerCase()}">${planned.priority}</span></td>
+          <td>${planned.item}</td>
+          <td><span class="category-badge">${planned.category}</span></td>
+          <td class="mono">£${planned.estimatedCost.toFixed(2)}</td>
+        `;
+        plannedTable.appendChild(row);
+      });
     }
+
+    // Update budget summary
+    document.getElementById("budgetSpent").textContent =
+      `£${totalSpent.toFixed(2)}`;
+    document.getElementById("budgetPlanned").textContent =
+      `£${totalPlanned.toFixed(2)}`;
+    document.getElementById("budgetTotal").textContent =
+      `£${(totalSpent + totalPlanned).toFixed(2)}`;
   } catch (error) {
     console.error("Error loading budget:", error);
   }
@@ -738,20 +572,14 @@ async function loadTasks() {
     const inProgressList = document.getElementById("inProgressTasks");
     const doneList = document.getElementById("doneTasks");
 
-    if (!todoList || !inProgressList || !doneList) return;
-
     todoList.innerHTML = "";
     inProgressList.innerHTML = "";
     doneList.innerHTML = "";
 
     if (snapshot.empty) {
-      todoList.innerHTML = `<div class="empty-state">${EMPTY_STATES.tasks}</div>`;
+      todoList.innerHTML = '<div class="empty-state">No tasks yet.</div>';
       return;
     }
-
-    let hasTodo = false;
-    let hasInProgress = false;
-    let hasDone = false;
 
     snapshot.forEach((doc) => {
       const task = doc.data();
@@ -759,26 +587,12 @@ async function loadTasks() {
 
       if (task.status === "To Do") {
         todoList.appendChild(card);
-        hasTodo = true;
       } else if (task.status === "In Progress") {
         inProgressList.appendChild(card);
-        hasInProgress = true;
       } else if (task.status === "Done") {
         doneList.appendChild(card);
-        hasDone = true;
       }
     });
-
-    // Add empty states for empty columns
-    if (!hasTodo) {
-      todoList.innerHTML = `<div class="empty-state">No tasks</div>`;
-    }
-    if (!hasInProgress) {
-      inProgressList.innerHTML = `<div class="empty-state">No tasks</div>`;
-    }
-    if (!hasDone) {
-      doneList.innerHTML = `<div class="empty-state">No tasks</div>`;
-    }
   } catch (error) {
     console.error("Error loading tasks:", error);
   }
@@ -788,19 +602,14 @@ function createTaskCard(task) {
   const card = document.createElement("div");
   card.className = "task-card";
 
-  const title = escapeHtml(task.title || "Untitled");
-  const description = escapeHtml(task.description || "");
-  const priority = escapeHtml(task.priority || "Medium");
-  const category = escapeHtml(task.category || "Other");
-
   card.innerHTML = `
     <div class="task-header">
-      <h4 class="task-title">${title}</h4>
-      <span class="priority-badge ${priority.toLowerCase()}">${priority}</span>
+      <h4 class="task-title">${task.title}</h4>
+      <span class="priority-badge ${task.priority.toLowerCase()}">${task.priority}</span>
     </div>
-    <p class="task-description">${description}</p>
+    <p class="task-description">${task.description || ""}</p>
     <div class="task-footer">
-      <span class="category-badge">${category}</span>
+      <span class="category-badge">${task.category}</span>
     </div>
   `;
 
@@ -840,37 +649,19 @@ function drawFlowDiagram(nodes, connections) {
   if (!canvas) return;
 
   const ctx = canvas.getContext("2d");
-  const dpr = window.devicePixelRatio || 1;
 
   // Set canvas size
-  const rect = canvas.getBoundingClientRect();
-  canvas.width = rect.width * dpr;
-  canvas.height = 600 * dpr;
-  canvas.style.width = rect.width + "px";
-  canvas.style.height = "600px";
-
-  // Scale for retina displays
-  ctx.scale(dpr, dpr);
-
-  // Apply zoom and pan
-  ctx.save();
-  ctx.translate(flowDiagram.offsetX, flowDiagram.offsetY);
-  ctx.scale(flowDiagram.scale, flowDiagram.scale);
+  canvas.width = canvas.offsetWidth;
+  canvas.height = 600;
 
   // Clear canvas
-  ctx.clearRect(
-    -flowDiagram.offsetX / flowDiagram.scale,
-    -flowDiagram.offsetY / flowDiagram.scale,
-    rect.width / flowDiagram.scale,
-    600 / flowDiagram.scale
-  );
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   if (nodes.length === 0) {
-    ctx.restore();
     ctx.fillStyle = "#666";
     ctx.font = "16px Inter";
     ctx.textAlign = "center";
-    ctx.fillText(EMPTY_STATES.flow, rect.width / 2 / dpr, 300);
+    ctx.fillText("No flow diagram yet", canvas.width / 2, canvas.height / 2);
     return;
   }
 
@@ -882,7 +673,7 @@ function drawFlowDiagram(nodes, connections) {
     const fromNode = nodes.find((n) => n.id === conn.from);
     const toNode = nodes.find((n) => n.id === conn.to);
 
-    if (fromNode && toNode && fromNode.x && fromNode.y && toNode.x && toNode.y) {
+    if (fromNode && toNode) {
       ctx.beginPath();
       ctx.moveTo(fromNode.x, fromNode.y);
       ctx.lineTo(toNode.x, toNode.y);
@@ -917,43 +708,38 @@ function drawFlowDiagram(nodes, connections) {
         ctx.fillStyle = "#333";
         ctx.font = "12px Inter";
         ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(conn.label, midX, midY);
+        ctx.fillText(conn.label, midX, midY + 4);
       }
     }
   });
 
   // Draw nodes
   nodes.forEach((node) => {
-    if (!node.x || !node.y) return;
-
     ctx.fillStyle = "#1a1a1a";
     ctx.fillRect(node.x - 60, node.y - 30, 120, 60);
     ctx.strokeStyle = "#7c3aed";
-    ctx.lineWidth = 2;
     ctx.strokeRect(node.x - 60, node.y - 30, 120, 60);
 
     ctx.fillStyle = "#fff";
     ctx.font = "14px Inter";
     ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(node.label || "Node", node.x, node.y - 5);
-
+    ctx.fillText(node.label, node.x, node.y - 5);
     ctx.font = "10px Inter";
     ctx.fillStyle = "#999";
-    ctx.fillText(node.type || "", node.x, node.y + 10);
+    ctx.fillText(node.type, node.x, node.y + 10);
   });
-
-  ctx.restore();
 }
 
 // Load YouTube Playlist
-function loadYouTubePlaylist(playlistId) {
+function loadYouTubePlaylist() {
   const container = document.getElementById("youtubePlaylist");
   if (!container) return;
 
+  const playlistId = window.youtubePlaylistId;
+
   if (!playlistId) {
-    container.innerHTML = `<div class="empty-state">${EMPTY_STATES.youtube}</div>`;
+    container.innerHTML =
+      '<div class="empty-state">YouTube playlist not configured yet.</div>';
     return;
   }
 
@@ -961,7 +747,7 @@ function loadYouTubePlaylist(playlistId) {
     <iframe 
       width="100%" 
       height="600" 
-      src="https://www.youtube.com/embed/videoseries?list=${escapeHtml(playlistId)}" 
+      src="https://www.youtube.com/embed/videoseries?list=${playlistId}" 
       frameborder="0" 
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
       allowfullscreen
@@ -977,65 +763,25 @@ function setupEventListeners() {
     newsletterForm.addEventListener("submit", handleNewsletterSubmit);
   }
 
+
   // Flow diagram controls
   const zoomIn = document.getElementById("zoomIn");
   const zoomOut = document.getElementById("zoomOut");
   const resetView = document.getElementById("resetView");
 
-  if (zoomIn) {
-    zoomIn.addEventListener("click", () => {
-      flowDiagram.scale = Math.min(flowDiagram.scale + SCALE_STEP, MAX_SCALE);
-      loadGameFlow();
-    });
-  }
-
-  if (zoomOut) {
-    zoomOut.addEventListener("click", () => {
-      flowDiagram.scale = Math.max(flowDiagram.scale - SCALE_STEP, MIN_SCALE);
-      loadGameFlow();
-    });
-  }
-
-  if (resetView) {
-    resetView.addEventListener("click", () => {
-      flowDiagram.scale = 1;
-      flowDiagram.offsetX = 0;
-      flowDiagram.offsetY = 0;
-      loadGameFlow();
-    });
-  }
-
-  // Window resize handler
-  window.addEventListener(
-    "resize",
-    debounce(() => {
-      loadGameFlow();
-      // Redraw charts if needed
-      Object.keys(charts).forEach((key) => {
-        if (charts[key]) {
-          charts[key].resize();
-        }
-      });
-    }, 250)
-  );
+  if (zoomIn) zoomIn.addEventListener("click", () => console.log("Zoom in"));
+  if (zoomOut)
+    zoomOut.addEventListener("click", () => console.log("Zoom out"));
+  if (resetView)
+    resetView.addEventListener("click", () => loadGameFlow());
 }
 
 // Newsletter Handler
 async function handleNewsletterSubmit(e) {
   e.preventDefault();
 
-  const emailInput = document.getElementById("newsletterEmail");
-  const email = emailInput.value.trim();
+  const email = document.getElementById("newsletterEmail").value;
   const status = document.getElementById("newsletterStatus");
-
-  if (!status) return;
-
-  // Validate email
-  if (!isValidEmail(email)) {
-    status.textContent = "❌ Please enter a valid email address.";
-    status.style.color = "#f56565";
-    return;
-  }
 
   try {
     await db.collection("newsletter").add({
@@ -1043,60 +789,55 @@ async function handleNewsletterSubmit(e) {
       subscribedAt: firebase.firestore.FieldValue.serverTimestamp(),
     });
 
-    showSuccess("Successfully subscribed to newsletter!");
+    status.textContent = "✅ Successfully subscribed!";
+    status.style.color = "#10b981";
     e.target.reset();
 
-    if (status) {
+    setTimeout(() => {
       status.textContent = "";
-    }
+    }, 5000);
   } catch (error) {
-    console.error("Newsletter subscription error:", error);
-    showError("Error subscribing. Please try again.");
+    status.textContent = "❌ Error subscribing. Please try again.";
+    status.style.color = "#f56565";
   }
 }
 
+// Add this to your setupEventListeners function or at the end of app.js
+
 // Image modal functionality
 function setupImageModal() {
-  const modal = document.getElementById("imageModal");
-  const modalImg = document.getElementById("modalImage");
-
+  const modal = document.getElementById('imageModal');
+  const modalImg = document.getElementById('modalImage');
+  
   if (!modal || !modalImg) return;
-
+  
   // Add click handlers to all screenshot images
-  document.addEventListener("click", (e) => {
-    const screenshotItem = e.target.closest(
-      ".screenshot-item, .screenshot-card"
-    );
-    if (screenshotItem) {
-      const img = screenshotItem.querySelector("img");
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.screenshot-item') || e.target.closest('.screenshot-card')) {
+      const img = e.target.closest('.screenshot-item, .screenshot-card').querySelector('img');
       if (img) {
-        modal.classList.add("active");
+        modal.classList.add('active');
         modalImg.src = img.src;
         modalImg.alt = img.alt;
-        document.body.style.overflow = "hidden";
+        document.body.style.overflow = 'hidden';
       }
     }
   });
-
+  
   // Close modal on click
-  modal.addEventListener("click", () => {
-    modal.classList.remove("active");
-    document.body.style.overflow = "auto";
+  modal.addEventListener('click', () => {
+    modal.classList.remove('active');
+    document.body.style.overflow = 'auto';
   });
-
+  
   // Close on escape key
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && modal.classList.contains("active")) {
-      modal.classList.remove("active");
-      document.body.style.overflow = "auto";
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('active')) {
+      modal.classList.remove('active');
+      document.body.style.overflow = 'auto';
     }
   });
 }
 
-// Cleanup on page unload
-window.addEventListener("beforeunload", () => {
-  // Destroy all charts
-  Object.keys(charts).forEach((key) => {
-    destroyChart(key);
-  });
-});
+// Call this in your initializeApp function
+setupImageModal();
