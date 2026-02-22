@@ -60,6 +60,7 @@ function setupEventListeners() {
     tab.addEventListener("click", () => switchTab(tab.dataset.tab));
   });
 
+
   // Form submissions
   document
     .getElementById("gameInfoForm")
@@ -67,6 +68,9 @@ function setupEventListeners() {
   document
     .getElementById("expenseForm")
     .addEventListener("submit", handleExpenseSubmit);
+  document
+    .getElementById("incomeForm")
+    .addEventListener("submit", handleIncomeSubmit);
   document
     .getElementById("timeForm")
     .addEventListener("submit", handleTimeSubmit);
@@ -233,6 +237,31 @@ async function handleExpenseSubmit(e) {
       .split("T")[0];
   } catch (error) {
     showMessage("Error adding expense: " + error.message, "error");
+  }
+}
+
+// Income Handler
+async function handleIncomeSubmit(e) {
+  e.preventDefault();
+
+  try {
+    const income = {
+      date: document.getElementById("incomeDate").value,
+      source: document.getElementById("incomeSource").value,
+      amount: parseFloat(document.getElementById("incomeAmount").value),
+      description: document.getElementById("incomeDescription").value,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+
+    await firebase.firestore().collection("income").add(income);
+
+    showMessage("Income added successfully!");
+    e.target.reset();
+    document.getElementById("incomeDate").value = new Date()
+      .toISOString()
+      .split("T")[0];
+  } catch (error) {
+    showMessage("Error adding income: " + error.message, "error");
   }
 }
 
