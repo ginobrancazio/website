@@ -735,34 +735,6 @@ function setupEventListeners() {
     resetView.addEventListener("click", () => loadGameFlow());
 }
 
-// Newsletter Handler
-async function handleNewsletterSubmit(e) {
-  e.preventDefault();
-
-  const email = document.getElementById("newsletterEmail").value;
-  const status = document.getElementById("newsletterStatus");
-
-  try {
-    await db.collection("newsletter").add({
-      email,
-      subscribedAt: firebase.firestore.FieldValue.serverTimestamp(),
-    });
-
-    status.textContent = "✅ Successfully subscribed!";
-    status.style.color = "#10b981";
-    e.target.reset();
-
-    setTimeout(() => {
-      status.textContent = "";
-    }, 5000);
-  } catch (error) {
-    status.textContent = "❌ Error subscribing. Please try again.";
-    status.style.color = "#f56565";
-  }
-}
-
-// Add this to your setupEventListeners function or at the end of app.js
-
 // Image modal functionality
 function setupImageModal() {
   const modal = document.getElementById('imageModal');
