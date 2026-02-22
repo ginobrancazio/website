@@ -485,10 +485,49 @@ function setupGalleryFilters() {
 // Load Budget Data
 async function loadBudget() {
   try {
-    // Load ALL expenses (not just 20) for accurate totals
-    const allExpensesSnapshot = await db
-      .collection("expenses")
+    // Load ALL income
+    const allIncomeSnapshot = await db.collection("income").get();
+
+    // Load recent income for table display
+    const recentIncomeSnapshot = await db
+      .collection("income")
+      .orderBy("date", "desc")
+      .limit(20)
       .get();
+
+    const incomeTable = document
+      .getElementById("incomeTable")
+      .querySelector("tbody");
+    incomeTable.innerHTML = "";
+
+    let totalIncome = 0;
+
+    // Calculate total from ALL income
+    allIncomeSnapshot.forEach((doc) => {
+      const income = doc.data();
+      totalIncome += income.amount;
+    });
+
+    // Populate income table
+    if (recentIncomeSnapshot.empty) {
+      incomeTable.innerHTML =
+        '<tr><td colspan="4" class="empty-state">No income recorded yet.</td></tr>';
+    } else {
+      recentIncomeSnapshot.forEach((doc) => {
+        const income = doc.data();
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td class="mono">${new Date(income.date).toLocaleDateString("en-GB")}</td>
+          <td><span class="category-badge">${income.source}</span></td>
+          <td>${income.description}</td>
+          <td class="mono">£${income.amount.toFixed(2)}</td>
+        `;
+        incomeTable.appendChild(row);
+      });
+    }
+
+    // Load ALL expenses
+    const allExpensesSnapshot = await db.collection("expenses").get();
 
     // Load recent expenses for table display
     const recentExpensesSnapshot = await db
@@ -510,7 +549,7 @@ async function loadBudget() {
       totalSpent += expense.amount;
     });
 
-    // Populate table with recent expenses
+    // Populate expenses table
     if (recentExpensesSnapshot.empty) {
       expensesTable.innerHTML =
         '<tr><td colspan="4" class="empty-state">No expenses recorded yet.</td></tr>';
@@ -528,7 +567,7 @@ async function loadBudget() {
       });
     }
 
-    // Load ALL planned expenses
+    // Load planned expenses
     const plannedSnapshot = await db
       .collection("plannedExpenses")
       .where("isPurchased", "==", false)
@@ -545,13 +584,11 @@ async function loadBudget() {
       plannedTable.innerHTML =
         '<tr><td colspan="4" class="empty-state">No planned expenses.</td></tr>';
     } else {
-      // Sort by priority for display
       const plannedExpenses = [];
       plannedSnapshot.forEach((doc) => {
         plannedExpenses.push(doc.data());
       });
 
-      // Sort: High -> Medium -> Low
       const priorityOrder = { High: 1, Medium: 2, Low: 3 };
       plannedExpenses.sort(
         (a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]
@@ -571,19 +608,29 @@ async function loadBudget() {
       });
     }
 
+    // Calculate profit/loss
+    const profitLoss = totalIncome - totalSpent;
+    const profitLossElement = document.getElementById("budgetProfitLoss");
+
     // Update budget summary
+    document.getElementById("budgetIncome").textContent =
+      `£${totalIncome.toFixed(2)}`;
     document.getElementById("budgetSpent").textContent =
       `£${totalSpent.toFixed(2)}`;
-    document.getElementById("budgetPlanned").textContent =
-      `£${totalPlanned.toFixed(2)}`;
-    document.getElementById("budgetTotal").textContent =
-      `£${(totalSpent + totalPlanned).toFixed(2)}`;
+    profitLossElement.textContent = `£${profitLoss.toFixed(2)}`;
+
+    // Add profit/loss color class
+    profitLossElement.classList.remove("profit", "loss");
+    if (profitLoss >= 0) {
+      profitLossElement.classList.add("profit");
+    } else {
+      profitLossElement.classList.add("loss");
+    }
   } catch (error) {
     console.error("Error loading budget:", error);
-    // Show error state
+    document.getElementById("budgetIncome").textContent = "Error";
     document.getElementById("budgetSpent").textContent = "Error";
-    document.getElementById("budgetPlanned").textContent = "Error";
-    document.getElementById("budgetTotal").textContent = "Error";
+    document.getElementById("budgetProfitLoss").textContent = "Error";
   }
 }
 
