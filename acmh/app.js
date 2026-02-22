@@ -763,21 +763,6 @@ function setupEventListeners() {
     newsletterForm.addEventListener("submit", handleNewsletterSubmit);
   }
 
-  // Export buttons
-  const exportExpenses = document.getElementById("exportExpenses");
-  if (exportExpenses) {
-    exportExpenses.addEventListener("click", () => exportToCSV("expenses"));
-  }
-
-  const exportTime = document.getElementById("exportTime");
-  if (exportTime) {
-    exportTime.addEventListener("click", () => exportToCSV("time"));
-  }
-
-  const exportTasks = document.getElementById("exportTasks");
-  if (exportTasks) {
-    exportTasks.addEventListener("click", () => exportToCSV("tasks"));
-  }
 
   // Flow diagram controls
   const zoomIn = document.getElementById("zoomIn");
@@ -814,80 +799,5 @@ async function handleNewsletterSubmit(e) {
   } catch (error) {
     status.textContent = "❌ Error subscribing. Please try again.";
     status.style.color = "#f56565";
-  }
-}
-
-// Export to CSV
-async function exportToCSV(type) {
-  try {
-    let data = [];
-    let filename = "";
-    let headers = [];
-
-    if (type === "expenses") {
-      const snapshot = await db
-        .collection("expenses")
-        .orderBy("date")
-        .get();
-      headers = ["Date", "Category", "Description", "Amount"];
-      snapshot.forEach((doc) => {
-        const expense = doc.data();
-        data.push([
-          expense.date,
-          expense.category,
-          expense.description,
-          expense.amount,
-        ]);
-      });
-      filename = "expenses.csv";
-    } else if (type === "time") {
-      const snapshot = await db
-        .collection("timeEntries")
-        .orderBy("date")
-        .get();
-      headers = ["Date", "Category", "Description", "Hours"];
-      snapshot.forEach((doc) => {
-        const entry = doc.data();
-        data.push([
-          entry.date,
-          entry.category,
-          entry.description || "",
-          entry.hours,
-        ]);
-      });
-      filename = "time_log.csv";
-    } else if (type === "tasks") {
-      const snapshot = await db.collection("tasks").orderBy("createdAt").get();
-      headers = ["Title", "Category", "Status", "Priority", "Description"];
-      snapshot.forEach((doc) => {
-        const task = doc.data();
-        data.push([
-          task.title,
-          task.category,
-          task.status,
-          task.priority,
-          task.description || "",
-        ]);
-      });
-      filename = "tasks.csv";
-    }
-
-    // Create CSV
-    let csv = headers.join(",") + "\n";
-    data.forEach((row) => {
-      csv += row.map((cell) => `"${cell}"`).join(",") + "\n";
-    });
-
-    // Download
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
-    window.URL.revokeObjectURL(url);
-  } catch (error) {
-    console.error("Error exporting:", error);
-    alert("Error exporting data. Please try again.");
   }
 }
