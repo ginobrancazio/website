@@ -1,20 +1,8 @@
-// ============================================
-// GLOBAL STATE & INITIALIZATION
-// ============================================
+// Public-facing application JavaScript
+let charts = {};
 
-let currentFilter = 'all';
-let flowCanvas, flowCtx;
-let flowNodes = [];
-let flowConnections = [];
-let flowZoom = 1;
-let flowPanX = 0;
-let flowPanY = 0;
-let isDragging = false;
-let dragStartX = 0;
-let dragStartY = 0;
-
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', () => {
+// Initialize when DOM is ready
+document.addEventListener("DOMContentLoaded", () => {
   initializeApp();
 });
 
@@ -24,1099 +12,882 @@ async function initializeApp() {
     await Promise.all([
       loadGameInfo(),
       loadMetrics(),
-      loadTimeEntries(),
-      loadExpenses(),
-      loadPlannedExpenses(),
-      loadTasks(),
+      loadUpdates(),
       loadScreenshots(),
-      loadDevUpdates(),
+      loadBudget(),
+      loadTasks(),
       loadGameFlow(),
-      loadYouTubePlaylist()
+      loadYouTubePlaylist(),
     ]);
 
-    // Initialize charts
-    initializeCharts();
-    
-    // Initialize flow canvas
-    initializeFlowCanvas();
-    
     // Setup event listeners
     setupEventListeners();
-    
-    console.log('✅ App initialized successfully');
   } catch (error) {
-    console.error('❌ Error initializing app:', error);
+    console.error("Error initializing app:", error);
   }
 }
 
-// ============================================
-// GAME INFO
-// ============================================
-
+// Load Game Info (Hero section and About)
 async function loadGameInfo() {
   try {
-    const snapshot = await db.collection('gameInfo')
-      .limit(1)
-      .get();
-    
-    if (!snapshot.empty) {
-      const data = snapshot.docs[0].data();
-      
-      document.getElementById('gameDescription').textContent = 
-        data.description || 'An exciting adventure awaits...';
-      
-      document.getElementById('projectDescription').textContent = 
-        data.projectDescription || 'Building something amazing...';
-      
-      const linkedinUrl = data.linkedinUrl || 
-        'https://www.linkedin.com/in/ginobrancazio/';
-      document.getElementById('linkedinLink').href = linkedinUrl;
-      document.getElementById('footerLinkedin').href = linkedinUrl;
-      
-      if (data.wishlistUrl) {
-        document.getElementById('wishlistBtn').href = data.wishlistUrl;
+    const doc = await db.collection("settings").doc("gameInfo").get();
+
+    if (doc.exists) {
+      const data = doc.data();
+
+      // Update hero description
+      const gameDesc = document.getElementById("gameDescription");
+      if (gameDesc) {
+        gameDesc.textContent =
+          data.gameDescription || "A unique gaming experience.";
+      }
+
+      // Update about section
+      const projectDesc = document.getElementById("projectDescription");
+      if (projectDesc) {
+        projectDesc.textContent =
+          data.projectDescription ||
+          "Follow along as I build this game from scratch.";
+      }
+
+      // Update wishlist button
+      const wishlistBtn = document.getElementById("wishlistBtn");
+      if (wishlistBtn && data.wishlistUrl) {
+        wishlistBtn.href = data.wishlistUrl;
+      }
+
+      // Update LinkedIn links
+      const linkedinLink = document.getElementById("linkedinLink");
+      const footerLinkedin = document.getElementById("footerLinkedin");
+      if (data.linkedinUrl) {
+        if (linkedinLink) linkedinLink.href = data.linkedinUrl;
+        if (footerLinkedin) footerLinkedin.href = data.linkedinUrl;
+      }
+
+      // Store playlist ID for later
+      if (data.youtubePlaylistId) {
+        window.youtubePlaylistId = data.youtubePlaylistId;
       }
     }
   } catch (error) {
-    console.error('Error loading game info:', error);
+    console.error("Error loading game info:", error);
   }
 }
 
-// ============================================
-// METRICS DASHBOARD
-// ============================================
-
+// Load Metrics and Charts
 async function loadMetrics() {
   try {
-    // Get all time entries
-    const timeSnapshot = await db.collection('timeEntries')
-      .orderBy('date', 'asc')
+    // Load time entries
+    const timeSnapshot = await db
+      .collection("timeEntries")
+      .orderBy("date")
       .get();
-    
-    // Get all expenses
-    const expenseSnapshot = await db.collection('expenses')
-      .orderBy('date', 'asc')
-      .get();
-    
-    // Calculate metrics
-    let totalHours = 0;
-    let totalSpent = 0;
     const timeEntries = [];
+    timeSnapshot.forEach((doc) => timeEntries.push(doc.data()));
+
+    // Load expenses
+    const expenseSnapshot = await db
+      .collection("expenses")
+      .orderBy("date")
+      .get();
     const expenses = [];
-    
-    timeSnapshot.forEach(doc => {
-      const data = doc.data();
-      totalHours += data.hours || 0;
-      timeEntries.push(data);
-    });
-    
-    expenseSnapshot.forEach(doc => {
-      const data = doc.data();
-      totalSpent += data.amount || 0;
-      expenses.push(data);
-    });
-    
-    // Calculate project duration
-    const projectStart = timeEntries[0]?.date?.toDate() || new Date();
-    const now = new Date();
-    const daysActive = Math.floor(
-      (now - projectStart) / (1000 * 60 * 60 * 24)
-    );
-    const weeksActive = Math.max(daysActive / 7, 1);
-    
-    const avgHoursPerWeek = (totalHours / weeksActive).toFixed(1);
-    
-    // Update display
-    document.getElementById('totalHours').textContent = 
+    expenseSnapshot.forEach((doc) => expenses.push(doc.data()));
+
+    // Calculate metrics
+    const totalHours = timeEntries.reduce((sum, e) => sum + e.hours, 0);
+    const totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
+
+    // Get unique dates for days active
+    const uniqueDates = new Set([
+      ...timeEntries.map((e) => e.date),
+      ...expenses.map((e) => e.date),
+    ]);
+    const daysActive = uniqueDates.size;
+
+    // Calculate average hours per week
+    const weeks = daysActive / 7;
+    const avgHours = weeks > 0 ? (totalHours / weeks).toFixed(1) : 0;
+
+    // Update metric cards
+    document.getElementById("totalHours").textContent =
       totalHours.toFixed(1);
-    document.getElementById('totalSpent').textContent = 
+    document.getElementById("totalSpent").textContent =
       `£${totalSpent.toFixed(2)}`;
-    document.getElementById('daysActive').textContent = daysActive;
-    document.getElementById('avgHours').textContent = avgHoursPerWeek;
-    
+    document.getElementById("daysActive").textContent = daysActive;
+    document.getElementById("avgHours").textContent = avgHours;
+
+    // Create charts
+    createTimeChart(timeEntries);
+    createBudgetChart(expenses);
+    createTimeCategoryChart(timeEntries);
+    createBudgetCategoryChart(expenses);
   } catch (error) {
-    console.error('Error loading metrics:', error);
+    console.error("Error loading metrics:", error);
   }
 }
 
-// ============================================
-// CHARTS
-// ============================================
+// Create Time Over Time Chart
+function createTimeChart(timeEntries) {
+  const ctx = document.getElementById("timeChart");
+  if (!ctx) return;
 
-let timeChart, budgetChart, timeCategoryChart, budgetCategoryChart;
+  // Group by date
+  const dateMap = {};
+  timeEntries.forEach((entry) => {
+    if (!dateMap[entry.date]) {
+      dateMap[entry.date] = 0;
+    }
+    dateMap[entry.date] += entry.hours;
+  });
 
-async function initializeCharts() {
-  await loadTimeChart();
-  await loadBudgetChart();
-  await loadCategoryCharts();
-}
+  const dates = Object.keys(dateMap).sort();
+  const hours = dates.map((date) => dateMap[date]);
 
-async function loadTimeChart() {
-  try {
-    const snapshot = await db.collection('timeEntries')
-      .orderBy('date', 'asc')
-      .get();
-    
-    const dataPoints = [];
-    let cumulative = 0;
-    
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      cumulative += data.hours || 0;
-      dataPoints.push({
-        x: data.date.toDate(),
-        y: cumulative
-      });
-    });
-    
-    const ctx = document.getElementById('timeChart').getContext('2d');
-    timeChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        datasets: [{
-          label: 'Cumulative Hours',
-          data: dataPoints,
-          borderColor: '#2563eb',
-          backgroundColor: 'rgba(37, 99, 235, 0.1)',
+  // Calculate cumulative
+  const cumulative = [];
+  let sum = 0;
+  hours.forEach((h) => {
+    sum += h;
+    cumulative.push(sum);
+  });
+
+  if (charts.timeChart) charts.timeChart.destroy();
+
+  charts.timeChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: dates,
+      datasets: [
+        {
+          label: "Cumulative Hours",
+          data: cumulative,
+          borderColor: "rgb(124, 58, 237)",
+          backgroundColor: "rgba(124, 58, 237, 0.1)",
+          tension: 0.4,
           fill: true,
-          tension: 0.4
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        scales: {
-          x: {
-            type: 'time',
-            time: {
-              unit: 'day',
-              displayFormats: {
-                day: 'MMM d'
-              }
-            }
-          },
-          y: {
-            beginAtZero: true,
-            title: {
-              display: true,
-              text: 'Total Hours'
-            }
-          }
         },
-        plugins: {
-          legend: {
-            display: false
-          }
-        }
-      }
-    });
-  } catch (error) {
-    console.error('Error loading time chart:', error);
-  }
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          display: false,
+        },
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+        },
+      },
+    },
+  });
 }
 
-async function loadBudgetChart() {
-  try {
-    const snapshot = await db.collection('expenses')
-      .orderBy('date', 'asc')
-      .get();
-    
-    const dataPoints = [];
-    let cumulative = 0;
-    
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      cumulative += data.amount || 0;
-      dataPoints.push({
-        x: data.date.toDate(),
-        y: cumulative
-      });
-    });
-    
-    const ctx = document.getElementById('budgetChart').getContext('2d');
-    budgetChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        datasets: [{
-          label: 'Cumulative Spending',
-          data: dataPoints,
-          borderColor: '#e84545',
-          backgroundColor: 'rgba(232, 69, 69, 0.1)',
+// Create Budget Over Time Chart
+function createBudgetChart(expenses) {
+  const ctx = document.getElementById("budgetChart");
+  if (!ctx) return;
+
+  // Group by date
+  const dateMap = {};
+  expenses.forEach((expense) => {
+    if (!dateMap[expense.date]) {
+      dateMap[expense.date] = 0;
+    }
+    dateMap[expense.date] += expense.amount;
+  });
+
+  const dates = Object.keys(dateMap).sort();
+  const amounts = dates.map((date) => dateMap[date]);
+
+  // Calculate cumulative
+  const cumulative = [];
+  let sum = 0;
+  amounts.forEach((amount) => {
+    sum += amount;
+    cumulative.push(sum);
+  });
+
+  if (charts.budgetChart) charts.budgetChart.destroy();
+
+  charts.budgetChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: dates,
+      datasets: [
+        {
+          label: "Cumulative Spending (£)",
+          data: cumulative,
+          borderColor: "rgb(245, 101, 101)",
+          backgroundColor: "rgba(245, 101, 101, 0.1)",
+          tension: 0.4,
           fill: true,
-          tension: 0.4
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        scales: {
-          x: {
-            type: 'time',
-            time: {
-              unit: 'day',
-              displayFormats: {
-                day: 'MMM d'
-              }
-            }
-          },
-          y: {
-            beginAtZero: true,
-            title: {
-              display: true,
-              text: 'Total Spent (£)'
-            }
-          }
         },
-        plugins: {
-          legend: {
-            display: false
-          }
-        }
-      }
-    });
-  } catch (error) {
-    console.error('Error loading budget chart:', error);
-  }
-}
-
-async function loadCategoryCharts() {
-  try {
-    // Time by category
-    const timeSnapshot = await db.collection('timeEntries').get();
-    const timeByCategory = {};
-    
-    timeSnapshot.forEach(doc => {
-      const data = doc.data();
-      const category = data.category || 'Other';
-      timeByCategory[category] = (timeByCategory[category] || 0) + 
-        (data.hours || 0);
-    });
-    
-    const timeCtx = document.getElementById('timeCategoryChart')
-      .getContext('2d');
-    timeCategoryChart = new Chart(timeCtx, {
-      type: 'doughnut',
-      data: {
-        labels: Object.keys(timeByCategory),
-        datasets: [{
-          data: Object.values(timeByCategory),
-          backgroundColor: [
-            '#2563eb', '#a855f7', '#4ecdc4', 
-            '#c44569', '#e84545', '#2ecc71'
-          ]
-        }]
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          display: false,
+        },
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: {
-            position: 'bottom'
-          }
-        }
-      }
-    });
-    
-    // Expenses by category
-    const expenseSnapshot = await db.collection('expenses').get();
-    const expenseByCategory = {};
-    
-    expenseSnapshot.forEach(doc => {
-      const data = doc.data();
-      const category = data.category || 'Other';
-      expenseByCategory[category] = (expenseByCategory[category] || 0) + 
-        (data.amount || 0);
-    });
-    
-    const budgetCtx = document.getElementById('budgetCategoryChart')
-      .getContext('2d');
-    budgetCategoryChart = new Chart(budgetCtx, {
-      type: 'doughnut',
-      data: {
-        labels: Object.keys(expenseByCategory),
-        datasets: [{
-          data: Object.values(expenseByCategory),
-          backgroundColor: [
-            '#e84545', '#f39c12', '#c44569', 
-            '#4ecdc4', '#2563eb', '#a855f7'
-          ]
-        }]
+      scales: {
+        y: {
+          beginAtZero: true,
+        },
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: {
-            position: 'bottom'
-          }
-        }
-      }
-    });
-    
-  } catch (error) {
-    console.error('Error loading category charts:', error);
-  }
+    },
+  });
 }
 
-// ============================================
-// TIME ENTRIES
-// ============================================
+// Create Time by Category Chart
+function createTimeCategoryChart(timeEntries) {
+  const ctx = document.getElementById("timeCategoryChart");
+  if (!ctx) return;
 
-async function loadTimeEntries() {
-  // Data already loaded in loadMetrics
-  // This function exists for future detailed time display if needed
+  // Group by category
+  const categoryMap = {};
+  timeEntries.forEach((entry) => {
+    if (!categoryMap[entry.category]) {
+      categoryMap[entry.category] = 0;
+    }
+    categoryMap[entry.category] += entry.hours;
+  });
+
+  const categories = Object.keys(categoryMap);
+  const hours = categories.map((cat) => categoryMap[cat]);
+
+  if (charts.timeCategoryChart) charts.timeCategoryChart.destroy();
+
+  charts.timeCategoryChart = new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels: categories,
+      datasets: [
+        {
+          data: hours,
+          backgroundColor: [
+            "rgba(124, 58, 237, 0.8)",
+            "rgba(59, 130, 246, 0.8)",
+            "rgba(16, 185, 129, 0.8)",
+            "rgba(245, 158, 11, 0.8)",
+            "rgba(245, 101, 101, 0.8)",
+            "rgba(139, 92, 246, 0.8)",
+            "rgba(236, 72, 153, 0.8)",
+          ],
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          position: "right",
+        },
+      },
+    },
+  });
 }
 
-// ============================================
-// EXPENSES & BUDGET
-// ============================================
+// Create Budget by Category Chart
+function createBudgetCategoryChart(expenses) {
+  const ctx = document.getElementById("budgetCategoryChart");
+  if (!ctx) return;
 
-async function loadExpenses() {
+  // Group by category
+  const categoryMap = {};
+  expenses.forEach((expense) => {
+    if (!categoryMap[expense.category]) {
+      categoryMap[expense.category] = 0;
+    }
+    categoryMap[expense.category] += expense.amount;
+  });
+
+  const categories = Object.keys(categoryMap);
+  const amounts = categories.map((cat) => categoryMap[cat]);
+
+  if (charts.budgetCategoryChart) charts.budgetCategoryChart.destroy();
+
+  charts.budgetCategoryChart = new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels: categories,
+      datasets: [
+        {
+          data: amounts,
+          backgroundColor: [
+            "rgba(124, 58, 237, 0.8)",
+            "rgba(59, 130, 246, 0.8)",
+            "rgba(16, 185, 129, 0.8)",
+            "rgba(245, 158, 11, 0.8)",
+            "rgba(245, 101, 101, 0.8)",
+            "rgba(139, 92, 246, 0.8)",
+            "rgba(236, 72, 153, 0.8)",
+          ],
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          position: "right",
+        },
+      },
+    },
+  });
+}
+
+// Load Development Updates
+async function loadUpdates() {
   try {
-    const snapshot = await db.collection('expenses')
-      .orderBy('date', 'desc')
+    const snapshot = await db
+      .collection("updates")
+      .orderBy("date", "desc")
       .limit(10)
       .get();
-    
-    const tbody = document.querySelector('#expensesTable tbody');
-    tbody.innerHTML = '';
-    
+
+    const grid = document.getElementById("updatesGrid");
+    grid.innerHTML = "";
+
     if (snapshot.empty) {
-      tbody.innerHTML = '<tr><td colspan="4">No expenses recorded yet</td></tr>';
+      grid.innerHTML =
+        '<div class="empty-state">No updates yet. Check back soon!</div>';
       return;
     }
-    
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      const row = tbody.insertRow();
-      
-      row.innerHTML = `
-        <td>${formatDate(data.date.toDate())}</td>
-        <td>${data.category || 'Other'}</td>
-        <td>${data.description || ''}</td>
-        <td style="font-weight: 600;">£${data.amount.toFixed(2)}</td>
-      `;
-    });
-    
-  } catch (error) {
-    console.error('Error loading expenses:', error);
-  }
-}
 
-async function loadPlannedExpenses() {
-  try {
-    const snapshot = await db.collection('plannedExpenses')
-      .orderBy('priority', 'asc')
-      .orderBy('order', 'asc')
-      .get();
-    
-    const tbody = document.querySelector('#plannedTable tbody');
-    tbody.innerHTML = '';
-    
-    let totalPlanned = 0;
-    
-    if (snapshot.empty) {
-      tbody.innerHTML = '<tr><td colspan="4">No planned expenses</td></tr>';
-    } else {
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        if (!data.completed) {
-          totalPlanned += data.estimatedCost || 0;
-          
-          const row = tbody.insertRow();
-          row.innerHTML = `
-            <td class="priority-${data.priority.toLowerCase()}">
-              ${data.priority}
-            </td>
-            <td>${data.item}</td>
-            <td>${data.category || ''}</td>
-            <td style="font-weight: 600;">£${data.estimatedCost.toFixed(2)}</td>
-          `;
-        }
-      });
-    }
-    
-    // Update budget summary
-    const expenseSnapshot = await db.collection('expenses').get();
-    let totalSpent = 0;
-    expenseSnapshot.forEach(doc => {
-      totalSpent += doc.data().amount || 0;
-    });
-    
-    document.getElementById('budgetSpent').textContent = 
-      `£${totalSpent.toFixed(2)}`;
-    document.getElementById('budgetPlanned').textContent = 
-      `£${totalPlanned.toFixed(2)}`;
-    document.getElementById('budgetTotal').textContent = 
-      `£${(totalSpent + totalPlanned).toFixed(2)}`;
-    
-  } catch (error) {
-    console.error('Error loading planned expenses:', error);
-  }
-}
-
-// ============================================
-// TASKS
-// ============================================
-
-async function loadTasks() {
-  try {
-    const snapshot = await db.collection('tasks')
-      .orderBy('order', 'asc')
-      .get();
-    
-    const todoContainer = document.getElementById('todoTasks');
-    const inProgressContainer = document.getElementById('inProgressTasks');
-    const doneContainer = document.getElementById('doneTasks');
-    
-    todoContainer.innerHTML = '';
-    inProgressContainer.innerHTML = '';
-    doneContainer.innerHTML = '';
-    
-    if (snapshot.empty) {
-      todoContainer.innerHTML = '<div class="loading-state">No tasks yet</div>';
-      inProgressContainer.innerHTML = '<div class="loading-state">No tasks yet</div>';
-      doneContainer.innerHTML = '<div class="loading-state">No tasks yet</div>';
-      return;
-    }
-    
-    const tasks = { todo: [], inProgress: [], done: [] };
-    
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      const status = data.status.toLowerCase().replace(' ', '');
-      
-      if (status === 'todo') tasks.todo.push(data);
-      else if (status === 'inprogress') tasks.inProgress.push(data);
-      else if (status === 'done') tasks.done.push(data);
-    });
-    
-    // Render tasks
-    renderTaskList(tasks.todo, todoContainer);
-    renderTaskList(tasks.inProgress, inProgressContainer);
-    renderTaskList(tasks.done, doneContainer);
-    
-  } catch (error) {
-    console.error('Error loading tasks:', error);
-  }
-}
-
-function renderTaskList(tasks, container) {
-  if (tasks.length === 0) {
-    container.innerHTML = '<div class="loading-state">No tasks</div>';
-    return;
-  }
-  
-  tasks.forEach(task => {
-    const taskEl = document.createElement('div');
-    taskEl.className = 'task-item';
-    taskEl.innerHTML = `
-      <div class="task-title">${task.title}</div>
-      ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
-      <div class="task-meta">
-        <span>${task.category || 'General'}</span>
-        <span class="priority-${task.priority.toLowerCase()}">${task.priority}</span>
-      </div>
-    `;
-    container.appendChild(taskEl);
-  });
-}
-
-// ============================================
-// SCREENSHOTS GALLERY
-// ============================================
-
-async function loadScreenshots() {
-  try {
-    const snapshot = await db.collection('screenshots')
-      .orderBy('date', 'desc')
-      .get();
-    
-    const grid = document.getElementById('screenshotsGrid');
-    grid.innerHTML = '';
-    
-    if (snapshot.empty) {
-      grid.innerHTML = '<div class="loading-state">No screenshots yet</div>';
-      return;
-    }
-    
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      const card = createScreenshotCard(data);
-      card.dataset.category = data.category || 'Other';
-      card.dataset.isBeforeAfter = data.linkedScreenshotId ? 'true' : 'false';
+    snapshot.forEach((doc) => {
+      const update = doc.data();
+      const card = createUpdateCard(update);
       grid.appendChild(card);
     });
-    
   } catch (error) {
-    console.error('Error loading screenshots:', error);
+    console.error("Error loading updates:", error);
   }
 }
 
-function createScreenshotCard(data) {
-  const card = document.createElement('div');
-  card.className = 'screenshot-card';
-  
+function createUpdateCard(update) {
+  const card = document.createElement("div");
+  card.className = "update-card";
+
+  const date = new Date(update.date).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+
+  const tags = update.tags
+    ? update.tags
+        .map((tag) => `<span class="update-tag">${tag}</span>`)
+        .join("")
+    : "";
+
   card.innerHTML = `
-    <img src="${data.imageUrl}" alt="${data.title}" class="screenshot-image" />
-    <div class="screenshot-info">
-      <h3 class="screenshot-title">${data.title}</h3>
-      ${data.description ? `<p class="screenshot-description">${data.description}</p>` : ''}
-      <div class="screenshot-meta">
-        <span>${data.category || 'Other'}</span>
-        ${data.linkedScreenshotId ? '<span class="before-after-badge">Before/After</span>' : ''}
-      </div>
+    <div class="update-header">
+      <h3 class="update-title">${update.title}</h3>
+      <span class="update-date mono">${date}</span>
+    </div>
+    <p class="update-summary">${update.summary || update.content.substring(0, 150) + "..."}</p>
+    <div class="update-footer">
+      <div class="update-tags">${tags}</div>
     </div>
   `;
-  
+
   return card;
 }
 
-// Gallery filtering
-function setupGalleryFilters() {
-  const filterBtns = document.querySelectorAll('.filter-btn');
-  
-  filterBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      // Update active state
-      filterBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      
-      const filter = btn.dataset.filter;
-      filterScreenshots(filter);
-    });
-  });
-}
-
-function filterScreenshots(filter) {
-  const cards = document.querySelectorAll('.screenshot-card');
-  
-  cards.forEach(card => {
-    if (filter === 'all') {
-      card.style.display = 'block';
-    } else if (filter === 'before-after') {
-      card.style.display = card.dataset.isBeforeAfter === 'true' ? 
-        'block' : 'none';
-    } else {
-      card.style.display = card.dataset.category === filter ? 
-        'block' : 'none';
-    }
-  });
-}
-
-// ============================================
-// DEV UPDATES
-// ============================================
-
-async function loadDevUpdates() {
+// Load Screenshots
+async function loadScreenshots() {
   try {
-    const snapshot = await db.collection('devUpdates')
-      .orderBy('date', 'desc')
-      .limit(5)
+    const snapshot = await db
+      .collection("screenshots")
+      .orderBy("date", "desc")
       .get();
-    
-    const grid = document.getElementById('updatesGrid');
-    grid.innerHTML = '';
-    
+
+    const grid = document.getElementById("screenshotsGrid");
+    grid.innerHTML = "";
+
     if (snapshot.empty) {
-      grid.innerHTML = '<div class="loading-state">No updates yet</div>';
+      grid.innerHTML =
+        '<div class="empty-state">No screenshots yet. Check back soon!</div>';
       return;
     }
-    
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      const card = createUpdateCard(data);
-      grid.appendChild(card);
+
+    snapshot.forEach((doc) => {
+      const screenshot = doc.data();
+      const item = createScreenshotItem(screenshot);
+      grid.appendChild(item);
     });
-    
+
+    // Setup filters
+    setupGalleryFilters();
   } catch (error) {
-    console.error('Error loading dev updates:', error);
+    console.error("Error loading screenshots:", error);
   }
 }
 
-function createUpdateCard(data) {
-  const card = document.createElement('div');
-  card.className = 'update-card';
-  
-  card.innerHTML = `
-    <div class="update-date">${formatDate(data.date.toDate())}</div>
-    <h3 class="update-title">${data.title}</h3>
-    <div class="update-content">${data.summary || data.content.substring(0, 200) + '...'}</div>
-    ${data.tags && data.tags.length > 0 ? `
-      <div class="update-tags">
-        ${data.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-      </div>
-    ` : ''}
+function createScreenshotItem(screenshot) {
+  const item = document.createElement("div");
+  item.className = "screenshot-item";
+  item.dataset.category = screenshot.category;
+  if (screenshot.isBeforeAfter) {
+    item.dataset.beforeAfter = "true";
+  }
+
+  item.innerHTML = `
+    <img src="${screenshot.imageUrl}" alt="${screenshot.title}" loading="lazy" />
+    <div class="screenshot-overlay">
+      <h4>${screenshot.title}</h4>
+      <p>${screenshot.description || ""}</p>
+      <span class="screenshot-category">${screenshot.category}</span>
+    </div>
   `;
-  
+
+  return item;
+}
+
+function setupGalleryFilters() {
+  const filterBtns = document.querySelectorAll(".filter-btn");
+  const items = document.querySelectorAll(".screenshot-item");
+
+  filterBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      // Update active button
+      filterBtns.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      const filter = btn.dataset.filter;
+
+      // Filter items
+      items.forEach((item) => {
+        if (filter === "all") {
+          item.style.display = "block";
+        } else if (filter === "before-after") {
+          item.style.display = item.dataset.beforeAfter ? "block" : "none";
+        } else {
+          item.style.display =
+            item.dataset.category === filter ? "block" : "none";
+        }
+      });
+    });
+  });
+}
+
+// Load Budget Data
+async function loadBudget() {
+  try {
+    // Load expenses
+    const expensesSnapshot = await db
+      .collection("expenses")
+      .orderBy("date", "desc")
+      .limit(20)
+      .get();
+
+    const expensesTable = document
+      .getElementById("expensesTable")
+      .querySelector("tbody");
+    expensesTable.innerHTML = "";
+
+    let totalSpent = 0;
+
+    if (expensesSnapshot.empty) {
+      expensesTable.innerHTML =
+        '<tr><td colspan="4" class="empty-state">No expenses recorded yet.</td></tr>';
+    } else {
+      expensesSnapshot.forEach((doc) => {
+        const expense = doc.data();
+        totalSpent += expense.amount;
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td class="mono">${new Date(expense.date).toLocaleDateString("en-GB")}</td>
+          <td><span class="category-badge">${expense.category}</span></td>
+          <td>${expense.description}</td>
+          <td class="mono">£${expense.amount.toFixed(2)}</td>
+        `;
+        expensesTable.appendChild(row);
+      });
+    }
+
+    // Load planned expenses
+    const plannedSnapshot = await db
+      .collection("plannedExpenses")
+      .where("isPurchased", "==", false)
+      .orderBy("createdAt", "desc")
+      .get();
+
+    const plannedTable = document
+      .getElementById("plannedTable")
+      .querySelector("tbody");
+    plannedTable.innerHTML = "";
+
+    let totalPlanned = 0;
+
+    if (plannedSnapshot.empty) {
+      plannedTable.innerHTML =
+        '<tr><td colspan="4" class="empty-state">No planned expenses.</td></tr>';
+    } else {
+      plannedSnapshot.forEach((doc) => {
+        const planned = doc.data();
+        totalPlanned += planned.estimatedCost;
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><span class="priority-badge ${planned.priority.toLowerCase()}">${planned.priority}</span></td>
+          <td>${planned.item}</td>
+          <td><span class="category-badge">${planned.category}</span></td>
+          <td class="mono">£${planned.estimatedCost.toFixed(2)}</td>
+        `;
+        plannedTable.appendChild(row);
+      });
+    }
+
+    // Update budget summary
+    document.getElementById("budgetSpent").textContent =
+      `£${totalSpent.toFixed(2)}`;
+    document.getElementById("budgetPlanned").textContent =
+      `£${totalPlanned.toFixed(2)}`;
+    document.getElementById("budgetTotal").textContent =
+      `£${(totalSpent + totalPlanned).toFixed(2)}`;
+  } catch (error) {
+    console.error("Error loading budget:", error);
+  }
+}
+
+// Load Tasks
+async function loadTasks() {
+  try {
+    const snapshot = await db
+      .collection("tasks")
+      .orderBy("createdAt", "desc")
+      .get();
+
+    const todoList = document.getElementById("todoTasks");
+    const inProgressList = document.getElementById("inProgressTasks");
+    const doneList = document.getElementById("doneTasks");
+
+    todoList.innerHTML = "";
+    inProgressList.innerHTML = "";
+    doneList.innerHTML = "";
+
+    if (snapshot.empty) {
+      todoList.innerHTML = '<div class="empty-state">No tasks yet.</div>';
+      return;
+    }
+
+    snapshot.forEach((doc) => {
+      const task = doc.data();
+      const card = createTaskCard(task);
+
+      if (task.status === "To Do") {
+        todoList.appendChild(card);
+      } else if (task.status === "In Progress") {
+        inProgressList.appendChild(card);
+      } else if (task.status === "Done") {
+        doneList.appendChild(card);
+      }
+    });
+  } catch (error) {
+    console.error("Error loading tasks:", error);
+  }
+}
+
+function createTaskCard(task) {
+  const card = document.createElement("div");
+  card.className = "task-card";
+
+  card.innerHTML = `
+    <div class="task-header">
+      <h4 class="task-title">${task.title}</h4>
+      <span class="priority-badge ${task.priority.toLowerCase()}">${task.priority}</span>
+    </div>
+    <p class="task-description">${task.description || ""}</p>
+    <div class="task-footer">
+      <span class="category-badge">${task.category}</span>
+    </div>
+  `;
+
   return card;
 }
 
-// ============================================
-// GAME FLOW DIAGRAM
-// ============================================
-
+// Load Game Flow Diagram
 async function loadGameFlow() {
   try {
-    const nodesSnapshot = await db.collection('gameFlowNodes').get();
-    const connectionsSnapshot = await db.collection('gameFlowConnections').get();
-    
-    flowNodes = [];
-    flowConnections = [];
-    
-    nodesSnapshot.forEach(doc => {
-      flowNodes.push({ id: doc.id, ...doc.data() });
+    const nodesSnapshot = await db
+      .collection("flowNodes")
+      .orderBy("createdAt")
+      .get();
+    const connectionsSnapshot = await db
+      .collection("flowConnections")
+      .orderBy("createdAt")
+      .get();
+
+    const nodes = [];
+    nodesSnapshot.forEach((doc) => {
+      nodes.push({ id: doc.id, ...doc.data() });
     });
-    
-    connectionsSnapshot.forEach(doc => {
-      flowConnections.push(doc.data());
+
+    const connections = [];
+    connectionsSnapshot.forEach((doc) => {
+      connections.push(doc.data());
     });
-    
+
+    drawFlowDiagram(nodes, connections);
   } catch (error) {
-    console.error('Error loading game flow:', error);
+    console.error("Error loading game flow:", error);
   }
 }
 
-function initializeFlowCanvas() {
-  flowCanvas = document.getElementById('flowCanvas');
-  if (!flowCanvas) return;
-  
-  flowCtx = flowCanvas.getContext('2d');
-  
-  // Set canvas size
-  flowCanvas.width = flowCanvas.offsetWidth;
-  flowCanvas.height = flowCanvas.offsetHeight;
-  
-  // Draw initial state
-  drawGameFlow();
-  
-  // Setup canvas interactions
-  flowCanvas.addEventListener('mousedown', handleFlowMouseDown);
-  flowCanvas.addEventListener('mousemove', handleFlowMouseMove);
-  flowCanvas.addEventListener('mouseup', handleFlowMouseUp);
-  flowCanvas.addEventListener('wheel', handleFlowWheel);
-  
-  // Zoom controls
-  document.getElementById('zoomIn')?.addEventListener('click', () => {
-    flowZoom = Math.min(flowZoom * 1.2, 3);
-    drawGameFlow();
-  });
-  
-  document.getElementById('zoomOut')?.addEventListener('click', () => {
-    flowZoom = Math.max(flowZoom / 1.2, 0.5);
-    drawGameFlow();
-  });
-  
-  document.getElementById('resetView')?.addEventListener('click', () => {
-    flowZoom = 1;
-    flowPanX = 0;
-    flowPanY = 0;
-    drawGameFlow();
-  });
-}
+function drawFlowDiagram(nodes, connections) {
+  const canvas = document.getElementById("flowCanvas");
+  if (!canvas) return;
 
-function drawGameFlow() {
-  if (!flowCtx) return;
-  
-  flowCtx.clearRect(0, 0, flowCanvas.width, flowCanvas.height);
-  flowCtx.save();
-  
-  // Apply transformations
-  flowCtx.translate(flowPanX, flowPanY);
-  flowCtx.scale(flowZoom, flowZoom);
-  
+  const ctx = canvas.getContext("2d");
+
+  // Set canvas size
+  canvas.width = canvas.offsetWidth;
+  canvas.height = 600;
+
+  // Clear canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (nodes.length === 0) {
+    ctx.fillStyle = "#666";
+    ctx.font = "16px Inter";
+    ctx.textAlign = "center";
+    ctx.fillText("No flow diagram yet", canvas.width / 2, canvas.height / 2);
+    return;
+  }
+
   // Draw connections
-  flowConnections.forEach(conn => {
-    const fromNode = flowNodes.find(n => n.id === conn.from);
-    const toNode = flowNodes.find(n => n.id === conn.to);
-    
+  ctx.strokeStyle = "#7c3aed";
+  ctx.lineWidth = 2;
+
+  connections.forEach((conn) => {
+    const fromNode = nodes.find((n) => n.id === conn.from);
+    const toNode = nodes.find((n) => n.id === conn.to);
+
     if (fromNode && toNode) {
-      flowCtx.beginPath();
-      flowCtx.moveTo(fromNode.x, fromNode.y);
-      flowCtx.lineTo(toNode.x, toNode.y);
-      flowCtx.strokeStyle = '#d1d5db';
-      flowCtx.lineWidth = 2;
-      flowCtx.stroke();
-      
+      ctx.beginPath();
+      ctx.moveTo(fromNode.x, fromNode.y);
+      ctx.lineTo(toNode.x, toNode.y);
+      ctx.stroke();
+
       // Draw arrow
-      drawArrow(flowCtx, fromNode.x, fromNode.y, toNode.x, toNode.y);
-      
+      const angle = Math.atan2(
+        toNode.y - fromNode.y,
+        toNode.x - fromNode.x
+      );
+      const arrowSize = 10;
+      ctx.beginPath();
+      ctx.moveTo(toNode.x, toNode.y);
+      ctx.lineTo(
+        toNode.x - arrowSize * Math.cos(angle - Math.PI / 6),
+        toNode.y - arrowSize * Math.sin(angle - Math.PI / 6)
+      );
+      ctx.lineTo(
+        toNode.x - arrowSize * Math.cos(angle + Math.PI / 6),
+        toNode.y - arrowSize * Math.sin(angle + Math.PI / 6)
+      );
+      ctx.closePath();
+      ctx.fillStyle = "#7c3aed";
+      ctx.fill();
+
       // Draw label if exists
       if (conn.label) {
         const midX = (fromNode.x + toNode.x) / 2;
         const midY = (fromNode.y + toNode.y) / 2;
-        flowCtx.fillStyle = '#5a5a5a';
-        flowCtx.font = '12px Inter';
-        flowCtx.textAlign = 'center';
-        flowCtx.fillText(conn.label, midX, midY - 5);
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(midX - 20, midY - 10, 40, 20);
+        ctx.fillStyle = "#333";
+        ctx.font = "12px Inter";
+        ctx.textAlign = "center";
+        ctx.fillText(conn.label, midX, midY + 4);
       }
     }
   });
-  
+
   // Draw nodes
-  flowNodes.forEach(node => {
-    flowCtx.fillStyle = node.color || '#2563eb';
-    flowCtx.beginPath();
-    flowCtx.roundRect(node.x - 60, node.y - 30, 120, 60, 8);
-    flowCtx.fill();
-    
-    flowCtx.fillStyle = '#ffffff';
-    flowCtx.font = '14px Inter';
-    flowCtx.textAlign = 'center';
-    flowCtx.textBaseline = 'middle';
-    flowCtx.fillText(node.label, node.x, node.y);
+  nodes.forEach((node) => {
+    ctx.fillStyle = "#1a1a1a";
+    ctx.fillRect(node.x - 60, node.y - 30, 120, 60);
+    ctx.strokeStyle = "#7c3aed";
+    ctx.strokeRect(node.x - 60, node.y - 30, 120, 60);
+
+    ctx.fillStyle = "#fff";
+    ctx.font = "14px Inter";
+    ctx.textAlign = "center";
+    ctx.fillText(node.label, node.x, node.y - 5);
+    ctx.font = "10px Inter";
+    ctx.fillStyle = "#999";
+    ctx.fillText(node.type, node.x, node.y + 10);
   });
-  
-  flowCtx.restore();
 }
 
-function drawArrow(ctx, fromX, fromY, toX, toY) {
-  const headlen = 10;
-  const angle = Math.atan2(toY - fromY, toX - fromX);
-  
-  ctx.beginPath();
-  ctx.moveTo(toX, toY);
-  ctx.lineTo(
-    toX - headlen * Math.cos(angle - Math.PI / 6),
-    toY - headlen * Math.sin(angle - Math.PI / 6)
-  );
-  ctx.moveTo(toX, toY);
-  ctx.lineTo(
-    toX - headlen * Math.cos(angle + Math.PI / 6),
-    toY - headlen * Math.sin(angle + Math.PI / 6)
-  );
-  ctx.strokeStyle = '#d1d5db';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-}
+// Load YouTube Playlist
+function loadYouTubePlaylist() {
+  const container = document.getElementById("youtubePlaylist");
+  if (!container) return;
 
-function handleFlowMouseDown(e) {
-  isDragging = true;
-  dragStartX = e.clientX - flowPanX;
-  dragStartY = e.clientY - flowPanY;
-}
+  const playlistId = window.youtubePlaylistId;
 
-function handleFlowMouseMove(e) {
-  if (isDragging) {
-    flowPanX = e.clientX - dragStartX;
-    flowPanY = e.clientY - dragStartY;
-    drawGameFlow();
+  if (!playlistId) {
+    container.innerHTML =
+      '<div class="empty-state">YouTube playlist not configured yet.</div>';
+    return;
   }
+
+  container.innerHTML = `
+    <iframe 
+      width="100%" 
+      height="600" 
+      src="https://www.youtube.com/embed/videoseries?list=${playlistId}" 
+      frameborder="0" 
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+      allowfullscreen
+    ></iframe>
+  `;
 }
 
-function handleFlowMouseUp() {
-  isDragging = false;
-}
-
-function handleFlowWheel(e) {
-  e.preventDefault();
-  const delta = e.deltaY > 0 ? 0.9 : 1.1;
-  flowZoom = Math.max(0.5, Math.min(3, flowZoom * delta));
-  drawGameFlow();
-}
-
-// ============================================
-// YOUTUBE PLAYLIST
-// ============================================
-
-async function loadYouTubePlaylist() {
-  try {
-    const snapshot = await db.collection('gameInfo').limit(1).get();
-    
-    if (!snapshot.empty) {
-      const data = snapshot.docs[0].data();
-      const playlistId = data.youtubePlaylistId;
-      
-      if (playlistId) {
-        const container = document.getElementById('youtubePlaylist');
-        container.innerHTML = `
-          <div class="video-embed">
-            <iframe
-              src="https://www.youtube.com/embed/videoseries?list=${playlistId}"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowfullscreen
-            ></iframe>
-          </div>
-        `;
-      } else {
-        document.getElementById('youtubePlaylist').innerHTML = 
-          '<div class="loading-state">No playlist configured yet</div>';
-      }
-    }
-  } catch (error) {
-    console.error('Error loading YouTube playlist:', error);
-  }
-}
-
-// ============================================
-// NEWSLETTER
-// ============================================
-
-async function handleNewsletterSubmit(e) {
-  e.preventDefault();
-  
-  const emailInput = document.getElementById('newsletterEmail');
-  const statusEl = document.getElementById('newsletterStatus');
-  const email = emailInput.value.trim();
-  
-  if (!email) return;
-  
-  try {
-    // Check if email already exists
-    const existing = await db.collection('newsletter')
-      .where('email', '==', email)
-      .get();
-    
-    if (!existing.empty) {
-      statusEl.textContent = 'You\'re already subscribed!';
-      statusEl.style.color = '#f39c12';
-      return;
-    }
-    
-    // Add new subscriber
-    await db.collection('newsletter').add({
-      email: email,
-      subscribedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      status: 'active'
-    });
-    
-    statusEl.textContent = '✅ Successfully subscribed!';
-    statusEl.style.color = '#2ecc71';
-    emailInput.value = '';
-    
-    setTimeout(() => {
-      statusEl.textContent = '';
-    }, 5000);
-    
-  } catch (error) {
-    console.error('Error subscribing:', error);
-    statusEl.textContent = '❌ Error subscribing. Please try again.';
-    statusEl.style.color = '#e84545';
-  }
-}
-
-// ============================================
-// EXPORT FUNCTIONS
-// ============================================
-
-async function exportExpenses() {
-  try {
-    const snapshot = await db.collection('expenses')
-      .orderBy('date', 'desc')
-      .get();
-    
-    const data = [['Date', 'Category', 'Description', 'Amount']];
-    
-    snapshot.forEach(doc => {
-      const expense = doc.data();
-      data.push([
-        formatDate(expense.date.toDate()),
-        expense.category || '',
-        expense.description || '',
-        expense.amount.toFixed(2)
-      ]);
-    });
-    
-    downloadCSV(data, 'expenses.csv');
-    
-  } catch (error) {
-    console.error('Error exporting expenses:', error);
-    alert('Error exporting expenses');
-  }
-}
-
-async function exportTimeLog() {
-  try {
-    const snapshot = await db.collection('timeEntries')
-      .orderBy('date', 'desc')
-      .get();
-    
-    const data = [['Date', 'Category', 'Description', 'Hours']];
-    
-    snapshot.forEach(doc => {
-      const entry = doc.data();
-      data.push([
-        formatDate(entry.date.toDate()),
-        entry.category || '',
-        entry.description || '',
-        entry.hours.toFixed(2)
-      ]);
-    });
-    
-    downloadCSV(data, 'time-log.csv');
-    
-  } catch (error) {
-    console.error('Error exporting time log:', error);
-    alert('Error exporting time log');
-  }
-}
-
-async function exportTasks() {
-  try {
-    const snapshot = await db.collection('tasks')
-      .orderBy('status', 'asc')
-      .get();
-    
-    const data = [['Status', 'Title', 'Category', 'Priority', 'Description']];
-    
-    snapshot.forEach(doc => {
-      const task = doc.data();
-      data.push([
-        task.status || '',
-        task.title || '',
-        task.category || '',
-        task.priority || '',
-        task.description || ''
-      ]);
-    });
-    
-    downloadCSV(data, 'tasks.csv');
-    
-  } catch (error) {
-    console.error('Error exporting tasks:', error);
-    alert('Error exporting tasks');
-  }
-}
-
-async function generateFullReport() {
-  try {
-    const report = [];
-    report.push('='.repeat(60));
-    report.push('ANIMAL CITY MONSTER HUNTERS - DEVELOPMENT REPORT');
-    report.push(`Generated: ${new Date().toLocaleDateString()}`);
-    report.push('='.repeat(60));
-    report.push('');
-    
-    // Get metrics
-    const timeSnapshot = await db.collection('timeEntries').get();
-    const expenseSnapshot = await db.collection('expenses').get();
-    const taskSnapshot = await db.collection('tasks').get();
-    
-    let totalHours = 0;
-    let totalSpent = 0;
-    
-    timeSnapshot.forEach(doc => {
-      totalHours += doc.data().hours || 0;
-    });
-    
-    expenseSnapshot.forEach(doc => {
-      totalSpent += doc.data().amount || 0;
-    });
-    
-    const completedTasks = taskSnapshot.docs.filter(
-      doc => doc.data().status === 'Done'
-    ).length;
-    
-    report.push('SUMMARY METRICS');
-    report.push('-'.repeat(60));
-    report.push(`Total Hours Invested: ${totalHours.toFixed(1)}`);
-    report.push(`Total Money Spent: £${totalSpent.toFixed(2)}`);
-    report.push(`Tasks Completed: ${completedTasks} / ${taskSnapshot.size}`);
-    report.push('');
-    
-    // Recent expenses
-    report.push('RECENT EXPENSES (Last 10)');
-    report.push('-'.repeat(60));
-    const recentExpenses = await db.collection('expenses')
-      .orderBy('date', 'desc')
-      .limit(10)
-      .get();
-    
-    recentExpenses.forEach(doc => {
-      const e = doc.data();
-      report.push(
-        `${formatDate(e.date.toDate())} | ${e.category} | £${e.amount.toFixed(2)} | ${e.description}`
-      );
-    });
-    
-    const blob = new Blob([report.join('\n')], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `dev-report-${Date.now()}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-    
-  } catch (error) {
-    console.error('Error generating report:', error);
-    alert('Error generating report');
-  }
-}
-
-function downloadCSV(data, filename) {
-  const csv = data.map(row => row.join(',')).join('\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-// ============================================
-// EVENT LISTENERS
-// ============================================
-
+// Setup Event Listeners
 function setupEventListeners() {
   // Newsletter form
-  const newsletterForm = document.getElementById('newsletterForm');
+  const newsletterForm = document.getElementById("newsletterForm");
   if (newsletterForm) {
-    newsletterForm.addEventListener('submit', handleNewsletterSubmit);
+    newsletterForm.addEventListener("submit", handleNewsletterSubmit);
   }
-  
+
   // Export buttons
-  document.getElementById('exportExpenses')?.addEventListener(
-    'click',
-    exportExpenses
-  );
-  document.getElementById('exportTime')?.addEventListener(
-    'click',
-    exportTimeLog
-  );
-  document.getElementById('exportTasks')?.addEventListener(
-    'click',
-    exportTasks
-  );
-  document.getElementById('generateReport')?.addEventListener(
-    'click',
-    generateFullReport
-  );
-  
-  // Gallery filters
-  setupGalleryFilters();
+  const exportExpenses = document.getElementById("exportExpenses");
+  if (exportExpenses) {
+    exportExpenses.addEventListener("click", () => exportToCSV("expenses"));
+  }
+
+  const exportTime = document.getElementById("exportTime");
+  if (exportTime) {
+    exportTime.addEventListener("click", () => exportToCSV("time"));
+  }
+
+  const exportTasks = document.getElementById("exportTasks");
+  if (exportTasks) {
+    exportTasks.addEventListener("click", () => exportToCSV("tasks"));
+  }
+
+  // Flow diagram controls
+  const zoomIn = document.getElementById("zoomIn");
+  const zoomOut = document.getElementById("zoomOut");
+  const resetView = document.getElementById("resetView");
+
+  if (zoomIn) zoomIn.addEventListener("click", () => console.log("Zoom in"));
+  if (zoomOut)
+    zoomOut.addEventListener("click", () => console.log("Zoom out"));
+  if (resetView)
+    resetView.addEventListener("click", () => loadGameFlow());
 }
 
-// ============================================
-// UTILITY FUNCTIONS
-// ============================================
+// Newsletter Handler
+async function handleNewsletterSubmit(e) {
+  e.preventDefault();
 
-function formatDate(date) {
-  if (!date) return '';
-  const options = { year: 'numeric', month: 'short', day: 'numeric' };
-  return date.toLocaleDateString('en-GB', options);
+  const email = document.getElementById("newsletterEmail").value;
+  const status = document.getElementById("newsletterStatus");
+
+  try {
+    await db.collection("newsletter").add({
+      email,
+      subscribedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+
+    status.textContent = "✅ Successfully subscribed!";
+    status.style.color = "#10b981";
+    e.target.reset();
+
+    setTimeout(() => {
+      status.textContent = "";
+    }, 5000);
+  } catch (error) {
+    status.textContent = "❌ Error subscribing. Please try again.";
+    status.style.color = "#f56565";
+  }
 }
 
-// Polyfill for roundRect if needed
-if (!CanvasRenderingContext2D.prototype.roundRect) {
-  CanvasRenderingContext2D.prototype.roundRect = function(
-    x, y, width, height, radius
-  ) {
-    this.beginPath();
-    this.moveTo(x + radius, y);
-    this.lineTo(x + width - radius, y);
-    this.quadraticCurveTo(x + width, y, x + width, y + radius);
-    this.lineTo(x + width, y + height - radius);
-    this.quadraticCurveTo(
-      x + width,
-      y + height,
-      x + width - radius,
-      y + height
-    );
-    this.lineTo(x + radius, y + height);
-    this.quadraticCurveTo(x, y + height, x, y + height - radius);
-    this.lineTo(x, y + radius);
-    this.quadraticCurveTo(x, y, x + radius, y);
-    this.closePath();
-  };
+// Export to CSV
+async function exportToCSV(type) {
+  try {
+    let data = [];
+    let filename = "";
+    let headers = [];
+
+    if (type === "expenses") {
+      const snapshot = await db
+        .collection("expenses")
+        .orderBy("date")
+        .get();
+      headers = ["Date", "Category", "Description", "Amount"];
+      snapshot.forEach((doc) => {
+        const expense = doc.data();
+        data.push([
+          expense.date,
+          expense.category,
+          expense.description,
+          expense.amount,
+        ]);
+      });
+      filename = "expenses.csv";
+    } else if (type === "time") {
+      const snapshot = await db
+        .collection("timeEntries")
+        .orderBy("date")
+        .get();
+      headers = ["Date", "Category", "Description", "Hours"];
+      snapshot.forEach((doc) => {
+        const entry = doc.data();
+        data.push([
+          entry.date,
+          entry.category,
+          entry.description || "",
+          entry.hours,
+        ]);
+      });
+      filename = "time_log.csv";
+    } else if (type === "tasks") {
+      const snapshot = await db.collection("tasks").orderBy("createdAt").get();
+      headers = ["Title", "Category", "Status", "Priority", "Description"];
+      snapshot.forEach((doc) => {
+        const task = doc.data();
+        data.push([
+          task.title,
+          task.category,
+          task.status,
+          task.priority,
+          task.description || "",
+        ]);
+      });
+      filename = "tasks.csv";
+    }
+
+    // Create CSV
+    let csv = headers.join(",") + "\n";
+    data.forEach((row) => {
+      csv += row.map((cell) => `"${cell}"`).join(",") + "\n";
+    });
+
+    // Download
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Error exporting:", error);
+    alert("Error exporting data. Please try again.");
+  }
 }
