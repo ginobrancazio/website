@@ -16,7 +16,6 @@ async function initializeApp() {
       loadScreenshots(),
       loadBudget(),
       loadTasks(),
-      loadGameFlow(),
       loadYouTubePlaylist(),
     ]);
 
@@ -688,120 +687,6 @@ function createTaskCard(task) {
   `;
 
   return card;
-}
-
-// Load Game Flow Diagram
-async function loadGameFlow() {
-  try {
-    const nodesSnapshot = await db
-      .collection("flowNodes")
-      .orderBy("createdAt")
-      .get();
-    const connectionsSnapshot = await db
-      .collection("flowConnections")
-      .orderBy("createdAt")
-      .get();
-
-    const nodes = [];
-    nodesSnapshot.forEach((doc) => {
-      nodes.push({ id: doc.id, ...doc.data() });
-    });
-
-    const connections = [];
-    connectionsSnapshot.forEach((doc) => {
-      connections.push(doc.data());
-    });
-
-    drawFlowDiagram(nodes, connections);
-  } catch (error) {
-    console.error("Error loading game flow:", error);
-  }
-}
-
-function drawFlowDiagram(nodes, connections) {
-  const canvas = document.getElementById("flowCanvas");
-  if (!canvas) return;
-
-  const ctx = canvas.getContext("2d");
-
-  // Set canvas size
-  canvas.width = canvas.offsetWidth;
-  canvas.height = 600;
-
-  // Clear canvas
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  if (nodes.length === 0) {
-    ctx.fillStyle = "#666";
-    ctx.font = "16px Inter";
-    ctx.textAlign = "center";
-    ctx.fillText("No flow diagram yet", canvas.width / 2, canvas.height / 2);
-    return;
-  }
-
-  // Draw connections
-  ctx.strokeStyle = "#7c3aed";
-  ctx.lineWidth = 2;
-
-  connections.forEach((conn) => {
-    const fromNode = nodes.find((n) => n.id === conn.from);
-    const toNode = nodes.find((n) => n.id === conn.to);
-
-    if (fromNode && toNode) {
-      ctx.beginPath();
-      ctx.moveTo(fromNode.x, fromNode.y);
-      ctx.lineTo(toNode.x, toNode.y);
-      ctx.stroke();
-
-      // Draw arrow
-      const angle = Math.atan2(
-        toNode.y - fromNode.y,
-        toNode.x - fromNode.x
-      );
-      const arrowSize = 10;
-      ctx.beginPath();
-      ctx.moveTo(toNode.x, toNode.y);
-      ctx.lineTo(
-        toNode.x - arrowSize * Math.cos(angle - Math.PI / 6),
-        toNode.y - arrowSize * Math.sin(angle - Math.PI / 6)
-      );
-      ctx.lineTo(
-        toNode.x - arrowSize * Math.cos(angle + Math.PI / 6),
-        toNode.y - arrowSize * Math.sin(angle + Math.PI / 6)
-      );
-      ctx.closePath();
-      ctx.fillStyle = "#7c3aed";
-      ctx.fill();
-
-      // Draw label if exists
-      if (conn.label) {
-        const midX = (fromNode.x + toNode.x) / 2;
-        const midY = (fromNode.y + toNode.y) / 2;
-        ctx.fillStyle = "#fff";
-        ctx.fillRect(midX - 20, midY - 10, 40, 20);
-        ctx.fillStyle = "#333";
-        ctx.font = "12px Inter";
-        ctx.textAlign = "center";
-        ctx.fillText(conn.label, midX, midY + 4);
-      }
-    }
-  });
-
-  // Draw nodes
-  nodes.forEach((node) => {
-    ctx.fillStyle = "#1a1a1a";
-    ctx.fillRect(node.x - 60, node.y - 30, 120, 60);
-    ctx.strokeStyle = "#7c3aed";
-    ctx.strokeRect(node.x - 60, node.y - 30, 120, 60);
-
-    ctx.fillStyle = "#fff";
-    ctx.font = "14px Inter";
-    ctx.textAlign = "center";
-    ctx.fillText(node.label, node.x, node.y - 5);
-    ctx.font = "10px Inter";
-    ctx.fillStyle = "#999";
-    ctx.fillText(node.type, node.x, node.y + 10);
-  });
 }
 
 // Load YouTube Playlist
