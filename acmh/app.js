@@ -427,6 +427,9 @@ async function loadScreenshots() {
 
     // Setup filters
     setupGalleryFilters();
+    
+    // Setup modal AFTER screenshots are loaded
+    setupImageModal();
   } catch (error) {
     console.error("Error loading screenshots:", error);
   }
@@ -482,8 +485,13 @@ function setupGalleryFilters() {
 // Load Budget Data
 async function loadBudget() {
   try {
-    // Load expenses
-    const expensesSnapshot = await db
+    // Load ALL expenses (not just 20) for accurate totals
+    const allExpensesSnapshot = await db
+      .collection("expenses")
+      .get();
+
+    // Load recent expenses for table display
+    const recentExpensesSnapshot = await db
       .collection("expenses")
       .orderBy("date", "desc")
       .limit(20)
@@ -496,14 +504,19 @@ async function loadBudget() {
 
     let totalSpent = 0;
 
-    if (expensesSnapshot.empty) {
+    // Calculate total from ALL expenses
+    allExpensesSnapshot.forEach((doc) => {
+      const expense = doc.data();
+      totalSpent += expense.amount;
+    });
+
+    // Populate table with recent expenses
+    if (recentExpensesSnapshot.empty) {
       expensesTable.innerHTML =
         '<tr><td colspan="4" class="empty-state">No expenses recorded yet.</td></tr>';
     } else {
-      expensesSnapshot.forEach((doc) => {
+      recentExpensesSnapshot.forEach((doc) => {
         const expense = doc.data();
-        totalSpent += expense.amount;
-
         const row = document.createElement("tr");
         row.innerHTML = `
           <td class="mono">${new Date(expense.date).toLocaleDateString("en-GB")}</td>
@@ -515,11 +528,10 @@ async function loadBudget() {
       });
     }
 
-    // Load planned expenses
+    // Load ALL planned expenses
     const plannedSnapshot = await db
       .collection("plannedExpenses")
       .where("isPurchased", "==", false)
-      .orderBy("createdAt", "desc")
       .get();
 
     const plannedTable = document
@@ -533,8 +545,19 @@ async function loadBudget() {
       plannedTable.innerHTML =
         '<tr><td colspan="4" class="empty-state">No planned expenses.</td></tr>';
     } else {
+      // Sort by priority for display
+      const plannedExpenses = [];
       plannedSnapshot.forEach((doc) => {
-        const planned = doc.data();
+        plannedExpenses.push(doc.data());
+      });
+
+      // Sort: High -> Medium -> Low
+      const priorityOrder = { High: 1, Medium: 2, Low: 3 };
+      plannedExpenses.sort(
+        (a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]
+      );
+
+      plannedExpenses.forEach((planned) => {
         totalPlanned += planned.estimatedCost;
 
         const row = document.createElement("tr");
@@ -557,6 +580,10 @@ async function loadBudget() {
       `£${(totalSpent + totalPlanned).toFixed(2)}`;
   } catch (error) {
     console.error("Error loading budget:", error);
+    // Show error state
+    document.getElementById("budgetSpent").textContent = "Error";
+    document.getElementById("budgetPlanned").textContent = "Error";
+    document.getElementById("budgetTotal").textContent = "Error";
   }
 }
 
@@ -838,6 +865,3 @@ function setupImageModal() {
     }
   });
 }
-
-// Call this in your initializeApp function
-setupImageModal();
