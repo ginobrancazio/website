@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Animal City Monster Hunters - Dev Journal</title>
+  
+  <meta name="description" content="Development journal for Animal City Monster Hunters - A game by Gino Brancazio" />
+  <meta property="og:title" content="Animal City Monster Hunters - Dev Journal" />
+  <meta property="og:description" content="Follow the development journey of Animal City Monster Hunters" />
+  <meta property="og:type" content="website" />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Navigation -->
+  <nav>
+    <a href="../index.html" class="nav-logo">← GINO BRANCAZIO</a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#metrics">Metrics</a></li>
+      <li><a href="#progress">Progress</a></li>
+      <li><a href="#budget">Budget</a></li>
+      <li><a href="#tasks">Tasks</a></li>
+      <li><a href="admin.html" class="admin-link">Admin</a></li>
+    </ul>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="badge-icon">🎮</span>
+        <span class="badge-text">IN DEVELOPMENT</span>
+      </div>
+      <h1 class="hero-title">
+        <span class="title-main">Animal City</span>
+        <span class="title-sub">Monster Hunters</span>
+      </h1>
+      <p class="hero-description" id="gameDescription">
+        Loading game description...
+      </p>
+      <div class="hero-actions">
+        <a href="#" class="btn btn-primary" id="wishlistBtn">
+          <span>🎯</span> Wishlist on Steam
+        </a>
+        <a href="#newsletter" class="btn btn-secondary">
+          <span>📧</span> Get Updates
+        </a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="game-frame">
+        <div class="frame-corner tl"></div>
+        <div class="frame-corner tr"></div>
+        <div class="frame-corner bl"></div>
+        <div class="frame-corner br"></div>
+        <img src="assets/game-cover.jpg" alt="Animal City Monster Hunters" class="game-cover" id="gameCover" />
+      </div>
+    </div>
+  </section>
+
+  <!-- Metrics Dashboard -->
+  <section id="metrics" class="section metrics-section">
+    <h2 class="section-header mono">// DEVELOPMENT METRICS</h2>
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-icon">⏱️</div>
+        <div class="metric-value" id="totalHours">0</div>
+        <div class="metric-label">Total Hours</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon">💰</div>
+        <div class="metric-value" id="totalSpent">£0</div>
+        <div class="metric-label">Total Invested</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon">📅</div>
+        <div class="metric-value" id="daysActive">0</div>
+        <div class="metric-label">Days Active</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon">📊</div>
+        <div class="metric-value" id="avgHours">0</div>
+        <div class="metric-label">Avg Hours/Week</div>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-container">
+        <h3 class="chart-title">Time Invested Over Time</h3>
+        <canvas id="timeChart"></canvas>
+      </div>
+      <div class="chart-container">
+        <h3 class="chart-title">Budget Spent Over Time</h3>
+        <canvas id="budgetChart"></canvas>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-container">
+        <h3 class="chart-title">Time by Category</h3>
+        <canvas id="timeCategoryChart"></canvas>
+      </div>
+      <div class="chart-container">
+        <h3 class="chart-title">Spending by Category</h3>
+        <canvas id="budgetCategoryChart"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- Project Description -->
+  <section id="about" class="section about-section">
+    <h2 class="section-header mono">// ABOUT THE PROJECT</h2>
+    <div class="about-content">
+      <div class="project-description" id="projectDescription">
+        Loading project details...
+      </div>
+      <div class="project-meta">
+        <div class="meta-item">
+          <span class="meta-label">Engine:</span>
+          <span class="meta-value">Godot</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Platform:</span>
+          <span class="meta-value">Steam (PC)</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Status:</span>
+          <span class="meta-value status-badge">In Development</span>
+        </div>
+      </div>
+      <a href="#" class="linkedin-link" id="linkedinLink">
+        <span>💼</span> Connect on LinkedIn
+      </a>
+    </div>
+  </section>
+
+  <!-- Development Updates -->
+  <section id="progress" class="section updates-section">
+    <h2 class="section-header mono">// DEVELOPMENT UPDATES</h2>
+    <div class="updates-grid" id="updatesGrid">
+      <div class="loading-state">Loading updates...</div>
+    </div>
+  </section>
+
+  <!-- Screenshots Gallery -->
+  <section class="section screenshots-section">
+    <h2 class="section-header mono">// PROGRESS GALLERY</h2>
+    <div class="gallery-filters">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="UI">UI</button>
+      <button class="filter-btn" data-filter="Gameplay">Gameplay</button>
+      <button class="filter-btn" data-filter="Character">Characters</button>
+      <button class="filter-btn" data-filter="Environment">Environments</button>
+      <button class="filter-btn" data-filter="before-after">Before/After</button>
+    </div>
+    <div class="screenshots-grid" id="screenshotsGrid">
+      <div class="loading-state">Loading screenshots...</div>
+    </div>
+  </section>
+
+  <!-- Budget Breakdown -->
+  <section id="budget" class="section budget-section">
+    <h2 class="section-header mono">// BUDGET TRACKER</h2>
+    
+    <div class="budget-summary">
+      <div class="summary-card">
+        <h3>Total Spent</h3>
+        <p class="amount spent" id="budgetSpent">£0.00</p>
+      </div>
+      <div class="summary-card">
+        <h3>Planned Expenses</h3>
+        <p class="amount planned" id="budgetPlanned">£0.00</p>
+      </div>
+      <div class="summary-card">
+        <h3>Total Budget</h3>
+        <p class="amount total" id="budgetTotal">£0.00</p>
+      </div>
+    </div>
+
+    <div class="budget-tables">
+      <div class="table-container">
+        <h3 class="table-title">Recent Expenses</h3>
+        <div class="table-wrapper">
+          <table class="data-table" id="expensesTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Category</th>
+                <th>Description</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="loading-row">
+                <td colspan="4">Loading expenses...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <h3 class="table-title">Planned Expenses</h3>
+        <div class="table-wrapper">
+          <table class="data-table" id="plannedTable">
+            <thead>
+              <tr>
+                <th>Priority</th>
+                <th>Item</th>
+                <th>Category</th>
+                <th>Est. Cost</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="loading-row">
+                <td colspan="4">Loading planned expenses...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tasks & Roadmap -->
+  <section id="tasks" class="section tasks-section">
+    <h2 class="section-header mono">// TASK BOARD</h2>
+    <div class="tasks-board">
+      <div class="task-column">
+        <h3 class="column-title todo">📋 To Do</h3>
+        <div class="task-list" id="todoTasks">
+          <div class="loading-state">Loading tasks...</div>
+        </div>
+      </div>
+      <div class="task-column">
+        <h3 class="column-title in-progress">🔨 In Progress</h3>
+        <div class="task-list" id="inProgressTasks">
+          <div class="loading-state">Loading tasks...</div>
+        </div>
+      </div>
+      <div class="task-column">
+        <h3 class="column-title done">✅ Done</h3>
+        <div class="task-list" id="doneTasks">
+          <div class="loading-state">Loading tasks...</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Game Flow Diagram -->
+  <section class="section flow-section">
+    <h2 class="section-header mono">// GAME FLOW DIAGRAM</h2>
+    <div class="flow-container">
+      <canvas id="flowCanvas"></canvas>
+      <div class="flow-controls">
+        <button class="flow-btn" id="zoomIn">🔍 +</button>
+        <button class="flow-btn" id="zoomOut">🔍 -</button>
+        <button class="flow-btn" id="resetView">⟲ Reset</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Video Content -->
+  <section class="section videos-section">
+    <h2 class="section-header mono">// DEVELOPMENT VIDEOS</h2>
+    <div class="video-container" id="youtubePlaylist">
+      <div class="loading-state">Loading playlist...</div>
+    </div>
+  </section>
+
+  <!-- Newsletter Signup -->
+  <section id="newsletter" class="section newsletter-section">
+    <h2 class="section-header mono">// STAY UPDATED</h2>
+    <div class="newsletter-content">
+      <h3>Get Development Updates</h3>
+      <p>Subscribe to receive monthly progress reports and exclusive behind-the-scenes content.</p>
+      <form class="newsletter-form" id="newsletterForm">
+        <input 
+          type="email" 
+          placeholder="your@email.com" 
+          required 
+          id="newsletterEmail"
+          class="newsletter-input"
+        />
+        <button type="submit" class="btn btn-primary">Subscribe</button>
+      </form>
+      <p class="newsletter-status" id="newsletterStatus"></p>
+    </div>
+  </section>
+
+  <!-- Export Tools -->
+  <section class="section export-section">
+    <h2 class="section-header mono">// DATA EXPORT</h2>
+    <div class="export-buttons">
+      <button class="btn btn-secondary" id="exportExpenses">
+        <span>📊</span> Export Expenses (CSV)
+      </button>
+      <button class="btn btn-secondary" id="exportTime">
+        <span>⏱️</span> Export Time Log (CSV)
+      </button>
+      <button class="btn btn-secondary" id="exportTasks">
+        <span>✅</span> Export Tasks (CSV)
+      </button>
+      <button class="btn btn-secondary" id="generateReport">
+        <span>📄</span> Generate Full Report
+      </button>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <p>&copy; 2026 Gino Brancazio. Built with Godot and passion.</p>
+      <div class="footer-links">
+        <a href="../index.html">Main Portfolio</a>
+        <a href="https://www.linkedin.com/in/ginobrancazio/" id="footerLinkedin">LinkedIn</a>
+        <a href="admin.html">Admin Login</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="firebase-config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
