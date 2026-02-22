@@ -379,7 +379,6 @@
         <button class="tab" data-tab="tasks">Add Task</button>
         <button class="tab" data-tab="screenshots">Upload Screenshot</button>
         <button class="tab" data-tab="updates">Dev Update</button>
-        <button class="tab" data-tab="flow">Game Flow</button>
       </div>
 
       <!-- Game Info Tab -->
@@ -918,109 +917,6 @@
               Post Update
             </button>
           </form>
-        </div>
-      </div>
-
-      <!-- Game Flow Tab -->
-      <div id="flow" class="tab-content">
-        <div class="form-card">
-          <h2 class="form-card-title">Game Flow Diagram Editor</h2>
-          
-          <div class="node-editor">
-            <h3 style="margin-bottom: 1rem;">Add Node</h3>
-            <form id="nodeForm">
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label">Node Label</label>
-                  <input 
-                    type="text" 
-                    id="nodeLabel" 
-                    class="form-input"
-                    required
-                    placeholder="Main Menu"
-                  />
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label">Type</label>
-                  <select id="nodeType" class="form-select" required>
-                    <option value="Menu">Menu</option>
-                    <option value="Level">Level</option>
-                    <option value="Cutscene">Cutscene</option>
-                    <option value="Boss">Boss Fight</option>
-                    <option value="Shop">Shop</option>
-                    <option value="Tutorial">Tutorial</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label">X Position</label>
-                  <input 
-                    type="number" 
-                    id="nodeX" 
-                    class="form-input"
-                    required
-                    placeholder="100"
-                  />
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label">Y Position</label>
-                  <input 
-                    type="number" 
-                    id="nodeY" 
-                    class="form-input"
-                    required
-                    placeholder="100"
-                  />
-                </div>
-              </div>
-
-              <button type="submit" class="btn btn-primary btn-small">
-                Add Node
-              </button>
-            </form>
-
-            <div class="node-list" id="nodeList">
-              <!-- Nodes will be listed here -->
-            </div>
-          </div>
-
-          <div class="node-editor" style="margin-top: 2rem;">
-            <h3 style="margin-bottom: 1rem;">Add Connection</h3>
-            <form id="connectionForm">
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label">From Node</label>
-                  <select id="connectionFrom" class="form-select" required>
-                    <option value="">Select node...</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label">To Node</label>
-                  <select id="connectionTo" class="form-select" required>
-                    <option value="">Select node...</option>
-                  </select>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label">Label (optional)</label>
-                  <input 
-                    type="text" 
-                    id="connectionLabel" 
-                    class="form-input"
-                    placeholder="Victory, Defeat, etc."
-                  />
-                </div>
-              </div>
-
-              <button type="submit" class="btn btn-primary btn-small">
-                Add Connection
-              </button>
-            </form>
-          </div>
         </div>
       </div>
     </div>
