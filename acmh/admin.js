@@ -24,7 +24,6 @@ function setupAuthObserver() {
       currentUser = user;
       showAdminDashboard();
       loadGameInfo();
-      loadNodes();
     } else {
       currentUser = null;
       showLoginScreen();
@@ -41,12 +40,6 @@ function showAdminDashboard() {
   document.getElementById("loginScreen").style.display = "none";
   document.getElementById("adminDashboard").style.display = "block";
   document.getElementById("userEmail").textContent = currentUser.email;
-
-  // Load initial data
-  loadAdminExpenses();
-  loadAdminIncome();
-  loadAdminTime();
-  loadAdminPlanned();
 }
 
 // Event Listeners Setup
@@ -91,22 +84,19 @@ function setupEventListeners() {
   document
     .getElementById("updateForm")
     .addEventListener("submit", handleUpdateSubmit);
-  document
-    .getElementById("nodeForm")
-    .addEventListener("submit", handleNodeSubmit);
-  document
-    .getElementById("connectionForm")
-    .addEventListener("submit", handleConnectionSubmit);
 
-  // File upload preview
-  document
-    .getElementById("screenshotFile")
-    .addEventListener("change", handleFilePreview);
-  document
-    .getElementById("screenshotUpload")
-    .addEventListener("click", () =>
-      document.getElementById("screenshotFile").click()
-    );
+  // File upload preview - Fix the event listeners
+  const fileInput = document.getElementById("screenshotFile");
+  const uploadDiv = document.getElementById("screenshotUpload");
+  
+  fileInput.addEventListener("change", handleFilePreview);
+  
+  uploadDiv.addEventListener("click", (e) => {
+    // Prevent the click if it's on the input itself
+    if (e.target !== fileInput) {
+      fileInput.click();
+    }
+  });
 }
 
 // Authentication Handlers
@@ -116,10 +106,16 @@ async function handleLogin(e) {
   const password = document.getElementById("loginPassword").value;
   const errorDiv = document.getElementById("loginError");
 
+  console.log("Attempting login with:", email);
+
   try {
-    await firebase.auth().signInWithEmailAndPassword(email, password);
+    const result = await firebase
+      .auth()
+      .signInWithEmailAndPassword(email, password);
+    console.log("Login successful:", result.user);
     errorDiv.style.display = "none";
   } catch (error) {
+    console.error("Login error:", error);
     errorDiv.textContent = error.message;
     errorDiv.style.display = "block";
   }
@@ -258,7 +254,6 @@ async function handleExpenseSubmit(e) {
       .toISOString()
       .split("T")[0];
 
-    // Reload the expenses list
     loadAdminExpenses();
   } catch (error) {
     showMessage("Error adding expense: " + error.message, "error");
@@ -286,7 +281,6 @@ async function handleIncomeSubmit(e) {
       .toISOString()
       .split("T")[0];
 
-    // Reload the income list
     loadAdminIncome();
   } catch (error) {
     showMessage("Error adding income: " + error.message, "error");
@@ -314,7 +308,6 @@ async function handleTimeSubmit(e) {
       .toISOString()
       .split("T")[0];
 
-    // Reload the time entries list
     loadAdminTime();
   } catch (error) {
     showMessage("Error logging time: " + error.message, "error");
@@ -341,7 +334,6 @@ async function handlePlannedSubmit(e) {
     showMessage("Planned expense added successfully!");
     e.target.reset();
 
-    // Reload the planned expenses list
     loadAdminPlanned();
   } catch (error) {
     showMessage("Error adding planned expense: " + error.message, "error");
@@ -375,12 +367,34 @@ async function handleTaskSubmit(e) {
 // Screenshot Handler
 function handleFilePreview(e) {
   const file = e.target.files[0];
+  console.log("File selected:", file);
+  
   if (file) {
+    // Validate file is an image
+    if (!file.type.startsWith('image/')) {
+      showMessage("Please select a valid image file", "error");
+      e.target.value = '';
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      showMessage("File size must be less than 5MB", "error");
+      e.target.value = '';
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (e) => {
       const preview = document.getElementById("screenshotPreview");
       preview.src = e.target.result;
       preview.style.display = "block";
+      
+      // Update the upload text
+      const uploadText = document.querySelector(".upload-text");
+      if (uploadText) {
+        uploadText.textContent = file.name;
+      }
     };
     reader.readAsDataURL(file);
   }
@@ -396,20 +410,34 @@ async function handleScreenshotSubmit(e) {
   }
 
   const uploadBtn = document.getElementById("uploadBtnText");
+  const originalText = uploadBtn.textContent;
   uploadBtn.textContent = "Uploading...";
 
   try {
+    console.log("Starting upload for file:", file.name);
+
+    // Create a unique filename
+    const timestamp = Date.now();
+    const filename = `${timestamp}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+    
     // Upload to Firebase Storage
     const storageRef = firebase
       .storage()
       .ref()
-      .child(`screenshots/${Date.now()}_${file.name}`);
+      .child(`screenshots/${filename}`);
+    
+    console.log("Uploading to:", `screenshots/${filename}`);
+    
     const snapshot = await storageRef.put(file);
+    console.log("Upload complete, getting download URL...");
+    
     const imageUrl = await snapshot.ref.getDownloadURL();
+    console.log("Download URL:", imageUrl);
 
     // Save to Firestore
     const screenshot = {
       imageUrl,
+      filename,
       title: document.getElementById("screenshotTitle").value,
       description: document.getElementById("screenshotDescription").value,
       category: document.getElementById("screenshotCategory").value,
@@ -419,17 +447,27 @@ async function handleScreenshotSubmit(e) {
     };
 
     await firebase.firestore().collection("screenshots").add(screenshot);
+    console.log("Screenshot saved to Firestore");
 
     showMessage("Screenshot uploaded successfully!");
+    
+    // Reset form
     e.target.reset();
     document.getElementById("screenshotPreview").style.display = "none";
     document.getElementById("screenshotDate").value = new Date()
       .toISOString()
       .split("T")[0];
+    
+    // Reset upload text
+    const uploadText = document.querySelector(".upload-text");
+    if (uploadText) {
+      uploadText.textContent = "Click to upload image";
+    }
   } catch (error) {
+    console.error("Error uploading screenshot:", error);
     showMessage("Error uploading screenshot: " + error.message, "error");
   } finally {
-    uploadBtn.textContent = "Upload Screenshot";
+    uploadBtn.textContent = originalText;
   }
 }
 
@@ -463,8 +501,6 @@ async function handleUpdateSubmit(e) {
     showMessage("Error posting update: " + error.message, "error");
   }
 }
-
-
 
 // Load previous entries for admin view
 async function loadAdminExpenses() {
@@ -648,5 +684,4 @@ async function deletePlannedExpense(id) {
 }
 
 // Make functions available globally
-window.deleteNode = deleteNode;
 window.deletePlannedExpense = deletePlannedExpense;
