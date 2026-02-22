@@ -1,4 +1,4 @@
-fl// Admin Panel JavaScript
+// Admin Panel JavaScript
 let currentUser = null;
 let unsubscribeAuth = null;
 
