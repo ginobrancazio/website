@@ -41,6 +41,12 @@ function showAdminDashboard() {
   document.getElementById("loginScreen").style.display = "none";
   document.getElementById("adminDashboard").style.display = "block";
   document.getElementById("userEmail").textContent = currentUser.email;
+
+  // Load initial data
+  loadAdminExpenses();
+  loadAdminIncome();
+  loadAdminTime();
+  loadAdminPlanned();
 }
 
 // Event Listeners Setup
@@ -59,7 +65,6 @@ function setupEventListeners() {
   document.querySelectorAll(".tab").forEach((tab) => {
     tab.addEventListener("click", () => switchTab(tab.dataset.tab));
   });
-
 
   // Form submissions
   document
@@ -147,12 +152,29 @@ function switchTab(tabName) {
 
   // Hide any messages
   document.getElementById("formMessage").style.display = "none";
+
+  // Load relevant data when switching tabs
+  switch (tabName) {
+    case "expenses":
+      loadAdminExpenses();
+      break;
+    case "income":
+      loadAdminIncome();
+      break;
+    case "time":
+      loadAdminTime();
+      break;
+    case "planned":
+      loadAdminPlanned();
+      break;
+  }
 }
 
 // Message Display
 function showMessage(message, type = "success") {
   const messageDiv = document.getElementById("formMessage");
-  messageDiv.className = type === "success" ? "success-message" : "error-message";
+  messageDiv.className =
+    type === "success" ? "success-message" : "error-message";
   messageDiv.textContent = message;
   messageDiv.style.display = "block";
 
@@ -235,6 +257,9 @@ async function handleExpenseSubmit(e) {
     document.getElementById("expenseDate").value = new Date()
       .toISOString()
       .split("T")[0];
+
+    // Reload the expenses list
+    loadAdminExpenses();
   } catch (error) {
     showMessage("Error adding expense: " + error.message, "error");
   }
@@ -260,6 +285,9 @@ async function handleIncomeSubmit(e) {
     document.getElementById("incomeDate").value = new Date()
       .toISOString()
       .split("T")[0];
+
+    // Reload the income list
+    loadAdminIncome();
   } catch (error) {
     showMessage("Error adding income: " + error.message, "error");
   }
@@ -285,6 +313,9 @@ async function handleTimeSubmit(e) {
     document.getElementById("timeDate").value = new Date()
       .toISOString()
       .split("T")[0];
+
+    // Reload the time entries list
+    loadAdminTime();
   } catch (error) {
     showMessage("Error logging time: " + error.message, "error");
   }
@@ -298,9 +329,7 @@ async function handlePlannedSubmit(e) {
     const planned = {
       item: document.getElementById("plannedItem").value,
       category: document.getElementById("plannedCategory").value,
-      estimatedCost: parseFloat(
-        document.getElementById("plannedCost").value
-      ),
+      estimatedCost: parseFloat(document.getElementById("plannedCost").value),
       priority: document.getElementById("plannedPriority").value,
       notes: document.getElementById("plannedNotes").value,
       isPurchased: false,
@@ -311,6 +340,9 @@ async function handlePlannedSubmit(e) {
 
     showMessage("Planned expense added successfully!");
     e.target.reset();
+
+    // Reload the planned expenses list
+    loadAdminPlanned();
   } catch (error) {
     showMessage("Error adding planned expense: " + error.message, "error");
   }
@@ -382,8 +414,7 @@ async function handleScreenshotSubmit(e) {
       description: document.getElementById("screenshotDescription").value,
       category: document.getElementById("screenshotCategory").value,
       date: document.getElementById("screenshotDate").value,
-      isBeforeAfter: document.getElementById("screenshotBeforeAfter")
-        .checked,
+      isBeforeAfter: document.getElementById("screenshotBeforeAfter").checked,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     };
 
@@ -547,10 +578,7 @@ async function handleConnectionSubmit(e) {
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     };
 
-    await firebase
-      .firestore()
-      .collection("flowConnections")
-      .add(connection);
+    await firebase.firestore().collection("flowConnections").add(connection);
 
     showMessage("Connection added successfully!");
     e.target.reset();
@@ -559,5 +587,187 @@ async function handleConnectionSubmit(e) {
   }
 }
 
-// Make deleteNode available globally
+// Load previous entries for admin view
+async function loadAdminExpenses() {
+  try {
+    const snapshot = await firebase
+      .firestore()
+      .collection("expenses")
+      .orderBy("date", "desc")
+      .limit(20)
+      .get();
+
+    const tbody = document.getElementById("adminExpensesList");
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+
+    if (snapshot.empty) {
+      tbody.innerHTML =
+        '<tr><td colspan="4" class="empty-state">No expenses yet.</td></tr>';
+      return;
+    }
+
+    snapshot.forEach((doc) => {
+      const expense = doc.data();
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td class="mono">${new Date(expense.date).toLocaleDateString(
+          "en-GB"
+        )}</td>
+        <td><span class="category-badge">${expense.category}</span></td>
+        <td>${expense.description}</td>
+        <td class="mono">£${expense.amount.toFixed(2)}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  } catch (error) {
+    console.error("Error loading admin expenses:", error);
+  }
+}
+
+async function loadAdminIncome() {
+  try {
+    const snapshot = await firebase
+      .firestore()
+      .collection("income")
+      .orderBy("date", "desc")
+      .limit(20)
+      .get();
+
+    const tbody = document.getElementById("adminIncomeList");
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+
+    if (snapshot.empty) {
+      tbody.innerHTML =
+        '<tr><td colspan="4" class="empty-state">No income yet.</td></tr>';
+      return;
+    }
+
+    snapshot.forEach((doc) => {
+      const income = doc.data();
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td class="mono">${new Date(income.date).toLocaleDateString(
+          "en-GB"
+        )}</td>
+        <td><span class="category-badge">${income.source}</span></td>
+        <td>${income.description}</td>
+        <td class="mono">£${income.amount.toFixed(2)}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  } catch (error) {
+    console.error("Error loading admin income:", error);
+  }
+}
+
+async function loadAdminTime() {
+  try {
+    const snapshot = await firebase
+      .firestore()
+      .collection("timeEntries")
+      .orderBy("date", "desc")
+      .limit(20)
+      .get();
+
+    const tbody = document.getElementById("adminTimeList");
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+
+    if (snapshot.empty) {
+      tbody.innerHTML =
+        '<tr><td colspan="4" class="empty-state">No time entries yet.</td></tr>';
+      return;
+    }
+
+    snapshot.forEach((doc) => {
+      const entry = doc.data();
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td class="mono">${new Date(entry.date).toLocaleDateString(
+          "en-GB"
+        )}</td>
+        <td><span class="category-badge">${entry.category}</span></td>
+        <td class="mono">${entry.hours}h</td>
+        <td>${entry.description || "-"}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  } catch (error) {
+    console.error("Error loading admin time:", error);
+  }
+}
+
+async function loadAdminPlanned() {
+  try {
+    const snapshot = await firebase
+      .firestore()
+      .collection("plannedExpenses")
+      .where("isPurchased", "==", false)
+      .get();
+
+    const tbody = document.getElementById("adminPlannedList");
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+
+    if (snapshot.empty) {
+      tbody.innerHTML =
+        '<tr><td colspan="5" class="empty-state">No planned expenses.</td></tr>';
+      return;
+    }
+
+    const items = [];
+    snapshot.forEach((doc) => {
+      items.push({ id: doc.id, ...doc.data() });
+    });
+
+    const priorityOrder = { High: 1, Medium: 2, Low: 3 };
+    items.sort(
+      (a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]
+    );
+
+    items.forEach((item) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td><span class="priority-badge ${item.priority.toLowerCase()}">${
+        item.priority
+      }</span></td>
+        <td>${item.item}</td>
+        <td><span class="category-badge">${item.category}</span></td>
+        <td class="mono">£${item.estimatedCost.toFixed(2)}</td>
+        <td>
+          <button class="btn btn-danger btn-small" onclick="deletePlannedExpense('${
+            item.id
+          }')">
+            Delete
+          </button>
+        </td>
+      `;
+      tbody.appendChild(row);
+    });
+  } catch (error) {
+    console.error("Error loading admin planned:", error);
+  }
+}
+
+async function deletePlannedExpense(id) {
+  if (!confirm("Are you sure you want to delete this planned expense?"))
+    return;
+
+  try {
+    await firebase.firestore().collection("plannedExpenses").doc(id).delete();
+    showMessage("Planned expense deleted!");
+    loadAdminPlanned();
+  } catch (error) {
+    showMessage("Error deleting: " + error.message, "error");
+  }
+}
+
+// Make functions available globally
 window.deleteNode = deleteNode;
+window.deletePlannedExpense = deletePlannedExpense;
