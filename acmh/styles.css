@@ -1172,3 +1172,44 @@ footer {
 .previous-entries .data-table {
   margin: 0;
 }
+
+.vibe-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.vibe-badge.green {
+  background: rgba(46, 204, 113, 0.2);
+  color: var(--accent-green);
+}
+
+.vibe-badge.amber {
+  background: rgba(243, 156, 18, 0.2);
+  color: var(--accent-yellow);
+}
+
+.vibe-badge.red {
+  background: rgba(232, 69, 69, 0.2);
+  color: var(--accent-coral);
+}
+
+.btn-contribute {
+  background: var(--accent-green);
+  color: white;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-contribute:hover {
+  background: #27ae60;
+  transform: translateY(-1px);
+}
