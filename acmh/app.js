@@ -92,6 +92,14 @@ async function loadMetrics() {
     const expenses = [];
     expenseSnapshot.forEach((doc) => expenses.push(doc.data()));
 
+    // Load vibe checks
+    const vibeSnapshot = await db
+      .collection("vibeChecks")
+      .orderBy("date")
+      .get();
+    const vibeChecks = [];
+    vibeSnapshot.forEach((doc) => vibeChecks.push(doc.data()));
+
     // Calculate metrics
     const totalHours = timeEntries.reduce((sum, e) => sum + e.hours, 0);
     const totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
@@ -343,6 +351,87 @@ function createBudgetCategoryChart(expenses) {
   });
 }
 
+createVibeChart(vibeChecks);
+  } catch (error) {
+    console.error("Error loading metrics:", error);
+  }
+}
+
+// Create Vibe Check Chart
+function createVibeChart(vibeChecks) {
+  const ctx = document.getElementById("vibeChart");
+  if (!ctx) return;
+
+  const dates = vibeChecks.map((v) => v.date);
+  const values = vibeChecks.map((v) => {
+    if (v.status === "Green") return 3;
+    if (v.status === "Amber") return 2;
+    return 1;
+  });
+
+  const colors = vibeChecks.map((v) => {
+    if (v.status === "Green") return "rgba(46, 204, 113, 0.8)";
+    if (v.status === "Amber") return "rgba(243, 156, 18, 0.8)";
+    return "rgba(232, 69, 69, 0.8)";
+  });
+
+  if (charts.vibeChart) charts.vibeChart.destroy();
+
+  charts.vibeChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: dates,
+      datasets: [
+        {
+          label: "Vibe Check",
+          data: values,
+          borderColor: "rgb(124, 58, 237)",
+          backgroundColor: colors,
+          tension: 0.4,
+          pointRadius: 8,
+          pointHoverRadius: 10,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          display: false,
+        },
+        tooltip: {
+          callbacks: {
+            label: function (context) {
+              const index = context.dataIndex;
+              const vibe = vibeChecks[index];
+              return [
+                `Status: ${vibe.status}`,
+                `Notes: ${vibe.notes}`,
+              ];
+            },
+          },
+        },
+      },
+      scales: {
+        y: {
+          min: 0,
+          max: 4,
+          ticks: {
+            stepSize: 1,
+            callback: function (value) {
+              if (value === 3) return "🟢 Green";
+              if (value === 2) return "🟡 Amber";
+              if (value === 1) return "🔴 Red";
+              return "";
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
 // Load Development Updates
 async function loadUpdates() {
   try {
@@ -566,7 +655,7 @@ async function loadBudget() {
       });
     }
 
-    // Load planned expenses
+     // Load planned expenses (updated)
     const plannedSnapshot = await db
       .collection("plannedExpenses")
       .where("isPurchased", "==", false)
@@ -577,31 +666,22 @@ async function loadBudget() {
       .querySelector("tbody");
     plannedTable.innerHTML = "";
 
-    let totalPlanned = 0;
-
     if (plannedSnapshot.empty) {
       plannedTable.innerHTML =
         '<tr><td colspan="4" class="empty-state">No planned expenses.</td></tr>';
     } else {
-      const plannedExpenses = [];
       plannedSnapshot.forEach((doc) => {
-        plannedExpenses.push(doc.data());
-      });
-
-      const priorityOrder = { High: 1, Medium: 2, Low: 3 };
-      plannedExpenses.sort(
-        (a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]
-      );
-
-      plannedExpenses.forEach((planned) => {
-        totalPlanned += planned.estimatedCost;
-
+        const planned = doc.data();
         const row = document.createElement("tr");
         row.innerHTML = `
-          <td><span class="priority-badge ${planned.priority.toLowerCase()}">${planned.priority}</span></td>
           <td>${planned.item}</td>
           <td><span class="category-badge">${planned.category}</span></td>
           <td class="mono">£${planned.estimatedCost.toFixed(2)}</td>
+          <td>
+            <button class="btn-contribute" onclick="contributeToItem('${doc.id}')">
+              💝 Contribute
+            </button>
+          </td>
         `;
         plannedTable.appendChild(row);
       });
@@ -631,6 +711,15 @@ async function loadBudget() {
     document.getElementById("budgetSpent").textContent = "Error";
     document.getElementById("budgetProfitLoss").textContent = "Error";
   }
+}
+
+// Add contribute placeholder function
+window.contributeToItem = function(itemId) {
+  showMessage("Contribution feature coming soon! 🎁", "info");
+};
+
+function showMessage(message, type = "success") {
+  alert(message); // Simple implementation for now
 }
 
 // Load Tasks
