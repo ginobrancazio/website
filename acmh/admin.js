@@ -49,11 +49,15 @@ function setupEventListeners() {
     .getElementById("loginForm")
     .addEventListener("submit", handleLogin);
 
+document
+  .getElementById("vibeForm")
+  .addEventListener("submit", handleVibeSubmit);
+  
   // Logout button
   document
     .getElementById("logoutBtn")
     .addEventListener("click", handleLogout);
-
+  
   // Tab navigation
   document.querySelectorAll(".tab").forEach((tab) => {
     tab.addEventListener("click", () => switchTab(tab.dataset.tab));
@@ -163,6 +167,9 @@ function switchTab(tabName) {
     case "planned":
       loadAdminPlanned();
       break;
+    case "vibes":
+      loadAdminVibes();
+      break;
   }
 }
 
@@ -260,6 +267,32 @@ async function handleExpenseSubmit(e) {
   }
 }
 
+// vibe handler
+async function handleVibeSubmit(e) {
+  e.preventDefault();
+
+  try {
+    const vibeCheck = {
+      date: document.getElementById("vibeDate").value,
+      status: document.getElementById("vibeStatus").value,
+      notes: document.getElementById("vibeNotes").value,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+
+    await firebase.firestore().collection("vibeChecks").add(vibeCheck);
+
+    showMessage("Vibe check logged successfully!");
+    e.target.reset();
+    document.getElementById("vibeDate").value = new Date()
+      .toISOString()
+      .split("T")[0];
+
+    loadAdminVibes();
+  } catch (error) {
+    showMessage("Error logging vibe check: " + error.message, "error");
+  }
+}
+
 // Income Handler
 async function handleIncomeSubmit(e) {
   e.preventDefault();
@@ -314,7 +347,7 @@ async function handleTimeSubmit(e) {
   }
 }
 
-// Planned Expense Handler
+// Planned expense Handler
 async function handlePlannedSubmit(e) {
   e.preventDefault();
 
@@ -322,8 +355,9 @@ async function handlePlannedSubmit(e) {
     const planned = {
       item: document.getElementById("plannedItem").value,
       category: document.getElementById("plannedCategory").value,
-      estimatedCost: parseFloat(document.getElementById("plannedCost").value),
-      priority: document.getElementById("plannedPriority").value,
+      estimatedCost: parseFloat(
+        document.getElementById("plannedCost").value
+      ),
       notes: document.getElementById("plannedNotes").value,
       isPurchased: false,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -336,7 +370,10 @@ async function handlePlannedSubmit(e) {
 
     loadAdminPlanned();
   } catch (error) {
-    showMessage("Error adding planned expense: " + error.message, "error");
+    showMessage(
+      "Error adding planned expense: " + error.message,
+      "error"
+    );
   }
 }
 
@@ -617,6 +654,50 @@ async function loadAdminTime() {
   }
 }
 
+async function loadAdminVibes() {
+  try {
+    const snapshot = await firebase
+      .firestore()
+      .collection("vibeChecks")
+      .orderBy("date", "desc")
+      .limit(20)
+      .get();
+
+    const tbody = document.getElementById("adminVibeList");
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+
+    if (snapshot.empty) {
+      tbody.innerHTML =
+        '<tr><td colspan="3" class="empty-state">No vibe checks yet.</td></tr>';
+      return;
+    }
+
+    snapshot.forEach((doc) => {
+      const vibe = doc.data();
+      const statusClass = vibe.status.toLowerCase();
+      const emoji =
+        vibe.status === "Green"
+          ? "🟢"
+          : vibe.status === "Amber"
+            ? "🟡"
+            : "🔴";
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td class="mono">${new Date(vibe.date).toLocaleDateString("en-GB")}</td>
+        <td><span class="vibe-badge ${statusClass}">${emoji} ${vibe.status}</span></td>
+        <td>${vibe.notes}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  } catch (error) {
+    console.error("Error loading admin vibes:", error);
+  }
+}
+
+
 async function loadAdminPlanned() {
   try {
     const snapshot = await firebase
@@ -632,33 +713,19 @@ async function loadAdminPlanned() {
 
     if (snapshot.empty) {
       tbody.innerHTML =
-        '<tr><td colspan="5" class="empty-state">No planned expenses.</td></tr>';
+        '<tr><td colspan="4" class="empty-state">No planned expenses.</td></tr>';
       return;
     }
 
-    const items = [];
     snapshot.forEach((doc) => {
-      items.push({ id: doc.id, ...doc.data() });
-    });
-
-    const priorityOrder = { High: 1, Medium: 2, Low: 3 };
-    items.sort(
-      (a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]
-    );
-
-    items.forEach((item) => {
+      const item = doc.data();
       const row = document.createElement("tr");
       row.innerHTML = `
-        <td><span class="priority-badge ${item.priority.toLowerCase()}">${
-        item.priority
-      }</span></td>
         <td>${item.item}</td>
         <td><span class="category-badge">${item.category}</span></td>
         <td class="mono">£${item.estimatedCost.toFixed(2)}</td>
         <td>
-          <button class="btn btn-danger btn-small" onclick="deletePlannedExpense('${
-            item.id
-          }')">
+          <button class="btn btn-danger btn-small" onclick="deletePlannedExpense('${doc.id}')">
             Delete
           </button>
         </td>
