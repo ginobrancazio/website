@@ -407,6 +407,7 @@
       <div class="tabs">
         <button class="tab active" data-tab="game-info">Game Info</button>
         <button class="tab" data-tab="expenses">Add Expense</button>
+        <button class="tab" data-tab="vibes">Vibe Check</button>
         <button class="tab" data-tab="income">Add Income</button>
         <button class="tab" data-tab="time">Log Time</button>
         <button class="tab" data-tab="planned">Planned Expenses</button>
@@ -711,6 +712,66 @@
         </div>
       </div>
 
+            <!-- Log Vibes Tab -->
+<div id="vibes" class="tab-content">
+  <div class="form-card">
+    <h2 class="form-card-title">Log Vibe Check</h2>
+    <form id="vibeForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <input 
+            type="date" 
+            id="vibeDate" 
+            class="form-input"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Vibe Status</label>
+          <select id="vibeStatus" class="form-select" required>
+            <option value="">Select status...</option>
+            <option value="Green">🟢 Green - Feeling Great!</option>
+            <option value="Amber">🟡 Amber - Okay, Some Concerns</option>
+            <option value="Red">🔴 Red - Struggling</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <textarea 
+          id="vibeNotes" 
+          class="form-textarea"
+          placeholder="How are you feeling about the project?"
+          required
+        ></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary">
+        Log Vibe Check
+      </button>
+    </form>
+  </div>
+
+  <div class="form-card">
+    <h3 class="form-card-title">Recent Vibe Checks</h3>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody id="adminVibeList"></tbody>
+    </table>
+  </div>
+</div>
+
+
+      
       <!-- Planned Expenses Tab -->
       <div id="planned" class="tab-content">
         <div class="form-card">
@@ -756,15 +817,6 @@
                 />
               </div>
 
-              <div class="form-group">
-                <label class="form-label">Priority</label>
-                <select id="plannedPriority" class="form-select" required>
-                  <option value="High">High</option>
-                  <option value="Medium">Medium</option>
-                  <option value="Low">Low</option>
-                </select>
-              </div>
-            </div>
 
             <div class="form-group">
               <label class="form-label">Notes</label>
@@ -786,7 +838,6 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th>Priority</th>
                 <th>Item</th>
                 <th>Category</th>
                 <th>Est. Cost</th>
