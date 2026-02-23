@@ -149,14 +149,16 @@ function createTimeChart(timeEntries) {
   });
 
   const dates = Object.keys(dateMap).sort();
-  const hours = dates.map((date) => dateMap[date]);
-
-  // Calculate cumulative
-  const cumulative = [];
+  
+  // Calculate cumulative with actual date objects
+  const dataPoints = [];
   let sum = 0;
-  hours.forEach((h) => {
-    sum += h;
-    cumulative.push(sum);
+  dates.forEach((date) => {
+    sum += dateMap[date];
+    dataPoints.push({
+      x: new Date(date),
+      y: sum
+    });
   });
 
   if (charts.timeChart) charts.timeChart.destroy();
@@ -164,11 +166,10 @@ function createTimeChart(timeEntries) {
   charts.timeChart = new Chart(ctx, {
     type: "line",
     data: {
-      labels: dates,
       datasets: [
         {
           label: "Cumulative Hours",
-          data: cumulative,
+          data: dataPoints,
           borderColor: "rgb(124, 58, 237)",
           backgroundColor: "rgba(124, 58, 237, 0.1)",
           tension: 0.4,
@@ -185,8 +186,25 @@ function createTimeChart(timeEntries) {
         },
       },
       scales: {
+        x: {
+          type: 'time',
+          time: {
+            unit: 'day',
+            displayFormats: {
+              day: 'dd/MM/yyyy'
+            }
+          },
+          title: {
+            display: true,
+            text: 'Date'
+          }
+        },
         y: {
           beginAtZero: true,
+          title: {
+            display: true,
+            text: 'Hours'
+          }
         },
       },
     },
@@ -208,14 +226,16 @@ function createBudgetChart(expenses) {
   });
 
   const dates = Object.keys(dateMap).sort();
-  const amounts = dates.map((date) => dateMap[date]);
-
-  // Calculate cumulative
-  const cumulative = [];
+  
+  // Calculate cumulative with actual date objects
+  const dataPoints = [];
   let sum = 0;
-  amounts.forEach((amount) => {
-    sum += amount;
-    cumulative.push(sum);
+  dates.forEach((date) => {
+    sum += dateMap[date];
+    dataPoints.push({
+      x: new Date(date),
+      y: sum
+    });
   });
 
   if (charts.budgetChart) charts.budgetChart.destroy();
@@ -223,11 +243,10 @@ function createBudgetChart(expenses) {
   charts.budgetChart = new Chart(ctx, {
     type: "line",
     data: {
-      labels: dates,
       datasets: [
         {
           label: "Cumulative Spending (£)",
-          data: cumulative,
+          data: dataPoints,
           borderColor: "rgb(245, 101, 101)",
           backgroundColor: "rgba(245, 101, 101, 0.1)",
           tension: 0.4,
@@ -244,8 +263,25 @@ function createBudgetChart(expenses) {
         },
       },
       scales: {
+        x: {
+          type: 'time',
+          time: {
+            unit: 'day',
+            displayFormats: {
+              day: 'dd/MM/yyyy'
+            }
+          },
+          title: {
+            display: true,
+            text: 'Date'
+          }
+        },
         y: {
           beginAtZero: true,
+          title: {
+            display: true,
+            text: 'Amount (£)'
+          }
         },
       },
     },
@@ -358,11 +394,17 @@ function createVibeChart(vibeChecks) {
   const ctx = document.getElementById("vibeChart");
   if (!ctx) return;
 
-  const dates = vibeChecks.map((v) => v.date);
-  const values = vibeChecks.map((v) => {
-    if (v.status === "Green") return 3;
-    if (v.status === "Amber") return 2;
-    return 1;
+  const dataPoints = vibeChecks.map((v) => {
+    let value = 1;
+    if (v.status === "Green") value = 3;
+    else if (v.status === "Amber") value = 2;
+    
+    return {
+      x: new Date(v.date),
+      y: value,
+      status: v.status,
+      notes: v.notes
+    };
   });
 
   const colors = vibeChecks.map((v) => {
@@ -376,11 +418,10 @@ function createVibeChart(vibeChecks) {
   charts.vibeChart = new Chart(ctx, {
     type: "line",
     data: {
-      labels: dates,
       datasets: [
         {
           label: "Vibe Check",
-          data: values,
+          data: dataPoints,
           borderColor: "rgb(124, 58, 237)",
           backgroundColor: colors,
           tension: 0.4,
@@ -399,17 +440,29 @@ function createVibeChart(vibeChecks) {
         tooltip: {
           callbacks: {
             label: function (context) {
-              const index = context.dataIndex;
-              const vibe = vibeChecks[index];
+              const point = context.raw;
               return [
-                `Status: ${vibe.status}`,
-                `Notes: ${vibe.notes}`,
+                `Status: ${point.status}`,
+                `Notes: ${point.notes}`,
               ];
             },
           },
         },
       },
       scales: {
+        x: {
+          type: 'time',
+          time: {
+            unit: 'day',
+            displayFormats: {
+              day: 'dd/MM/yyyy'
+            }
+          },
+          title: {
+            display: true,
+            text: 'Date'
+          }
+        },
         y: {
           min: 0,
           max: 4,
@@ -422,6 +475,10 @@ function createVibeChart(vibeChecks) {
               return "";
             },
           },
+          title: {
+            display: true,
+            text: 'Status'
+          }
         },
       },
     },
