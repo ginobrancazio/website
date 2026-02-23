@@ -89,18 +89,29 @@ document
     .getElementById("updateForm")
     .addEventListener("submit", handleUpdateSubmit);
 
-  // File upload preview - Fix the event listeners
-  const fileInput = document.getElementById("screenshotFile");
-  const uploadDiv = document.getElementById("screenshotUpload");
-  
-  fileInput.addEventListener("change", handleFilePreview);
-  
-  uploadDiv.addEventListener("click", (e) => {
-    // Prevent the click if it's on the input itself
-    if (e.target !== fileInput) {
-      fileInput.click();
-    }
-  });
+// File upload preview
+const fileInput = document.getElementById("screenshotFile");
+const uploadDiv = document.getElementById("screenshotUpload");
+
+fileInput.addEventListener("change", handleFilePreview);
+
+uploadDiv.addEventListener("click", (e) => {
+  // Only trigger if clicking the div itself, not the input
+  if (e.target === uploadDiv || e.target.closest('.upload-icon, .upload-text')) {
+    fileInput.click();
+  }
+});
+
+// Prevent default drag behavior
+uploadDiv.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  uploadDiv.style.borderColor = "var(--gradient-start)";
+});
+
+uploadDiv.addEventListener("dragleave", (e) => {
+  e.preventDefault();
+  uploadDiv.style.borderColor = "";
+});
 }
 
 // Authentication Handlers
@@ -148,10 +159,20 @@ function switchTab(tabName) {
   document.querySelectorAll(".tab-content").forEach((content) => {
     content.classList.remove("active");
   });
-  document.getElementById(tabName).classList.add("active");
+  
+  const targetTab = document.getElementById(tabName);
+  if (targetTab) {
+    targetTab.classList.add("active");
+  } else {
+    console.error(`Tab content not found: ${tabName}`);
+    return;
+  }
 
   // Hide any messages
-  document.getElementById("formMessage").style.display = "none";
+  const messageDiv = document.getElementById("formMessage");
+  if (messageDiv) {
+    messageDiv.style.display = "none";
+  }
 
   // Load relevant data when switching tabs
   switch (tabName) {
