@@ -128,6 +128,7 @@ async function loadMetrics() {
     createBudgetChart(expenses);
     createTimeCategoryChart(timeEntries);
     createBudgetCategoryChart(expenses);
+    createVibeChart(vibeChecks);
   } catch (error) {
     console.error("Error loading metrics:", error);
   }
@@ -351,11 +352,6 @@ function createBudgetCategoryChart(expenses) {
   });
 }
 
-createVibeChart(vibeChecks);
-  } catch (error) {
-    console.error("Error loading metrics:", error);
-  }
-}
 
 // Create Vibe Check Chart
 function createVibeChart(vibeChecks) {
