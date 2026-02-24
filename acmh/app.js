@@ -775,16 +775,17 @@ if (plannedSnapshot.empty && recurringSnapshot.empty) {
     const planned = doc.data();
     const row = document.createElement("tr");
 
-    row.innerHTML = `
-      <td>${planned.item}</td>
-      <td><span class="category-badge">${planned.category}</span></td>
-      <td class="mono">£${planned.estimatedCost.toFixed(2)}</td>
-      <td>
-        <button class="btn-contribute">
-          💝 Contribute
-        </button>
-      </td>
-    `;
+  row.innerHTML = `
+    <td>${planned.item}</td>
+    <td><span class="category-badge">${planned.category}</span></td>
+    <td>${planned.description || "-"}</td>
+    <td class="mono">£${planned.estimatedCost.toFixed(2)}</td>
+    <td>
+      <button class="btn-contribute">
+        💝 Contribute
+      </button>
+    </td>
+`;
 
     plannedTable.appendChild(row);
   });
@@ -800,9 +801,14 @@ if (plannedSnapshot.empty && recurringSnapshot.empty) {
         <span class="recurring-badge">RECURRING</span>
       </td>
       <td><span class="category-badge">${recurring.category}</span></td>
+      <td>${recurring.description || "-"}</td>
       <td class="mono">£${recurring.amount.toFixed(2)} / month</td>
-      <td class="mono">Day ${recurring.dayOfMonth}</td>
-    `;
+      <td>
+      <button class="btn-contribute">
+        💝 Contribute
+      </button>
+    </td>
+`;
 
     plannedTable.appendChild(row);
   });
