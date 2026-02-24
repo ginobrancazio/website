@@ -354,6 +354,80 @@ async function handleIncomeSubmit(e) {
   }
 }
 
+//process recurring costs
+async function processRecurringCosts() {
+  if (
+    !confirm(
+      "Process all due recurring costs for this month? This will create expense records."
+    )
+  )
+    return;
+
+  try {
+    const today = new Date();
+    const currentDay = today.getDate();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+
+    // Get all active recurring costs
+    const snapshot = await firebase
+      .firestore()
+      .collection("recurringCosts")
+      .where("isActive", "==", true)
+      .get();
+
+    let processedCount = 0;
+
+    for (const doc of snapshot.docs) {
+      const cost = doc.data();
+
+      // Check if this should be processed this month
+      const lastProcessed = cost.lastProcessed
+        ? cost.lastProcessed.toDate()
+        : null;
+      const shouldProcess =
+        !lastProcessed ||
+        lastProcessed.getMonth() !== currentMonth ||
+        lastProcessed.getFullYear() !== currentYear;
+
+      if (shouldProcess && cost.dayOfMonth <= currentDay) {
+        // Create expense record
+        const expenseDate = new Date(
+          currentYear,
+          currentMonth,
+          cost.dayOfMonth
+        )
+          .toISOString()
+          .split("T")[0];
+
+        await firebase.firestore().collection("expenses").add({
+          date: expenseDate,
+          category: cost.category,
+          amount: cost.amount,
+          description: `${cost.item} - Monthly recurring${cost.description ? " - " + cost.description : ""}`,
+          isRecurring: true,
+          recurringCostId: doc.id,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+
+        // Update last processed date
+        await firebase.firestore().collection("recurringCosts").doc(doc.id).update({
+          lastProcessed: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+
+        processedCount++;
+      }
+    }
+
+    showMessage(
+      `Successfully processed ${processedCount} recurring cost(s)!`
+    );
+    loadAdminExpenses();
+  } catch (error) {
+    showMessage("Error processing recurring costs: " + error.message, "error");
+  }
+}
+
 // Time Log Handler
 async function handleTimeSubmit(e) {
   e.preventDefault();
@@ -945,6 +1019,7 @@ async function deletePlannedExpense(id) {
 
 // Make functions available globally
 window.deletePlannedExpense = deletePlannedExpense;
+window.processRecurringCosts = processRecurringCosts;
 window.markAsPaid = markAsPaid;
 window.toggleRecurring = toggleRecurring;
 window.deleteRecurring = deleteRecurring;
