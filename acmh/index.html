@@ -38,34 +38,45 @@
 
   <!-- Hero Section -->
   <section class="hero">
-    <div class="hero-content">
-      <div class="hero-badge">
-        <span class="badge-icon">🎮</span>
-        <span class="badge-text">IN DEVELOPMENT</span>
-      </div>
-      <h1 class="hero-title">
-        <span class="title-main">Animal City</span>
-        <span class="title-sub">Monster Hunters</span>
-      </h1>
-      <p class="hero-description" id="gameDescription">
-        Loading game description...
-      </p>
-      <div class="hero-actions">
-        <a href="#" class="btn btn-primary" id="wishlistBtn">
-          <span>🎯</span> Wishlist on Steam (coming soon)
-        </a>
-      </div>
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="badge-icon">🎮</span>
+      <span class="badge-text">IN DEVELOPMENT</span>
     </div>
-    <div class="hero-visual">
-      <div class="game-frame">
-        <div class="frame-corner tl"></div>
-        <div class="frame-corner tr"></div>
-        <div class="frame-corner bl"></div>
-        <div class="frame-corner br"></div>
-        <img src="assets/game-cover.jpg" alt="Animal City Monster Hunters" class="game-cover" id="gameCover" />
-      </div>
+    <h1 class="hero-title">
+      <span class="title-main">Animal City</span>
+      <span class="title-sub">Monster Hunters</span>
+    </h1>
+    <p class="hero-description" id="gameDescription">
+      Loading game description...
+    </p>
+    <div class="hero-actions">
+      <a href="#" class="btn btn-primary" id="wishlistBtn">
+        <span>🎯</span> Wishlist on Steam
+      </a>
+      <a href="#" class="btn btn-secondary" id="discordBtn">
+        <span>💬</span> Join Discord
+      </a>
+      <a href="#newsletter" class="btn btn-secondary">
+        <span>📧</span> Newsletter
+      </a>
     </div>
-  </section>
+  </div>
+  <div class="hero-visual">
+    <div class="game-frame">
+      <div class="frame-corner tl"></div>
+      <div class="frame-corner tr"></div>
+      <div class="frame-corner bl"></div>
+      <div class="frame-corner br"></div>
+      <img
+        src="assets/game-cover.jpg"
+        alt="Animal City Monster Hunters"
+        class="game-cover"
+        id="gameCover"
+      />
+    </div>
+  </div>
+</section>
 
   <!-- Metrics Dashboard -->
   <section id="metrics" class="section metrics-section">
@@ -292,6 +303,27 @@
       <div class="loading-state">Loading updates...</div>
     </div>
   </section>
+
+  <section id="newsletter" class="section newsletter-section">
+  <h2 class="section-header mono">// STAY UPDATED</h2>
+  <div class="newsletter-content">
+    <h3>Subscribe to Development Updates</h3>
+    <p>Get notified about major milestones, releases, and behind-the-scenes content</p>
+    <form id="newsletterForm" class="newsletter-form">
+      <input 
+        type="email" 
+        id="newsletterEmail" 
+        class="newsletter-input"
+        placeholder="your@email.com"
+        required
+      />
+      <button type="submit" class="btn btn-primary">
+        Subscribe
+      </button>
+    </form>
+    <div id="newsletterStatus" class="newsletter-status"></div>
+  </div>
+</section>
 
   <!-- Footer -->
   <footer>
