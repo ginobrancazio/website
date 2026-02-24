@@ -198,6 +198,9 @@ function switchTab(tabName) {
     case "vibes":
       loadAdminVibes();
       break;
+    case "recurring":
+      loadAdminRecurring();
+      break;
   }
 }
 
@@ -736,7 +739,7 @@ async function loadAdminPlanned() {
 
     if (snapshot.empty) {
       tbody.innerHTML =
-        '<tr><td colspan="4" class="empty-state">No planned expenses.</td></tr>';
+        '<tr><td colspan="5" class="empty-state">No planned expenses.</td></tr>';
       return;
     }
 
@@ -746,8 +749,12 @@ async function loadAdminPlanned() {
       row.innerHTML = `
         <td>${item.item}</td>
         <td><span class="category-badge">${item.category}</span></td>
+        <td>${item.description || "-"}</td>
         <td class="mono">£${item.estimatedCost.toFixed(2)}</td>
         <td>
+          <button class="btn btn-primary btn-small" onclick="markAsPaid('${doc.id}')">
+            Mark as Paid
+          </button>
           <button class="btn btn-danger btn-small" onclick="deletePlannedExpense('${doc.id}')">
             Delete
           </button>
@@ -759,6 +766,166 @@ async function loadAdminPlanned() {
     console.error("Error loading admin planned:", error);
   }
 }
+
+async function markAsPaid(id) {
+  if (!confirm("Mark this planned expense as paid and move it to expenses?"))
+    return;
+
+  try {
+    // Get the planned expense
+    const doc = await firebase
+      .firestore()
+      .collection("plannedExpenses")
+      .doc(id)
+      .get();
+
+    if (!doc.exists) {
+      showMessage("Planned expense not found", "error");
+      return;
+    }
+
+    const planned = doc.data();
+    const today = new Date().toISOString().split("T")[0];
+
+    // Create expense record
+    const expense = {
+      date: today,
+      category: planned.category,
+      amount: planned.estimatedCost,
+      description: `${planned.item}${planned.description ? " - " + planned.description : ""}`,
+      fromPlanned: true,
+      plannedExpenseId: id,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+
+    // Add to expenses
+    await firebase.firestore().collection("expenses").add(expense);
+
+    // Mark planned expense as purchased
+    await firebase
+      .firestore()
+      .collection("plannedExpenses")
+      .doc(id)
+      .update({
+        isPurchased: true,
+        purchasedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        purchasedDate: today,
+      });
+
+    showMessage("Expense marked as paid and moved to expenses!");
+    loadAdminPlanned();
+    loadAdminExpenses();
+  } catch (error) {
+    showMessage("Error marking as paid: " + error.message, "error");
+  }
+}
+
+async function handleRecurringSubmit(e) {
+  e.preventDefault();
+
+  try {
+    const recurring = {
+      item: document.getElementById("recurringItem").value,
+      category: document.getElementById("recurringCategory").value,
+      amount: parseFloat(document.getElementById("recurringAmount").value),
+      dayOfMonth: parseInt(document.getElementById("recurringDay").value),
+      description: document.getElementById("recurringDescription").value || "",
+      isActive: document.getElementById("recurringActive").checked,
+      lastProcessed: null,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+
+    await firebase.firestore().collection("recurringCosts").add(recurring);
+
+    showMessage("Recurring cost added successfully!");
+    e.target.reset();
+    document.getElementById("recurringActive").checked = true;
+
+    loadAdminRecurring();
+  } catch (error) {
+    showMessage("Error adding recurring cost: " + error.message, "error");
+  }
+}
+
+// Add function to load recurring costs
+async function loadAdminRecurring() {
+  try {
+    const snapshot = await firebase
+      .firestore()
+      .collection("recurringCosts")
+      .orderBy("createdAt", "desc")
+      .get();
+
+    const tbody = document.getElementById("adminRecurringList");
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+
+    if (snapshot.empty) {
+      tbody.innerHTML =
+        '<tr><td colspan="6" class="empty-state">No recurring costs.</td></tr>';
+      return;
+    }
+
+    snapshot.forEach((doc) => {
+      const cost = doc.data();
+      const row = document.createElement("tr");
+      const statusBadge = cost.isActive
+        ? '<span class="vibe-badge green">Active</span>'
+        : '<span class="vibe-badge red">Inactive</span>';
+
+      row.innerHTML = `
+        <td>${cost.item}</td>
+        <td><span class="category-badge">${cost.category}</span></td>
+        <td class="mono">£${cost.amount.toFixed(2)}</td>
+        <td class="mono">${cost.dayOfMonth}</td>
+        <td>${statusBadge}</td>
+        <td>
+          <button class="btn btn-small ${cost.isActive ? "btn-danger" : "btn-primary"}" 
+                  onclick="toggleRecurring('${doc.id}', ${!cost.isActive})">
+            ${cost.isActive ? "Deactivate" : "Activate"}
+          </button>
+          <button class="btn btn-danger btn-small" onclick="deleteRecurring('${doc.id}')">
+            Delete
+          </button>
+        </td>
+      `;
+      tbody.appendChild(row);
+    });
+  } catch (error) {
+    console.error("Error loading recurring costs:", error);
+  }
+}
+
+// Add toggle recurring function
+async function toggleRecurring(id, isActive) {
+  try {
+    await firebase.firestore().collection("recurringCosts").doc(id).update({
+      isActive: isActive,
+    });
+
+    showMessage(
+      `Recurring cost ${isActive ? "activated" : "deactivated"} successfully!`
+    );
+    loadAdminRecurring();
+  } catch (error) {
+    showMessage("Error toggling recurring cost: " + error.message, "error");
+  }
+}
+
+// Add delete recurring function
+async function deleteRecurring(id) {
+  if (!confirm("Are you sure you want to delete this recurring cost?")) return;
+
+  try {
+    await firebase.firestore().collection("recurringCosts").doc(id).delete();
+    showMessage("Recurring cost deleted!");
+    loadAdminRecurring();
+  } catch (error) {
+    showMessage("Error deleting: " + error.message, "error");
+  }
+}
+
 
 async function deletePlannedExpense(id) {
   if (!confirm("Are you sure you want to delete this planned expense?"))
@@ -775,3 +942,6 @@ async function deletePlannedExpense(id) {
 
 // Make functions available globally
 window.deletePlannedExpense = deletePlannedExpense;
+window.markAsPaid = markAsPaid;
+window.toggleRecurring = toggleRecurring;
+window.deleteRecurring = deleteRecurring;
