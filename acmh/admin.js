@@ -239,6 +239,7 @@ async function loadGameInfo() {
       document.getElementById("youtubePlaylistId").value =
         data.youtubePlaylistId || "";
       document.getElementById("linkedinUrl").value = data.linkedinUrl || "";
+      document.getElementById("discordUrl").value = data.discordUrl || "";
       document.getElementById("wishlistUrl").value = data.wishlistUrl || "";
     }
   } catch (error) {
@@ -249,13 +250,15 @@ async function loadGameInfo() {
 async function handleGameInfoSubmit(e) {
   e.preventDefault();
 
-  try {
+try {
     const gameInfo = {
       gameDescription: document.getElementById("gameDescription").value,
       projectDescription: document.getElementById("projectDescription").value,
       youtubePlaylistId: document.getElementById("youtubePlaylistId").value,
       linkedinUrl: document.getElementById("linkedinUrl").value,
+      discordUrl: document.getElementById("discordUrl").value,
       wishlistUrl: document.getElementById("wishlistUrl").value,
+      newsletterEnabled: true,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
     };
 
