@@ -67,9 +67,48 @@ async function loadGameInfo() {
       if (data.youtubePlaylistId) {
         window.youtubePlaylistId = data.youtubePlaylistId;
       }
+
+      // Update Discord button
+      const discordBtn = document.getElementById("discordBtn");
+      if (discordBtn && data.discordUrl) {
+        discordBtn.href = data.discordUrl;
+      }
+
+      // Store newsletter config
+      if (data.newsletterEnabled !== undefined) {
+        window.newsletterEnabled = data.newsletterEnabled;
+      }
     }
   } catch (error) {
     console.error("Error loading game info:", error);
+  }
+}
+
+// Add newsletter handler
+async function handleNewsletterSubmit(e) {
+  e.preventDefault();
+  const email = document.getElementById("newsletterEmail").value;
+  const statusDiv = document.getElementById("newsletterStatus");
+
+  try {
+    // Save to Firestore
+    await db.collection("newsletterSubscribers").add({
+      email: email,
+      subscribedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      isActive: true,
+    });
+
+    statusDiv.textContent = "✓ Successfully subscribed!";
+    statusDiv.style.color = "#2ecc71";
+    e.target.reset();
+
+    setTimeout(() => {
+      statusDiv.textContent = "";
+    }, 5000);
+  } catch (error) {
+    console.error("Newsletter error:", error);
+    statusDiv.textContent = "Error subscribing. Please try again.";
+    statusDiv.style.color = "#e84545";
   }
 }
 
