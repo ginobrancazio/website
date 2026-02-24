@@ -748,36 +748,65 @@ async function loadBudget() {
     }
 
      // Load planned expenses (updated)
-    const plannedSnapshot = await db
-      .collection("plannedExpenses")
-      .where("isPurchased", "==", false)
-      .get();
+const plannedSnapshot = await db
+  .collection("plannedExpenses")
+  .where("isPurchased", "==", false)
+  .get();
 
-    const plannedTable = document
-      .getElementById("plannedTable")
-      .querySelector("tbody");
-    plannedTable.innerHTML = "";
+// Load active recurring costs
+const recurringSnapshot = await db
+  .collection("recurringCosts")
+  .where("isActive", "==", true)
+  .get();
 
-    if (plannedSnapshot.empty) {
-      plannedTable.innerHTML =
-        '<tr><td colspan="4" class="empty-state">No planned expenses.</td></tr>';
-    } else {
-      plannedSnapshot.forEach((doc) => {
-        const planned = doc.data();
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${planned.item}</td>
-          <td><span class="category-badge">${planned.category}</span></td>
-          <td class="mono">£${planned.estimatedCost.toFixed(2)}</td>
-          <td>
-            <button class="btn-contribute" onclick="contributeToItem('${doc.id}')">
-              💝 Contribute
-            </button>
-          </td>
-        `;
-        plannedTable.appendChild(row);
-      });
-    }
+const plannedTable = document
+  .getElementById("plannedTable")
+  .querySelector("tbody");
+
+plannedTable.innerHTML = "";
+
+// If both empty
+if (plannedSnapshot.empty && recurringSnapshot.empty) {
+  plannedTable.innerHTML =
+    '<tr><td colspan="4" class="empty-state">No planned expenses.</td></tr>';
+} else {
+  // Normal planned expenses
+  plannedSnapshot.forEach((doc) => {
+    const planned = doc.data();
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${planned.item}</td>
+      <td><span class="category-badge">${planned.category}</span></td>
+      <td class="mono">£${planned.estimatedCost.toFixed(2)}</td>
+      <td>
+        <button class="btn-contribute">
+          💝 Contribute
+        </button>
+      </td>
+    `;
+
+    plannedTable.appendChild(row);
+  });
+
+  // Recurring expenses (clearly marked)
+  recurringSnapshot.forEach((doc) => {
+    const recurring = doc.data();
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>
+        ${recurring.item}
+        <span class="recurring-badge">RECURRING</span>
+      </td>
+      <td><span class="category-badge">${recurring.category}</span></td>
+      <td class="mono">£${recurring.amount.toFixed(2)} / month</td>
+      <td class="mono">Day ${recurring.dayOfMonth}</td>
+    `;
+
+    plannedTable.appendChild(row);
+  });
+}
 
     // Calculate profit/loss
     const profitLoss = totalIncome - totalSpent;
