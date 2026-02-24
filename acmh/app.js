@@ -781,7 +781,9 @@ if (plannedSnapshot.empty && recurringSnapshot.empty) {
     <td class="mono">£${planned.estimatedCost.toFixed(2)}</td>
     <td>${planned.description || "-"}</td>
     <td>
-      <button class="btn-contribute">
+      <button class="btn-contribute"
+      onclick="contributeToItem('${doc.id}')"
+      >
         💝 Contribute
       </button>
     </td>
