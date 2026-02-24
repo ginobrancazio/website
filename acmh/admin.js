@@ -24,6 +24,7 @@ function setupAuthObserver() {
       currentUser = user;
       showAdminDashboard();
       loadGameInfo();
+      processRecurringCosts();
     } else {
       currentUser = null;
       showLoginScreen();
