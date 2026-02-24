@@ -1277,3 +1277,17 @@ footer {
   background: #27ae60;
   transform: translateY(-1px);
 }
+
+.recurring-badge {
+  margin-left: 0.5rem;
+  background: var(--accent-yellow);
+  color: white;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.7rem;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.planned-wide {
+  grid-column: span 2;
+}
