@@ -45,7 +45,7 @@ function showAdminDashboard() {
 // Event Listeners Setup
 function setupEventListeners() {
   // Login form
-  document
+document
     .getElementById("loginForm")
     .addEventListener("submit", handleLogin);
 
@@ -57,6 +57,7 @@ document
   document
     .getElementById("logoutBtn")
     .addEventListener("click", handleLogout);
+  
   
   // Tab navigation
   document.querySelectorAll(".tab").forEach((tab) => {
@@ -89,6 +90,12 @@ document
     .getElementById("updateForm")
     .addEventListener("submit", handleUpdateSubmit);
 
+  // recurring expenses form
+  document
+  .getElementById("recurringForm")
+  .addEventListener("submit", handleRecurringSubmit);
+
+  
 // File upload preview
 const fileInput = document.getElementById("screenshotFile");
 const uploadDiv = document.getElementById("screenshotUpload");
@@ -376,10 +383,8 @@ async function handlePlannedSubmit(e) {
     const planned = {
       item: document.getElementById("plannedItem").value,
       category: document.getElementById("plannedCategory").value,
-      estimatedCost: parseFloat(
-        document.getElementById("plannedCost").value
-      ),
-      notes: document.getElementById("plannedNotes").value,
+      estimatedCost: parseFloat(document.getElementById("plannedCost").value),
+      description: document.getElementById("plannedDescription").value || "",
       isPurchased: false,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     };
@@ -391,10 +396,7 @@ async function handlePlannedSubmit(e) {
 
     loadAdminPlanned();
   } catch (error) {
-    showMessage(
-      "Error adding planned expense: " + error.message,
-      "error"
-    );
+    showMessage("Error adding planned expense: " + error.message, "error");
   }
 }
 
