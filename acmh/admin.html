@@ -683,6 +683,8 @@
                   <option value="Research">Research</option>
                   <option value="Marketing">Marketing</option>
                   <option value="Planning">Planning</option>
+                  <option value="Events/Meetups">Events/Meetups</option>
+                  <option value="Travel">Travel</option>
                   <option value="Other">Other</option>
                 </select>
               </div>
@@ -793,83 +795,186 @@
 
 
       
-      <!-- Planned Expenses Tab -->
       <div id="planned" class="tab-content">
-        <div class="form-card">
-          <h2 class="form-card-title">Add Planned Expense</h2>
-          <form id="plannedForm">
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Item</label>
-                <input 
-                  type="text" 
-                  id="plannedItem" 
-                  class="form-input"
-                  required
-                  placeholder="What do you need to buy?"
-                />
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Category</label>
-                <select id="plannedCategory" class="form-select" required>
-                  <option value="">Select category...</option>
-                  <option value="Art">Art</option>
-                  <option value="Music">Music</option>
-                  <option value="Sound Effects">Sound Effects</option>
-                  <option value="Tools">Tools & Software</option>
-                  <option value="Marketing">Marketing</option>
-                  <option value="Legal">Legal</option>
-                  <option value="Hardware">Hardware</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Estimated Cost (£)</label>
-                <input 
-                  type="number" 
-                  id="plannedCost" 
-                  class="form-input"
-                  step="0.01"
-                  min="0"
-                  required
-                  placeholder="0.00"
-                />
-              </div>
-              </div>
-
-
-            <div class="form-group">
-              <label class="form-label">Notes</label>
-              <textarea 
-                id="plannedNotes" 
-                class="form-textarea"
-                placeholder="Additional details about this expense..."
-              ></textarea>
-            </div>
-
-            <button type="submit" class="btn btn-primary">
-              Add Planned Expense
-            </button>
-          </form>
+  <div class="form-card">
+    <h2 class="form-card-title">Add Planned Expense</h2>
+    <form id="plannedForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Item</label>
+          <input 
+            type="text" 
+            id="plannedItem" 
+            class="form-input"
+            required
+            placeholder="What do you need to buy?"
+          />
         </div>
 
-        <div class="form-card">
-          <h3 class="form-card-title">Active Planned Expenses</h3>
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Item</th>
-                <th>Category</th>
-                <th>Est. Cost</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="adminPlannedList"></tbody>
-          </table>
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select id="plannedCategory" class="form-select" required>
+            <option value="">Select category...</option>
+            <option value="Art">Art</option>
+            <option value="Music">Music</option>
+            <option value="Sound Effects">Sound Effects</option>
+            <option value="Tools">Tools & Software</option>
+            <option value="Marketing">Marketing</option>
+            <option value="Legal">Legal</option>
+            <option value="Hardware">Hardware</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Estimated Cost (£)</label>
+          <input 
+            type="number" 
+            id="plannedCost" 
+            class="form-input"
+            step="0.01"
+            min="0"
+            required
+            placeholder="0.00"
+          />
         </div>
       </div>
+
+      <div class="form-group">
+        <label class="form-label">Description/Notes</label>
+        <textarea 
+          id="plannedDescription" 
+          class="form-textarea"
+          placeholder="Additional details about this expense..."
+          rows="3"
+        ></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary">
+        Add Planned Expense
+      </button>
+    </form>
+  </div>
+
+  <div class="form-card">
+    <h3 class="form-card-title">Active Planned Expenses</h3>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Category</th>
+          <th>Description</th>
+          <th>Est. Cost</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="adminPlannedList"></tbody>
+    </table>
+  </div>
+</div>
+
+<button class="tab" data-tab="recurring">Recurring Costs</button>
+
+<!-- Add new tab content after planned expenses section -->
+<div id="recurring" class="tab-content">
+  <div class="form-card">
+    <h2 class="form-card-title">Add Recurring Cost</h2>
+    <form id="recurringForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Item</label>
+          <input 
+            type="text" 
+            id="recurringItem" 
+            class="form-input"
+            required
+            placeholder="e.g., Web Hosting"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select id="recurringCategory" class="form-select" required>
+            <option value="">Select category...</option>
+            <option value="Hosting">Hosting</option>
+            <option value="Software">Software Subscription</option>
+            <option value="Services">Services</option>
+            <option value="Tools">Tools</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Amount (£)</label>
+          <input 
+            type="number" 
+            id="recurringAmount" 
+            class="form-input"
+            step="0.01"
+            min="0"
+            required
+            placeholder="0.00"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Day of Month (1-31)</label>
+          <input 
+            type="number" 
+            id="recurringDay" 
+            class="form-input"
+            min="1"
+            max="31"
+            required
+            placeholder="5"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <input 
+          type="text" 
+          id="recurringDescription" 
+          class="form-input"
+          placeholder="Additional details..."
+        />
+      </div>
+
+      <div class="form-checkbox">
+        <input 
+          type="checkbox" 
+          id="recurringActive"
+          checked
+        />
+        <label class="form-label" style="margin: 0;">
+          Active (will be automatically charged)
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-primary">
+        Add Recurring Cost
+      </button>
+    </form>
+  </div>
+
+  <div class="form-card">
+    <h3 class="form-card-title">Active Recurring Costs</h3>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Category</th>
+          <th>Amount</th>
+          <th>Day of Month</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="adminRecurringList"></tbody>
+    </table>
+  </div>
+</div>
 
       <!-- Add Task Tab -->
       <div id="tasks" class="tab-content">
