@@ -869,7 +869,7 @@ async function markAsPaid(id) {
       date: today,
       category: planned.category,
       amount: planned.estimatedCost,
-      description: `${planned.item}${planned.description ? " - " + planned.description : ""}`,
+      description: planned.description || planned.item,
       fromPlanned: true,
       plannedExpenseId: id,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
