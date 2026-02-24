@@ -451,6 +451,21 @@
               ></textarea>
             </div>
 
+            <div class="form-card">
+  <h3 class="form-card-title">Active Recurring Costs</h3>
+  <div style="margin-bottom: 1rem;">
+    <button class="btn btn-primary" onclick="processRecurringCosts()">
+      Process Due Recurring Costs
+    </button>
+    <p style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">
+      This will create expense records for all active recurring costs that are due this month.
+    </p>
+  </div>
+  <table class="data-table">
+    <!-- table content -->
+  </table>
+</div>
+
             <div class="form-group">
               <label class="form-label">Project Description</label>
               <textarea 
