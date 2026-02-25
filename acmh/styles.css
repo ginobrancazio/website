@@ -1291,3 +1291,34 @@ footer {
 .planned-wide {
   grid-column: span 2;
 }
+
+/* Collapsible Section */
+
+.collapsible-toggle {
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.toggle-indicator {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.2rem;
+  transition: transform 0.2s ease;
+}
+
+.collapsible-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, opacity 0.3s ease;
+  opacity: 0;
+}
+
+.collapsible.open .collapsible-content {
+  max-height: 1000px; /* large enough to fit content */
+  opacity: 1;
+}
+
+.collapsible.open .toggle-indicator {
+  transform: rotate(45deg); /* turns + into × */
+}
