@@ -1322,3 +1322,51 @@ footer {
 .collapsible.open .toggle-indicator {
   transform: rotate(45deg); /* turns + into × */
 }
+/* Accordion Style */
+
+.accordion {
+  padding-top: 2rem;
+  padding-bottom: 0;
+}
+
+.accordion-header {
+  width: 100%;
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 0;
+}
+
+.accordion-header:hover {
+  opacity: 0.7;
+}
+
+.accordion-icon {
+  font-size: 1.2rem;
+  transition: transform 0.3s ease;
+}
+
+.accordion-content {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.4s ease, opacity 0.3s ease;
+}
+
+/* Open State */
+
+.accordion.open .accordion-content {
+  max-height: 1200px;
+  opacity: 1;
+  margin-top: 1.5rem;
+}
+
+.accordion.open .accordion-icon {
+  transform: rotate(180deg);
+}
