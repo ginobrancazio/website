@@ -991,12 +991,12 @@ function setupImageModal() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const collapsible = document.querySelector(".collapsible");
-  const toggle = document.querySelector(".collapsible-toggle");
+  const accordion = document.querySelector(".accordion");
+  const header = document.querySelector(".accordion-header");
 
-  if (collapsible && toggle) {
-    toggle.addEventListener("click", () => {
-      collapsible.classList.toggle("open");
+  if (accordion && header) {
+    header.addEventListener("click", () => {
+      accordion.classList.toggle("open");
     });
   }
 });
