@@ -108,6 +108,7 @@ nav {
   gap: 4rem;
   max-width: 1400px;
   margin: 0 auto;
+  width: 100%; 
 }
 
 .hero-content {
@@ -1054,6 +1055,7 @@ nav {
 /* Newsletter */
 .newsletter-section {
   margin: 4rem 0;
+  padding: 0 5rem;
 }
 
 .newsletter-content {
@@ -1066,6 +1068,8 @@ nav {
   border-radius: 12px;
   padding: 3rem;
   text-align: center;
+  max-width: 1400px; 
+  margin: 0 auto; 
 }
 
 .newsletter-content h3 {
@@ -1258,6 +1262,10 @@ footer {
     grid-template-columns: 1fr;
   }
 
+  .newsletter-section {
+    padding: 0 2rem; /* Match section padding */
+  }
+  
   footer {
     padding: 2rem 1.5rem;
   }
@@ -1282,6 +1290,10 @@ footer {
 
   .budget-tables {
     grid-template-columns: 1fr;
+  }
+
+  .newsletter-section {
+    padding: 0 1.5rem; /* Match section padding */
   }
 
   .accordion-header {
