@@ -104,7 +104,7 @@ nav {
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: center;
-  padding: 8rem 6rem 4rem; /* Match .section padding of 6rem */
+  padding: 8rem 6rem 4rem;
   gap: 4rem;
   max-width: 1400px;
   margin: 0 auto;
@@ -333,6 +333,12 @@ nav {
 
 .accordion.open .accordion-header span:first-child::before {
   transform: rotate(90deg);
+}
+
+.accordion-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 400;
 }
 
 .accordion-icon {
@@ -1052,69 +1058,20 @@ nav {
   border: none;
 }
 
-/* Newsletter */
+/* Newsletter Section - Updated for Beehiiv */
 .newsletter-section {
-  padding: 4rem 6rem; 
+  padding: 4rem 6rem;
   max-width: 1400px;
   margin: 0 auto;
 }
 
-.newsletter-content {
-  background: linear-gradient(
-    135deg,
-    var(--gradient-start),
-    var(--gradient-end)
-  );
-  color: white;
-  border-radius: 12px;
-  padding: 3rem;
-  text-align: center;
-}
-
-.newsletter-content h3 {
-  font-size: 2rem;
-  margin-bottom: 1rem;
-}
-
-.newsletter-content p {
-  font-size: 1.1rem;
-  margin-bottom: 2rem;
-  opacity: 0.9;
-}
-
-.newsletter-form {
-  display: flex;
-  gap: 1rem;
-  max-width: 500px;
-  margin: 0 auto;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.newsletter-input {
-  flex: 1;
-  min-width: 250px;
-  padding: 1rem;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  font-size: 1rem;
-}
-
-.newsletter-input::placeholder {
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.newsletter-input:focus {
-  outline: none;
-  border-color: white;
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.newsletter-status {
-  margin-top: 1rem;
-  font-size: 0.9rem;
+.newsletter-section .beehiiv-embed {
+  display: block;
+  margin: 2rem auto 0;
+  width: 100% !important;
+  max-width: 600px !important;
+  height: auto !important;
+  min-height: 400px;
 }
 
 /* Vibe Check Badges */
@@ -1250,7 +1207,7 @@ footer {
   }
 
   .section,
-  .newsletter-section { /* Add newsletter-section here */
+  .newsletter-section {
     padding: 2.5rem 2rem;
   }
 
@@ -1269,7 +1226,7 @@ footer {
 
 @media (max-width: 600px) {
   .section,
-  .newsletter-section { /* Add newsletter-section here */
+  .newsletter-section {
     padding: 2rem 1.5rem;
   }
 
@@ -1279,10 +1236,6 @@ footer {
 
   .screenshots-grid {
     grid-template-columns: 1fr;
-  }
-
-  .newsletter-form {
-    flex-direction: column;
   }
 
   .budget-tables {
@@ -1295,5 +1248,9 @@ footer {
 
   .accordion-header span:first-child::before {
     font-size: 0.7rem;
+  }
+
+  .newsletter-section .beehiiv-embed {
+    min-height: 450px;
   }
 }
