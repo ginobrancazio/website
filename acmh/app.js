@@ -989,3 +989,14 @@ function setupImageModal() {
     }
   });
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  const collapsible = document.querySelector(".collapsible");
+  const toggle = document.querySelector(".collapsible-toggle");
+
+  if (collapsible && toggle) {
+    toggle.addEventListener("click", () => {
+      collapsible.classList.toggle("open");
+    });
+  }
+});
