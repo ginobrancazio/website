@@ -15,7 +15,6 @@ async function initializeApp() {
       loadUpdates(),
       loadScreenshots(),
       loadBudget(),
-      loadTasks(),
       loadYouTubePlaylist(),
     ]);
 
@@ -869,6 +868,7 @@ window.contributeToItem = async function(itemId, itemName, amount) {
       itemName: itemName,
       amount: amount,
       timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            userAgent: navigator.userAgent,
     });
     
     console.log('Contribution logged successfully with ID:', docRef.id);
@@ -878,6 +878,7 @@ window.contributeToItem = async function(itemId, itemName, amount) {
   } catch (error) {
     console.error('Error logging contribution click:', error);
     alert('Error logging contribution: ' + error.message);
+  
     // Still open Ko-fi even if logging fails
     window.open('https://ko-fi.com/ginolitway', '_blank');
   }
@@ -887,43 +888,7 @@ function showMessage(message, type = "success") {
   alert(message); // Simple implementation for now
 }
 
-// Load Tasks
-async function loadTasks() {
-  try {
-    const snapshot = await db
-      .collection("tasks")
-      .orderBy("createdAt", "desc")
-      .get();
 
-    const todoList = document.getElementById("todoTasks");
-    const inProgressList = document.getElementById("inProgressTasks");
-    const doneList = document.getElementById("doneTasks");
-
-    todoList.innerHTML = "";
-    inProgressList.innerHTML = "";
-    doneList.innerHTML = "";
-
-    if (snapshot.empty) {
-      todoList.innerHTML = '<div class="empty-state">No tasks yet.</div>';
-      return;
-    }
-
-    snapshot.forEach((doc) => {
-      const task = doc.data();
-      const card = createTaskCard(task);
-
-      if (task.status === "To Do") {
-        todoList.appendChild(card);
-      } else if (task.status === "In Progress") {
-        inProgressList.appendChild(card);
-      } else if (task.status === "Done") {
-        doneList.appendChild(card);
-      }
-    });
-  } catch (error) {
-    console.error("Error loading tasks:", error);
-  }
-}
 
 function createTaskCard(task) {
   const card = document.createElement("div");
