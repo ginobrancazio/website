@@ -696,11 +696,11 @@ async function loadBudget() {
         const income = doc.data();
         const row = document.createElement("tr");
         row.innerHTML = `
-          <td class="mono">${new Date(income.date).toLocaleDateString("en-GB")}</td>
-          <td><span class="category-badge">${income.source}</span></td>
-          <td>${income.description}</td>
-          <td class="mono">£${income.amount.toFixed(2)}</td>
-        `;
+          <td data-label="Date" class="mono">${new Date(income.date).toLocaleDateString("en-GB")}</td>
+    <td data-label="Source"><span class="category-badge">${income.source}</span></td>
+    <td data-label="Description">${income.description}</td>
+    <td data-label="Amount" class="mono">£${income.amount.toFixed(2)}</td>
+  `;
         incomeTable.appendChild(row);
       });
     }
@@ -737,11 +737,11 @@ async function loadBudget() {
         const expense = doc.data();
         const row = document.createElement("tr");
         row.innerHTML = `
-          <td class="mono">${new Date(expense.date).toLocaleDateString("en-GB")}</td>
-          <td><span class="category-badge">${expense.category}</span></td>
-          <td>${expense.description}</td>
-          <td class="mono">£${expense.amount.toFixed(2)}</td>
-        `;
+          <td data-label="Date" class="mono">${new Date(expense.date).toLocaleDateString("en-GB")}</td>
+    <td data-label="Category"><span class="category-badge">${expense.category}</span></td>
+    <td data-label="Description">${expense.description}</td>
+    <td data-label="Amount" class="mono">£${expense.amount.toFixed(2)}</td>
+  `;
         expensesTable.appendChild(row);
       });
     }
@@ -777,11 +777,11 @@ plannedSnapshot.forEach((doc) => {
   const row = document.createElement("tr");
 
   row.innerHTML = `
-    <td>${planned.item}</td>
-    <td><span class="category-badge">${planned.category}</span></td>
-    <td class="mono">£${planned.estimatedCost.toFixed(2)}</td>
-    <td>${planned.description || "-"}</td>
-    <td>
+    <td data-label="Item">${planned.item}</td>
+    <td data-label="Category"><span class="category-badge">${planned.category}</span></td>
+    <td data-label="Est. Cost" class="mono">£${planned.estimatedCost.toFixed(2)}</td>
+    <td data-label="Notes">${planned.description || "-"}</td>
+    <td data-label="Action">
       <button 
         class="btn-contribute" 
         data-item-id="${doc.id}"
@@ -802,14 +802,14 @@ recurringSnapshot.forEach((doc) => {
   const row = document.createElement("tr");
 
   row.innerHTML = `
-    <td>
+    <td data-label="Item">
       ${recurring.item}
       <span class="recurring-badge">RECURRING</span>
     </td>
-    <td><span class="category-badge">${recurring.category}</span></td>
-    <td class="mono">£${recurring.amount.toFixed(2)} / month</td>
-    <td>${recurring.description || "-"}</td>
-    <td>
+    <td data-label="Category"><span class="category-badge">${recurring.category}</span></td>
+    <td data-label="Cost" class="mono">£${recurring.amount.toFixed(2)} / month</td>
+    <td data-label="Notes">${recurring.description || "-"}</td>
+    <td data-label="Action">
       <button 
         class="btn-contribute"
         data-item-id="${doc.id}"
