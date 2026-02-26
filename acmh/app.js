@@ -868,7 +868,6 @@ window.contributeToItem = async function(itemId, itemName, amount) {
       itemName: itemName,
       amount: amount,
       timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            userAgent: navigator.userAgent,
     });
     
     console.log('Contribution logged successfully with ID:', docRef.id);
