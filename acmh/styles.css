@@ -1102,7 +1102,7 @@ nav {
 
 /* Budget Buttons */
 .btn-contribute {
-  background: var(--accent-green);
+  background: #FF5E5B; /* Ko-fi red color */
   color: white;
   padding: 0.4rem 0.8rem;
   font-size: 0.8rem;
@@ -1110,11 +1110,14 @@ nav {
   border: none;
   cursor: pointer;
   transition: all 0.2s;
+  text-decoration: none;
+  display: inline-block;
 }
 
 .btn-contribute:hover {
-  background: #27ae60;
+  background: #e54b47;
   transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(255, 94, 91, 0.3);
 }
 
 .recurring-badge {
