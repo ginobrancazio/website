@@ -739,7 +739,7 @@ async function loadBudget() {
         row.innerHTML = `
           <td data-label="Date" class="mono">${new Date(expense.date).toLocaleDateString("en-GB")}</td>
     <td data-label="Category"><span class="category-badge">${expense.category}</span></td>
-    <td data-label="Description">${expense.notes}</td>
+    <td data-label="Description">${expense.description}</td>
     <td data-label="Amount" class="mono">£${expense.amount.toFixed(2)}</td>
   `;
         expensesTable.appendChild(row);
