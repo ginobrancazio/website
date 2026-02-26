@@ -773,9 +773,13 @@ if (plannedSnapshot.empty && recurringSnapshot.empty) {
 
   
 // Normal planned expenses
+// Normal planned expenses
 plannedSnapshot.forEach((doc) => {
   const planned = doc.data();
   const row = document.createElement("tr");
+
+  // Escape quotes in item name for onclick
+  const safeItemName = planned.item.replace(/'/g, "\\'");
 
   row.innerHTML = `
     <td>${planned.item}</td>
@@ -785,7 +789,7 @@ plannedSnapshot.forEach((doc) => {
     <td>
       <button 
         class="btn-contribute"
-        onclick="contributeToItem('${doc.id}', '${planned.item}', ${planned.estimatedCost})"
+        onclick="contributeToItem('${doc.id}', '${safeItemName}', ${planned.estimatedCost})"
       >
         💝 Contribute
       </button>
@@ -800,6 +804,9 @@ recurringSnapshot.forEach((doc) => {
   const recurring = doc.data();
   const row = document.createElement("tr");
 
+  // Escape quotes in item name for onclick
+  const safeItemName = recurring.item.replace(/'/g, "\\'");
+
   row.innerHTML = `
     <td>
       ${recurring.item}
@@ -811,7 +818,7 @@ recurringSnapshot.forEach((doc) => {
     <td>
       <button 
         class="btn-contribute"
-        onclick="contributeToItem('${doc.id}', '${recurring.item} (Monthly)', ${recurring.amount})"
+        onclick="contributeToItem('${doc.id}', '${safeItemName} (Monthly)', ${recurring.amount})"
       >
         💝 Contribute
       </button>
@@ -849,23 +856,28 @@ recurringSnapshot.forEach((doc) => {
 }
 
 // contribute function
-window.contributeToItem = function(itemId, itemName, amount) {
-  // Log to Firestore for tracking
-  firebase.firestore().collection('contributionClicks').add({
-    itemId: itemId,
-    itemName: itemName,
-    amount: amount,
-    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-  })
-  .then(() => {
-    console.log('Contribution click logged successfully');
-  })
-  .catch(error => {
-    console.error('Error logging contribution click:', error);
-  });
+window.contributeToItem = async function(itemId, itemName, amount) {
+  console.log('Contribute clicked:', { itemId, itemName, amount });
   
-  // Open Ko-fi page
-  window.open('https://ko-fi.com/ginolitway', '_blank');
+  try {
+    // Log to Firestore for tracking
+    const docRef = await firebase.firestore().collection('contributionClicks').add({
+      itemId: itemId,
+      itemName: itemName,
+      amount: amount,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    
+    console.log('Contribution logged successfully with ID:', docRef.id);
+    
+    // Open Ko-fi page
+    window.open('https://ko-fi.com/ginolitway', '_blank');
+  } catch (error) {
+    console.error('Error logging contribution click:', error);
+    alert('Error logging contribution: ' + error.message);
+    // Still open Ko-fi even if logging fails
+    window.open('https://ko-fi.com/ginolitway', '_blank');
+  }
 };
 
 function showMessage(message, type = "success") {
