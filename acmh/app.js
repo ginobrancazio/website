@@ -825,24 +825,27 @@ recurringSnapshot.forEach((doc) => {
 });
 
 const plannedTableElement = document.getElementById("plannedTable");
-      if (plannedTableElement) {
-        // Remove any existing listeners to prevent duplicates
-        plannedTableElement.replaceWith(plannedTableElement.cloneNode(true));
-        
-        // Get the fresh table reference
-        const freshTable = document.getElementById("plannedTable");
-        
-        // Add the click listener
-        freshTable.addEventListener("click", (e) => {
-          if (e.target.classList.contains("btn-contribute")) {
-            const itemId = e.target.dataset.itemId;
-            const itemName = e.target.dataset.itemName;
-            const itemCost = parseFloat(e.target.dataset.itemCost);
-            
-            contributeToItem(itemId, itemName, itemCost);
-          }
-        });
-      }
+if (plannedTableElement) {
+  // Use both click and touchend events for better mobile support
+  const handleContribute = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const button = e.target.closest('.btn-contribute');
+    if (button) {
+      const itemId = button.dataset.itemId;
+      const itemName = button.dataset.itemName;
+      const itemCost = parseFloat(button.dataset.itemCost);
+      
+      console.log('Button clicked:', { itemId, itemName, itemCost });
+      
+      contributeToItem(itemId, itemName, itemCost);
+    }
+  };
+  
+  plannedTableElement.addEventListener("click", handleContribute);
+  plannedTableElement.addEventListener("touchend", handleContribute);
+}
 }
 
     // Calculate profit/loss
@@ -873,34 +876,46 @@ const plannedTableElement = document.getElementById("plannedTable");
 }
 
 // contribute function
-window.contributeToItem = async function(itemId, itemName, amount) {
-  console.log('Contribute clicked:', { itemId, itemName, amount });
-  
+window.contributeToItem = async function (itemId, itemName, amount) {
+  console.log("=== CONTRIBUTE FUNCTION CALLED ===");
+  console.log("Contribute clicked:", { itemId, itemName, amount });
+  console.log("User Agent:", navigator.userAgent);
+
   try {
+    console.log("Attempting to log to Firestore...");
+    
     // Log to Firestore for tracking
-    const docRef = await firebase.firestore().collection('contributionClicks').add({
+    const docRef = await db.collection("contributionClicks").add({
       itemId: itemId,
       itemName: itemName,
       amount: amount,
-      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      userAgent: navigator.userAgent,
+      isMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
     });
-    
-    console.log('Contribution logged successfully with ID:', docRef.id);
-    
+
+    console.log("Contribution logged successfully with ID:", docRef.id);
+    console.log("Opening Ko-fi...");
+
     // Open Ko-fi page
-    window.open('https://ko-fi.com/ginolitway', '_blank');
+    window.open("https://ko-fi.com/ginolitway", "_blank");
+    
+    console.log("Ko-fi window opened");
   } catch (error) {
-    console.error('Error logging contribution click:', error);
-    alert('Error logging contribution: ' + error.message);
-  
+    console.error("=== ERROR IN CONTRIBUTE ===");
+    console.error("Error logging contribution click:", error);
+    console.error("Error details:", error.code, error.message);
+
     // Still open Ko-fi even if logging fails
-    window.open('https://ko-fi.com/ginolitway', '_blank');
+    console.log("Opening Ko-fi despite error...");
+    window.open("https://ko-fi.com/ginolitway", "_blank");
+
+    // Show user-friendly message
+    alert(
+      "Contribution tracking temporarily unavailable, but you can still support the project!"
+    );
   }
 };
-
-function showMessage(message, type = "success") {
-  alert(message); // Simple implementation for now
-}
 
 
 
