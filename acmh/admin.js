@@ -83,9 +83,6 @@ document
     .getElementById("plannedForm")
     .addEventListener("submit", handlePlannedSubmit);
   document
-    .getElementById("taskForm")
-    .addEventListener("submit", handleTaskSubmit);
-  document
     .getElementById("screenshotForm")
     .addEventListener("submit", handleScreenshotSubmit);
   document
@@ -482,29 +479,6 @@ async function handlePlannedSubmit(e) {
   }
 }
 
-// Task Handler
-async function handleTaskSubmit(e) {
-  e.preventDefault();
-
-  try {
-    const task = {
-      title: document.getElementById("taskTitle").value,
-      description: document.getElementById("taskDescription").value,
-      category: document.getElementById("taskCategory").value,
-      status: document.getElementById("taskStatus").value,
-      priority: document.getElementById("taskPriority").value,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      completedAt: null,
-    };
-
-    await firebase.firestore().collection("tasks").add(task);
-
-    showMessage("Task added successfully!");
-    e.target.reset();
-  } catch (error) {
-    showMessage("Error adding task: " + error.message, "error");
-  }
-}
 
 // Screenshot Handler
 function handleFilePreview(e) {
