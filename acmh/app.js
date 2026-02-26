@@ -770,10 +770,12 @@ if (plannedSnapshot.empty && recurringSnapshot.empty) {
   plannedTable.innerHTML =
     '<tr><td colspan="4" class="empty-state">No planned expenses.</td></tr>';
 } else {
-  // Normal planned expenses
-  plannedSnapshot.forEach((doc) => {
-    const planned = doc.data();
-    const row = document.createElement("tr");
+
+  
+// Normal planned expenses
+plannedSnapshot.forEach((doc) => {
+  const planned = doc.data();
+  const row = document.createElement("tr");
 
   row.innerHTML = `
     <td>${planned.item}</td>
@@ -781,41 +783,43 @@ if (plannedSnapshot.empty && recurringSnapshot.empty) {
     <td class="mono">£${planned.estimatedCost.toFixed(2)}</td>
     <td>${planned.description || "-"}</td>
     <td>
-      <button class="btn-contribute"
-      onclick="contributeToItem('${doc.id}')"
+      <button 
+        class="btn-contribute"
+        onclick="contributeToItem('${doc.id}', '${planned.item}', ${planned.estimatedCost})"
       >
         💝 Contribute
       </button>
     </td>
-`;
+  `;
 
-    plannedTable.appendChild(row);
-  });
+  plannedTable.appendChild(row);
+});
 
-  // Recurring expenses (clearly marked)
-  recurringSnapshot.forEach((doc) => {
-    const recurring = doc.data();
-    const row = document.createElement("tr");
+// Recurring expenses (UPDATED)
+recurringSnapshot.forEach((doc) => {
+  const recurring = doc.data();
+  const row = document.createElement("tr");
 
-    row.innerHTML = `
-      <td>
-        ${recurring.item}
-        <span class="recurring-badge">RECURRING</span>
-      </td>
-      <td><span class="category-badge">${recurring.category}</span></td>
-      <td class="mono">£${recurring.amount.toFixed(2)} / month</td>
-      <td>${recurring.description || "-"}</td>
-      <td>
-      <button class="btn-contribute"
-      onclick="contributeToItem('${doc.id}')"
+  row.innerHTML = `
+    <td>
+      ${recurring.item}
+      <span class="recurring-badge">RECURRING</span>
+    </td>
+    <td><span class="category-badge">${recurring.category}</span></td>
+    <td class="mono">£${recurring.amount.toFixed(2)} / month</td>
+    <td>${recurring.description || "-"}</td>
+    <td>
+      <button 
+        class="btn-contribute"
+        onclick="contributeToItem('${doc.id}', '${recurring.item} (Monthly)', ${recurring.amount})"
       >
         💝 Contribute
       </button>
     </td>
-`;
+  `;
 
-    plannedTable.appendChild(row);
-  });
+  plannedTable.appendChild(row);
+});
 }
 
     // Calculate profit/loss
