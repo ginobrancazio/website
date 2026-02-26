@@ -13,6 +13,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Setup auth state observer
   setupAuthObserver();
 
+loadContributionAnalytics()
+  
   // Setup event listeners
   setupEventListeners();
 });
@@ -1014,6 +1016,101 @@ async function deletePlannedExpense(id) {
     loadAdminPlanned();
   } catch (error) {
     showMessage("Error deleting: " + error.message, "error");
+  }
+}
+
+// Load Contribution Analytics
+async function loadContributionAnalytics() {
+  try {
+    const snapshot = await db
+      .collection('contributionClicks')
+      .orderBy('timestamp', 'desc')
+      .get();
+
+    const clicksTable = document.getElementById('contributionClicksTable');
+    clicksTable.innerHTML = '';
+
+    if (snapshot.empty) {
+      clicksTable.innerHTML = '<tr><td colspan="3">No clicks yet.</td></tr>';
+      document.getElementById('totalClicks').textContent = '0';
+      document.getElementById('popularItem').textContent = '-';
+      document.getElementById('totalInterest').textContent = '£0.00';
+      return;
+    }
+
+    // Process data
+    let totalClicks = 0;
+    let totalInterest = 0;
+    const itemCounts = {};
+    const clicks = [];
+
+    snapshot.forEach((doc) => {
+      const click = doc.data();
+      clicks.push(click);
+      totalClicks++;
+      totalInterest += click.amount || 0;
+
+      // Count by item
+      if (!itemCounts[click.itemName]) {
+        itemCounts[click.itemName] = {
+          count: 0,
+          amount: click.amount || 0
+        };
+      }
+      itemCounts[click.itemName].count++;
+    });
+
+    // Update summary cards
+    document.getElementById('totalClicks').textContent = totalClicks;
+    document.getElementById('totalInterest').textContent = 
+      `£${totalInterest.toFixed(2)}`;
+
+    // Find most popular item
+    let popularItem = '-';
+    let maxCount = 0;
+    for (const [itemName, data] of Object.entries(itemCounts)) {
+      if (data.count > maxCount) {
+        maxCount = data.count;
+        popularItem = `${itemName} (${data.count}x)`;
+      }
+    }
+    document.getElementById('popularItem').textContent = popularItem;
+
+    // Populate recent clicks table (last 20)
+    clicks.slice(0, 20).forEach((click) => {
+      const row = document.createElement('tr');
+      const date = click.timestamp 
+        ? new Date(click.timestamp.toDate()).toLocaleString('en-GB')
+        : 'Unknown';
+      
+      row.innerHTML = `
+        <td class="mono">${date}</td>
+        <td>${click.itemName}</td>
+        <td class="mono">£${(click.amount || 0).toFixed(2)}</td>
+      `;
+      clicksTable.appendChild(row);
+    });
+
+    // Populate item summary table
+    const summaryTable = document.getElementById('itemSummaryTable');
+    summaryTable.innerHTML = '';
+
+    const sortedItems = Object.entries(itemCounts)
+      .sort((a, b) => b[1].count - a[1].count);
+
+    sortedItems.forEach(([itemName, data]) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${itemName}</td>
+        <td class="mono">${data.count}</td>
+        <td class="mono">£${data.amount.toFixed(2)}</td>
+      `;
+      summaryTable.appendChild(row);
+    });
+
+  } catch (error) {
+    console.error('Error loading contribution analytics:', error);
+    showMessage('Error loading contribution analytics', 'error');
   }
 }
 
