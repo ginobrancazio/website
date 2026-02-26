@@ -849,13 +849,8 @@ recurringSnapshot.forEach((doc) => {
 }
 
 // contribute function
-window.contributeToItem = function(itemId, itemName, amount) {
-  const kofiUsername = 'ginolitway';
-  const message = encodeURIComponent(`Supporting: ${itemName}`);
-  window.open(
-    `https://ko-fi.com/${kofiUsername}?message=${message}`,
-    '_blank'
-  );
+window.contributeToItem = function(itemId) {
+  window.open('https://ko-fi.com/ginolitway', '_blank');
 };
 
 function showMessage(message, type = "success") {
