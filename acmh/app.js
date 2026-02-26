@@ -879,41 +879,38 @@ if (plannedTableElement) {
 window.contributeToItem = async function (itemId, itemName, amount) {
   console.log("=== CONTRIBUTE FUNCTION CALLED ===");
   console.log("Contribute clicked:", { itemId, itemName, amount });
-  console.log("User Agent:", navigator.userAgent);
 
+  // ⭐ Open Ko-fi IMMEDIATELY (before any async operations)
+  // This must happen synchronously from the user click
+  const kofiWindow = window.open("https://ko-fi.com/ginolitway", "_blank");
+  
+  if (!kofiWindow) {
+    // Popup was blocked
+    alert("Please allow popups for this site, or click OK to visit Ko-fi");
+    window.location.href = "https://ko-fi.com/ginolitway";
+  }
+
+  // Log to Firestore in the background (don't wait for it)
   try {
-    console.log("Attempting to log to Firestore...");
+    console.log("Logging contribution to Firestore...");
     
-    // Log to Firestore for tracking
-    const docRef = await db.collection("contributionClicks").add({
+    db.collection("contributionClicks").add({
       itemId: itemId,
       itemName: itemName,
       amount: amount,
       timestamp: firebase.firestore.FieldValue.serverTimestamp(),
       userAgent: navigator.userAgent,
       isMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+    }).then((docRef) => {
+      console.log("Contribution logged successfully with ID:", docRef.id);
+    }).catch((error) => {
+      console.error("Error logging contribution:", error);
+      // Don't show error to user since Ko-fi already opened
     });
-
-    console.log("Contribution logged successfully with ID:", docRef.id);
-    console.log("Opening Ko-fi...");
-
-    // Open Ko-fi page
-    window.open("https://ko-fi.com/ginolitway", "_blank");
     
-    console.log("Ko-fi window opened");
   } catch (error) {
-    console.error("=== ERROR IN CONTRIBUTE ===");
-    console.error("Error logging contribution click:", error);
-    console.error("Error details:", error.code, error.message);
-
-    // Still open Ko-fi even if logging fails
-    console.log("Opening Ko-fi despite error...");
-    window.open("https://ko-fi.com/ginolitway", "_blank");
-
-    // Show user-friendly message
-    alert(
-      "Contribution tracking temporarily unavailable, but you can still support the project!"
-    );
+    console.error("Error in contribution logging:", error);
+    // Don't show error to user since Ko-fi already opened
   }
 };
 
