@@ -773,13 +773,9 @@ if (plannedSnapshot.empty && recurringSnapshot.empty) {
 
   
 // Normal planned expenses
-// Normal planned expenses
 plannedSnapshot.forEach((doc) => {
   const planned = doc.data();
   const row = document.createElement("tr");
-
-  // Escape quotes in item name for onclick
-  const safeItemName = planned.item.replace(/'/g, "\\'");
 
   row.innerHTML = `
     <td>${planned.item}</td>
@@ -787,14 +783,17 @@ plannedSnapshot.forEach((doc) => {
     <td class="mono">£${planned.estimatedCost.toFixed(2)}</td>
     <td>${planned.description || "-"}</td>
     <td>
-      <button 
-        class="btn-contribute"
-        onclick="contributeToItem('${doc.id}', '${safeItemName}', ${planned.estimatedCost})"
-      >
+      <button class="btn-contribute" data-item-id="${doc.id}">
         💝 Contribute
       </button>
     </td>
   `;
+
+  // Add event listener to button
+  const btn = row.querySelector(".btn-contribute");
+  btn.addEventListener("click", () => {
+    contributeToItem(doc.id, planned.item, planned.estimatedCost);
+  });
 
   plannedTable.appendChild(row);
 });
@@ -803,9 +802,6 @@ plannedSnapshot.forEach((doc) => {
 recurringSnapshot.forEach((doc) => {
   const recurring = doc.data();
   const row = document.createElement("tr");
-
-  // Escape quotes in item name for onclick
-  const safeItemName = recurring.item.replace(/'/g, "\\'");
 
   row.innerHTML = `
     <td>
@@ -816,14 +812,21 @@ recurringSnapshot.forEach((doc) => {
     <td class="mono">£${recurring.amount.toFixed(2)} / month</td>
     <td>${recurring.description || "-"}</td>
     <td>
-      <button 
-        class="btn-contribute"
-        onclick="contributeToItem('${doc.id}', '${safeItemName} (Monthly)', ${recurring.amount})"
-      >
+      <button class="btn-contribute" data-item-id="${doc.id}">
         💝 Contribute
       </button>
     </td>
   `;
+
+  // Add event listener to button
+  const btn = row.querySelector(".btn-contribute");
+  btn.addEventListener("click", () => {
+    contributeToItem(
+      doc.id,
+      `${recurring.item} (Monthly)`,
+      recurring.amount
+    );
+  });
 
   plannedTable.appendChild(row);
 });
