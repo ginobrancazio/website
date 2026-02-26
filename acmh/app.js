@@ -851,12 +851,16 @@ recurringSnapshot.forEach((doc) => {
 // contribute function
 window.contributeToItem = function(itemId, itemName, amount) {
   // Log to Firestore for tracking
-  db.collection('contributionClicks').add({
+  firebase.firestore().collection('contributionClicks').add({
     itemId: itemId,
     itemName: itemName,
     amount: amount,
     timestamp: firebase.firestore.FieldValue.serverTimestamp()
-  }).catch(error => {
+  })
+  .then(() => {
+    console.log('Contribution click logged successfully');
+  })
+  .catch(error => {
     console.error('Error logging contribution click:', error);
   });
   
