@@ -795,7 +795,7 @@ plannedSnapshot.forEach((doc) => {
   plannedTable.appendChild(row);
 });
 
-// Recurring expenses (UPDATED)
+// Recurring expenses
 recurringSnapshot.forEach((doc) => {
   const recurring = doc.data();
   const row = document.createElement("tr");
@@ -849,7 +849,18 @@ recurringSnapshot.forEach((doc) => {
 }
 
 // contribute function
-window.contributeToItem = function(itemId) {
+window.contributeToItem = function(itemId, itemName, amount) {
+  // Log to Firestore for tracking
+  db.collection('contributionClicks').add({
+    itemId: itemId,
+    itemName: itemName,
+    amount: amount,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+  }).catch(error => {
+    console.error('Error logging contribution click:', error);
+  });
+  
+  // Open Ko-fi page
   window.open('https://ko-fi.com/ginolitway', '_blank');
 };
 
