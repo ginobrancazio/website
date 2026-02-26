@@ -434,7 +434,6 @@
         <button class="tab" data-tab="recurring">Recurring Costs</button>
         <button class="tab" data-tab="income">Add Income</button>
         <button class="tab" data-tab="screenshots">Upload Screenshot</button>
-        <button class="tab" data-tab="tasks">Add Task</button>
         <button class="tab" data-tab="updates">Dev Update</button>
         <button class="tab" data-tab="contributions">Contributions</button>
 
@@ -1004,73 +1003,6 @@
   </div>
 </div>
 
-      <!-- Add Task Tab -->
-      <div id="tasks" class="tab-content">
-        <div class="form-card">
-          <h2 class="form-card-title">Add Task</h2>
-          <form id="taskForm">
-            <div class="form-group">
-              <label class="form-label">Task Title</label>
-              <input 
-                type="text" 
-                id="taskTitle" 
-                class="form-input"
-                required
-                placeholder="What needs to be done?"
-              />
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Description</label>
-              <textarea 
-                id="taskDescription" 
-                class="form-textarea"
-                placeholder="Additional details about this task..."
-              ></textarea>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Category</label>
-                <select id="taskCategory" class="form-select" required>
-                  <option value="">Select category...</option>
-                  <option value="Level Design">Level Design</option>
-                  <option value="Programming">Programming</option>
-                  <option value="Art">Art & Animation</option>
-                  <option value="Audio">Audio</option>
-                  <option value="UI/UX">UI/UX</option>
-                  <option value="Testing">Testing</option>
-                  <option value="Marketing">Marketing</option>
-                  <option value="Documentation">Documentation</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Status</label>
-                <select id="taskStatus" class="form-select" required>
-                  <option value="To Do">To Do</option>
-                  <option value="In Progress">In Progress</option>
-                  <option value="Done">Done</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Priority</label>
-                <select id="taskPriority" class="form-select" required>
-                  <option value="High">High</option>
-                  <option value="Medium">Medium</option>
-                  <option value="Low">Low</option>
-                </select>
-              </div>
-            </div>
-
-            <button type="submit" class="btn btn-primary">
-              Add Task
-            </button>
-          </form>
-        </div>
-      </div>
 
       <!-- Upload Screenshot Tab -->
       <div id="screenshots" class="tab-content">
