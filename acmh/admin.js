@@ -1022,16 +1022,25 @@ async function deletePlannedExpense(id) {
 // Load Contribution Analytics
 async function loadContributionAnalytics() {
   try {
-    const snapshot = await db
+    const snapshot = await firebase.firestore()
       .collection('contributionClicks')
       .orderBy('timestamp', 'desc')
       .get();
 
     const clicksTable = document.getElementById('contributionClicksTable');
+    const itemSummaryTable = document.getElementById('itemSummaryTable');
+    
+    if (!clicksTable || !itemSummaryTable) {
+      console.error('Contribution tables not found');
+      return;
+    }
+
     clicksTable.innerHTML = '';
+    itemSummaryTable.innerHTML = '';
 
     if (snapshot.empty) {
       clicksTable.innerHTML = '<tr><td colspan="3">No clicks yet.</td></tr>';
+      itemSummaryTable.innerHTML = '<tr><td colspan="3">No data yet.</td></tr>';
       document.getElementById('totalClicks').textContent = '0';
       document.getElementById('popularItem').textContent = '-';
       document.getElementById('totalInterest').textContent = '£0.00';
@@ -1092,9 +1101,6 @@ async function loadContributionAnalytics() {
     });
 
     // Populate item summary table
-    const summaryTable = document.getElementById('itemSummaryTable');
-    summaryTable.innerHTML = '';
-
     const sortedItems = Object.entries(itemCounts)
       .sort((a, b) => b[1].count - a[1].count);
 
@@ -1105,12 +1111,15 @@ async function loadContributionAnalytics() {
         <td class="mono">${data.count}</td>
         <td class="mono">£${data.amount.toFixed(2)}</td>
       `;
-      summaryTable.appendChild(row);
+      itemSummaryTable.appendChild(row);
     });
 
   } catch (error) {
     console.error('Error loading contribution analytics:', error);
-    showMessage('Error loading contribution analytics', 'error');
+    const clicksTable = document.getElementById('contributionClicksTable');
+    if (clicksTable) {
+      clicksTable.innerHTML = `<tr><td colspan="3" style="color: var(--accent-coral);">Error loading data: ${error.message}</td></tr>`;
+    }
   }
 }
 
