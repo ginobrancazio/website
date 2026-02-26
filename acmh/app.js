@@ -780,7 +780,7 @@ plannedSnapshot.forEach((doc) => {
     <td data-label="Item">${planned.item}</td>
     <td data-label="Category"><span class="category-badge">${planned.category}</span></td>
     <td data-label="Est. Cost" class="mono">£${planned.estimatedCost.toFixed(2)}</td>
-    <td data-label="Notes">${planned.description || "-"}</td>
+    <td data-label="Notes">${planned.notes || "-"}</td>
     <td data-label="Action">
       <button 
         class="btn-contribute" 
