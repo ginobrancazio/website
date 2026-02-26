@@ -1110,6 +1110,16 @@ nav {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  /* Add these for better mobile interaction */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.btn-contribute:active {
+  transform: scale(0.95);
+  opacity: 0.8;
 }
 
 .btn-contribute:hover {
@@ -1317,9 +1327,12 @@ footer {
   }
 
   /* Button full width on mobile */
-  .btn-contribute {
+ .btn-contribute {
     width: 100%;
     margin-top: 0.5rem;
+    padding: 0.875rem 1rem;
+    font-size: 0.9rem;
+    min-height: 44px; /* iOS recommended tap target size */
   }
 }
 
