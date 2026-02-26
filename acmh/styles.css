@@ -1100,34 +1100,32 @@ nav {
   color: var(--accent-coral);
 }
 
-/* Budget Buttons */
 .btn-contribute {
-  background: #FF5E5B; /* Ko-fi red color */
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
   color: white;
-  padding: 0.4rem 0.8rem;
-  font-size: 0.8rem;
-  border-radius: 6px;
   border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  text-decoration: none;
-  display: inline-block;
 }
 
 .btn-contribute:hover {
-  background: #e54b47;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(255, 94, 91, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
 }
 
 .recurring-badge {
+  display: inline-block;
   margin-left: 0.5rem;
-  background: var(--accent-yellow);
+  padding: 0.25rem 0.5rem;
+  background: var(--accent-orange);
   color: white;
-  padding: 0.2rem 0.6rem;
   font-size: 0.7rem;
-  border-radius: 10px;
   font-weight: 600;
+  border-radius: 4px;
 }
 
 .planned-wide {
