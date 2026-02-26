@@ -436,6 +436,8 @@
         <button class="tab" data-tab="screenshots">Upload Screenshot</button>
         <button class="tab" data-tab="tasks">Add Task</button>
         <button class="tab" data-tab="updates">Dev Update</button>
+        <button class="tab" data-tab="contributions">Contributions</button>
+
 
       </div>
 
@@ -1218,6 +1220,62 @@
           </form>
         </div>
       </div>
+
+      <!-- Contribution Analytics Section -->
+<section class="admin-section">
+  <h2>💝 Contribution Analytics</h2>
+  <div class="analytics-summary">
+    <div class="stat-card">
+      <h3>Total Clicks</h3>
+      <p id="totalClicks">0</p>
+    </div>
+    <div class="stat-card">
+      <h3>Most Popular Item</h3>
+      <p id="popularItem">-</p>
+    </div>
+    <div class="stat-card">
+      <h3>Total Interest Value</h3>
+      <p id="totalInterest">£0.00</p>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <h3>Recent Contribution Clicks</h3>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Date & Time</th>
+          <th>Item Name</th>
+          <th>Amount</th>
+        </tr>
+      </thead>
+      <tbody id="contributionClicksTable">
+        <tr>
+          <td colspan="3">Loading...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-container" style="margin-top: 2rem;">
+    <h3>Item Click Summary</h3>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Item Name</th>
+          <th>Click Count</th>
+          <th>Amount</th>
+        </tr>
+      </thead>
+      <tbody id="itemSummaryTable">
+        <tr>
+          <td colspan="3">Loading...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+      
     </div>
   </div>
 
