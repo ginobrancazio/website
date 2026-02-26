@@ -782,17 +782,16 @@ plannedSnapshot.forEach((doc) => {
     <td class="mono">£${planned.estimatedCost.toFixed(2)}</td>
     <td>${planned.description || "-"}</td>
     <td>
-      <button class="btn-contribute" data-item-id="${doc.id}">
+      <button 
+        class="btn-contribute" 
+        data-item-id="${doc.id}"
+        data-item-name="${planned.item}"
+        data-item-cost="${planned.estimatedCost}"
+      >
         💝 Contribute
       </button>
     </td>
   `;
-
-  // Add event listener to button
-  const btn = row.querySelector(".btn-contribute");
-  btn.addEventListener("click", () => {
-    contributeToItem(doc.id, planned.item, planned.estimatedCost);
-  });
 
   plannedTable.appendChild(row);
 });
@@ -811,24 +810,39 @@ recurringSnapshot.forEach((doc) => {
     <td class="mono">£${recurring.amount.toFixed(2)} / month</td>
     <td>${recurring.description || "-"}</td>
     <td>
-      <button class="btn-contribute" data-item-id="${doc.id}">
+      <button 
+        class="btn-contribute"
+        data-item-id="${doc.id}"
+        data-item-name="${recurring.item} (Monthly)"
+        data-item-cost="${recurring.amount}"
+      >
         💝 Contribute
       </button>
     </td>
   `;
 
-  // Add event listener to button
-  const btn = row.querySelector(".btn-contribute");
-  btn.addEventListener("click", () => {
-    contributeToItem(
-      doc.id,
-      `${recurring.item} (Monthly)`,
-      recurring.amount
-    );
-  });
-
   plannedTable.appendChild(row);
 });
+
+const plannedTableElement = document.getElementById("plannedTable");
+      if (plannedTableElement) {
+        // Remove any existing listeners to prevent duplicates
+        plannedTableElement.replaceWith(plannedTableElement.cloneNode(true));
+        
+        // Get the fresh table reference
+        const freshTable = document.getElementById("plannedTable");
+        
+        // Add the click listener
+        freshTable.addEventListener("click", (e) => {
+          if (e.target.classList.contains("btn-contribute")) {
+            const itemId = e.target.dataset.itemId;
+            const itemName = e.target.dataset.itemName;
+            const itemCost = parseFloat(e.target.dataset.itemCost);
+            
+            contributeToItem(itemId, itemName, itemCost);
+          }
+        });
+      }
 }
 
     // Calculate profit/loss
@@ -849,6 +863,7 @@ recurringSnapshot.forEach((doc) => {
     } else {
       profitLossElement.classList.add("loss");
     }
+    
   } catch (error) {
     console.error("Error loading budget:", error);
     document.getElementById("budgetIncome").textContent = "Error";
