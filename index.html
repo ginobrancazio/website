@@ -546,7 +546,6 @@
   grid-column: 1 / -1;
   display: grid;
   grid-template-columns: 1fr 2fr;
-  gap: 0;
 }
 
 .project-card.featured .project-image {
@@ -571,9 +570,10 @@
 
 @media (max-width: 900px) {
   .project-card.featured {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto;
+    display: flex;
+    flex-direction: column;
   }
+}
 
   .project-card.featured .project-image {
     min-height: 300px;
