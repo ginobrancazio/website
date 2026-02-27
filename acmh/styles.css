@@ -458,6 +458,22 @@ nav {
   text-decoration: underline;
 }
 
+.ai-disclaimer {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.ai-disclaimer h4 {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
 /* Metrics Dashboard */
 .metrics-grid {
   display: grid;
