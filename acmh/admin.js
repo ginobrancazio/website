@@ -304,6 +304,7 @@ async function loadGameInfo() {
       document.getElementById("linkedinUrl").value = data.linkedinUrl || "";
       document.getElementById("discordUrl").value = data.discordUrl || "";
       document.getElementById("wishlistUrl").value = data.wishlistUrl || "";
+      document.getElementById("kofiUrl").value = data.kofiUrl || "";
     }
   } catch (error) {
     console.error("Error loading game info:", error);
@@ -321,6 +322,7 @@ try {
       linkedinUrl: document.getElementById("linkedinUrl").value,
       discordUrl: document.getElementById("discordUrl").value,
       wishlistUrl: document.getElementById("wishlistUrl").value,
+      kofiUrl: document.getElementById("kofiUrl").value,
       newsletterEnabled: true,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
     };

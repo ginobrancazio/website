@@ -1,7 +1,7 @@
 // Public-facing application JavaScript
 let charts = {};
 
-const KOFI_URL = "https://ko-fi.com/ginolitway";
+let KOFI_URL = "https://ko-fi.com/ginolitway"; // default; overridden by Firestore gameInfo.kofiUrl
 
 // Resolved after DOM is ready so CSS variables are accessible
 let CHART_COLORS;
@@ -89,6 +89,11 @@ async function loadGameInfo() {
       const discordBtn = document.getElementById("discordBtn");
       if (discordBtn && data.discordUrl) {
         discordBtn.href = data.discordUrl;
+      }
+
+      // Update Ko-fi URL
+      if (data.kofiUrl) {
+        KOFI_URL = data.kofiUrl;
       }
 
       // Store newsletter config
