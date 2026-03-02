@@ -459,6 +459,15 @@
         color: var(--accent-cyan);
       }
 
+      .project-title a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .project-title a:hover {
+        text-decoration: underline;
+      }
+
       .project-description {
         color: var(--text-muted);
         font-size: 1rem;
@@ -938,13 +947,15 @@
       <p class="section-header mono">// PROJECTS</p>
       <div class="projects-grid">
           <article class="project-card featured">
-            <img
-              src="/acmh-cover.jpg"
-              alt="Animal City Monster Hunters"
-              class="project-image"
-            />
+            <a href="https://www.ginobrancazio.com/acmh/">
+              <img
+                src="/acmh-cover.jpg"
+                alt="Animal City Monster Hunters"
+                class="project-image"
+              />
+            </a>
             <div class="project-content">
-              <h2 class="project-title">Animal City Monster Hunters</h2>
+              <h2 class="project-title"><a href="https://www.ginobrancazio.com/acmh/">Animal City Monster Hunters</a></h2>
               <p class="project-description">
                 <i>An open journey building a video game from scratch.</i><br />
                 Follow the complete development journey of Animal City Monster Hunters -
