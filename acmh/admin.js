@@ -2,6 +2,40 @@
 let currentUser = null;
 let unsubscribeAuth = null;
 
+const ADMIN_PAGE_SIZE = 25;
+const adminPaginationState = {};
+
+function setLoading(selector) {
+  const el = document.querySelector(selector);
+  if (el) el.innerHTML = '<tr><td colspan="10" class="loading-state">Loading...</td></tr>';
+}
+
+function renderPagination(tbodyId, page, total, loadFn) {
+  const totalPages = Math.ceil(total / ADMIN_PAGE_SIZE);
+  const paginationId = tbodyId + '-pagination';
+
+  let paginationEl = document.getElementById(paginationId);
+  if (!paginationEl) {
+    paginationEl = document.createElement('div');
+    paginationEl.id = paginationId;
+    paginationEl.style.cssText = 'display:flex;gap:0.5rem;align-items:center;padding:1rem;justify-content:flex-end;';
+    const tbody = document.getElementById(tbodyId);
+    if (tbody) tbody.closest('table').after(paginationEl);
+  }
+
+  paginationEl.innerHTML = `
+    <button class="btn btn-small btn-secondary" ${page <= 1 ? 'disabled' : ''} data-page="${page - 1}">← Prev</button>
+    <span style="font-size:0.85rem;color:var(--text-muted);">Page ${page} of ${totalPages || 1}</span>
+    <button class="btn btn-small btn-secondary" ${page >= totalPages ? 'disabled' : ''} data-page="${page + 1}">Next →</button>
+  `;
+
+  paginationEl.querySelectorAll('button[data-page]').forEach(btn => {
+    if (!btn.disabled) {
+      btn.addEventListener('click', () => loadFn(parseInt(btn.dataset.page)));
+    }
+  });
+}
+
 // Initialize
 document.addEventListener("DOMContentLoaded", () => {
   // Set today's date as default for all date inputs
@@ -118,6 +152,36 @@ uploadDiv.addEventListener("dragleave", (e) => {
   e.preventDefault();
   uploadDiv.style.borderColor = "";
 });
+
+// Event delegation for planned expenses table
+const plannedList = document.getElementById('adminPlannedList');
+if (plannedList) {
+  plannedList.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const id = btn.dataset.id;
+    if (btn.dataset.action === 'mark-paid') markAsPaid(id);
+    if (btn.dataset.action === 'delete-planned') deletePlannedExpense(id);
+  });
+}
+
+// Event delegation for recurring costs table
+const recurringList = document.getElementById('adminRecurringList');
+if (recurringList) {
+  recurringList.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const id = btn.dataset.id;
+    if (btn.dataset.action === 'toggle-recurring') {
+      toggleRecurring(id, btn.dataset.active === 'true');
+    }
+    if (btn.dataset.action === 'delete-recurring') deleteRecurring(id);
+  });
+}
+
+// Wire process-recurring button via data-action
+const processBtn = document.querySelector('[data-action="process-recurring"]');
+if (processBtn) processBtn.addEventListener('click', processRecurringCosts);
 }
 
 // Authentication Handlers
@@ -276,6 +340,10 @@ try {
 // Expense Handler
 async function handleExpenseSubmit(e) {
   e.preventDefault();
+  const submitBtn = e.target.querySelector('[type="submit"]');
+  const originalText = submitBtn.textContent;
+  submitBtn.textContent = 'Saving...';
+  submitBtn.disabled = true;
 
   try {
     const expense = {
@@ -294,15 +362,23 @@ async function handleExpenseSubmit(e) {
       .toISOString()
       .split("T")[0];
 
+    adminPaginationState.expenses = null;
     loadAdminExpenses();
   } catch (error) {
     showMessage("Error adding expense: " + error.message, "error");
+  } finally {
+    submitBtn.textContent = originalText;
+    submitBtn.disabled = false;
   }
 }
 
 // vibe handler
 async function handleVibeSubmit(e) {
   e.preventDefault();
+  const submitBtn = e.target.querySelector('[type="submit"]');
+  const originalText = submitBtn.textContent;
+  submitBtn.textContent = 'Saving...';
+  submitBtn.disabled = true;
 
   try {
     const vibeCheck = {
@@ -320,15 +396,23 @@ async function handleVibeSubmit(e) {
       .toISOString()
       .split("T")[0];
 
+    adminPaginationState.vibes = null;
     loadAdminVibes();
   } catch (error) {
     showMessage("Error logging vibe check: " + error.message, "error");
+  } finally {
+    submitBtn.textContent = originalText;
+    submitBtn.disabled = false;
   }
 }
 
 // Income Handler
 async function handleIncomeSubmit(e) {
   e.preventDefault();
+  const submitBtn = e.target.querySelector('[type="submit"]');
+  const originalText = submitBtn.textContent;
+  submitBtn.textContent = 'Saving...';
+  submitBtn.disabled = true;
 
   try {
     const income = {
@@ -347,9 +431,13 @@ async function handleIncomeSubmit(e) {
       .toISOString()
       .split("T")[0];
 
+    adminPaginationState.income = null;
     loadAdminIncome();
   } catch (error) {
     showMessage("Error adding income: " + error.message, "error");
+  } finally {
+    submitBtn.textContent = originalText;
+    submitBtn.disabled = false;
   }
 }
 
@@ -390,12 +478,11 @@ async function processRecurringCosts() {
         lastProcessed.getFullYear() !== currentYear;
 
       if (shouldProcess && cost.dayOfMonth <= currentDay) {
-        // Create expense record
-        const expenseDate = new Date(
-          currentYear,
-          currentMonth,
-          cost.dayOfMonth
-        )
+        // Create expense record — clamp dayOfMonth to the last day of the month
+        // to avoid roll-over (e.g. day 31 in February)
+        const lastDay = new Date(currentYear, currentMonth + 1, 0).getDate();
+        const day = Math.min(cost.dayOfMonth, lastDay);
+        const expenseDate = new Date(currentYear, currentMonth, day)
           .toISOString()
           .split("T")[0];
 
@@ -430,6 +517,10 @@ async function processRecurringCosts() {
 // Time Log Handler
 async function handleTimeSubmit(e) {
   e.preventDefault();
+  const submitBtn = e.target.querySelector('[type="submit"]');
+  const originalText = submitBtn.textContent;
+  submitBtn.textContent = 'Saving...';
+  submitBtn.disabled = true;
 
   try {
     const timeEntry = {
@@ -448,15 +539,23 @@ async function handleTimeSubmit(e) {
       .toISOString()
       .split("T")[0];
 
+    adminPaginationState.time = null;
     loadAdminTime();
   } catch (error) {
     showMessage("Error logging time: " + error.message, "error");
+  } finally {
+    submitBtn.textContent = originalText;
+    submitBtn.disabled = false;
   }
 }
 
 // Planned expense Handler
 async function handlePlannedSubmit(e) {
   e.preventDefault();
+  const submitBtn = e.target.querySelector('[type="submit"]');
+  const originalText = submitBtn.textContent;
+  submitBtn.textContent = 'Saving...';
+  submitBtn.disabled = true;
 
   try {
     const planned = {
@@ -476,6 +575,9 @@ async function handlePlannedSubmit(e) {
     loadAdminPlanned();
   } catch (error) {
     showMessage("Error adding planned expense: " + error.message, "error");
+  } finally {
+    submitBtn.textContent = originalText;
+    submitBtn.disabled = false;
   }
 }
 
@@ -619,174 +721,206 @@ async function handleUpdateSubmit(e) {
 }
 
 // Load previous entries for admin view
-async function loadAdminExpenses() {
-  try {
-    const snapshot = await firebase
-      .firestore()
-      .collection("expenses")
-      .orderBy("date", "desc")
-      .limit(20)
-      .get();
+async function loadAdminExpenses(page = 1) {
+  const tbody = document.getElementById("adminExpensesList");
+  if (!tbody) return;
 
-    const tbody = document.getElementById("adminExpensesList");
-    if (!tbody) return;
+  setLoading('#adminExpensesList');
+
+  try {
+    if (page === 1 || !adminPaginationState.expenses) {
+      const snapshot = await firebase
+        .firestore()
+        .collection("expenses")
+        .orderBy("date", "desc")
+        .get();
+      adminPaginationState.expenses = { docs: snapshot.docs };
+    }
+
+    const allDocs = adminPaginationState.expenses.docs;
+    const start = (page - 1) * ADMIN_PAGE_SIZE;
+    const pageDocs = allDocs.slice(start, start + ADMIN_PAGE_SIZE);
 
     tbody.innerHTML = "";
 
-    if (snapshot.empty) {
+    if (allDocs.length === 0) {
       tbody.innerHTML =
         '<tr><td colspan="4" class="empty-state">No expenses yet.</td></tr>';
-      return;
+    } else {
+      pageDocs.forEach((doc) => {
+        const expense = doc.data();
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td class="mono">${new Date(expense.date).toLocaleDateString("en-GB")}</td>
+          <td><span class="category-badge">${expense.category}</span></td>
+          <td>${expense.description}</td>
+          <td class="mono">£${expense.amount.toFixed(2)}</td>
+        `;
+        tbody.appendChild(row);
+      });
     }
 
-    snapshot.forEach((doc) => {
-      const expense = doc.data();
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td class="mono">${new Date(expense.date).toLocaleDateString(
-          "en-GB"
-        )}</td>
-        <td><span class="category-badge">${expense.category}</span></td>
-        <td>${expense.description}</td>
-        <td class="mono">£${expense.amount.toFixed(2)}</td>
-      `;
-      tbody.appendChild(row);
-    });
+    renderPagination('adminExpensesList', page, allDocs.length, loadAdminExpenses);
   } catch (error) {
     console.error("Error loading admin expenses:", error);
+    tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Error loading data.</td></tr>';
   }
 }
 
-async function loadAdminIncome() {
-  try {
-    const snapshot = await firebase
-      .firestore()
-      .collection("income")
-      .orderBy("date", "desc")
-      .limit(20)
-      .get();
+async function loadAdminIncome(page = 1) {
+  const tbody = document.getElementById("adminIncomeList");
+  if (!tbody) return;
 
-    const tbody = document.getElementById("adminIncomeList");
-    if (!tbody) return;
+  setLoading('#adminIncomeList');
+
+  try {
+    if (page === 1 || !adminPaginationState.income) {
+      const snapshot = await firebase
+        .firestore()
+        .collection("income")
+        .orderBy("date", "desc")
+        .get();
+      adminPaginationState.income = { docs: snapshot.docs };
+    }
+
+    const allDocs = adminPaginationState.income.docs;
+    const start = (page - 1) * ADMIN_PAGE_SIZE;
+    const pageDocs = allDocs.slice(start, start + ADMIN_PAGE_SIZE);
 
     tbody.innerHTML = "";
 
-    if (snapshot.empty) {
+    if (allDocs.length === 0) {
       tbody.innerHTML =
         '<tr><td colspan="4" class="empty-state">No income yet.</td></tr>';
-      return;
+    } else {
+      pageDocs.forEach((doc) => {
+        const income = doc.data();
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td class="mono">${new Date(income.date).toLocaleDateString("en-GB")}</td>
+          <td><span class="category-badge">${income.source}</span></td>
+          <td>${income.description}</td>
+          <td class="mono">£${income.amount.toFixed(2)}</td>
+        `;
+        tbody.appendChild(row);
+      });
     }
 
-    snapshot.forEach((doc) => {
-      const income = doc.data();
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td class="mono">${new Date(income.date).toLocaleDateString(
-          "en-GB"
-        )}</td>
-        <td><span class="category-badge">${income.source}</span></td>
-        <td>${income.description}</td>
-        <td class="mono">£${income.amount.toFixed(2)}</td>
-      `;
-      tbody.appendChild(row);
-    });
+    renderPagination('adminIncomeList', page, allDocs.length, loadAdminIncome);
   } catch (error) {
     console.error("Error loading admin income:", error);
+    tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Error loading data.</td></tr>';
   }
 }
 
-async function loadAdminTime() {
-  try {
-    const snapshot = await firebase
-      .firestore()
-      .collection("timeEntries")
-      .orderBy("date", "desc")
-      .limit(20)
-      .get();
+async function loadAdminTime(page = 1) {
+  const tbody = document.getElementById("adminTimeList");
+  if (!tbody) return;
 
-    const tbody = document.getElementById("adminTimeList");
-    if (!tbody) return;
+  setLoading('#adminTimeList');
+
+  try {
+    if (page === 1 || !adminPaginationState.time) {
+      const snapshot = await firebase
+        .firestore()
+        .collection("timeEntries")
+        .orderBy("date", "desc")
+        .get();
+      adminPaginationState.time = { docs: snapshot.docs };
+    }
+
+    const allDocs = adminPaginationState.time.docs;
+    const start = (page - 1) * ADMIN_PAGE_SIZE;
+    const pageDocs = allDocs.slice(start, start + ADMIN_PAGE_SIZE);
 
     tbody.innerHTML = "";
 
-    if (snapshot.empty) {
+    if (allDocs.length === 0) {
       tbody.innerHTML =
         '<tr><td colspan="4" class="empty-state">No time entries yet.</td></tr>';
-      return;
+    } else {
+      pageDocs.forEach((doc) => {
+        const entry = doc.data();
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td class="mono">${new Date(entry.date).toLocaleDateString("en-GB")}</td>
+          <td><span class="category-badge">${entry.category}</span></td>
+          <td class="mono">${entry.hours}h</td>
+          <td>${entry.description || "-"}</td>
+        `;
+        tbody.appendChild(row);
+      });
     }
 
-    snapshot.forEach((doc) => {
-      const entry = doc.data();
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td class="mono">${new Date(entry.date).toLocaleDateString(
-          "en-GB"
-        )}</td>
-        <td><span class="category-badge">${entry.category}</span></td>
-        <td class="mono">${entry.hours}h</td>
-        <td>${entry.description || "-"}</td>
-      `;
-      tbody.appendChild(row);
-    });
+    renderPagination('adminTimeList', page, allDocs.length, loadAdminTime);
   } catch (error) {
     console.error("Error loading admin time:", error);
+    tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Error loading data.</td></tr>';
   }
 }
 
-async function loadAdminVibes() {
-  try {
-    const snapshot = await firebase
-      .firestore()
-      .collection("vibeChecks")
-      .orderBy("date", "desc")
-      .limit(20)
-      .get();
+async function loadAdminVibes(page = 1) {
+  const tbody = document.getElementById("adminVibeList");
+  if (!tbody) return;
 
-    const tbody = document.getElementById("adminVibeList");
-    if (!tbody) return;
+  setLoading('#adminVibeList');
+
+  try {
+    if (page === 1 || !adminPaginationState.vibes) {
+      const snapshot = await firebase
+        .firestore()
+        .collection("vibeChecks")
+        .orderBy("date", "desc")
+        .get();
+      adminPaginationState.vibes = { docs: snapshot.docs };
+    }
+
+    const allDocs = adminPaginationState.vibes.docs;
+    const start = (page - 1) * ADMIN_PAGE_SIZE;
+    const pageDocs = allDocs.slice(start, start + ADMIN_PAGE_SIZE);
 
     tbody.innerHTML = "";
 
-    if (snapshot.empty) {
+    if (allDocs.length === 0) {
       tbody.innerHTML =
         '<tr><td colspan="3" class="empty-state">No vibe checks yet.</td></tr>';
-      return;
+    } else {
+      pageDocs.forEach((doc) => {
+        const vibe = doc.data();
+        const statusClass = vibe.status.toLowerCase();
+        const emoji =
+          vibe.status === "Green" ? "🟢" : vibe.status === "Amber" ? "🟡" : "🔴";
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td class="mono">${new Date(vibe.date).toLocaleDateString("en-GB")}</td>
+          <td><span class="vibe-badge ${statusClass}">${emoji} ${vibe.status}</span></td>
+          <td>${vibe.notes}</td>
+        `;
+        tbody.appendChild(row);
+      });
     }
 
-    snapshot.forEach((doc) => {
-      const vibe = doc.data();
-      const statusClass = vibe.status.toLowerCase();
-      const emoji =
-        vibe.status === "Green"
-          ? "🟢"
-          : vibe.status === "Amber"
-            ? "🟡"
-            : "🔴";
-
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td class="mono">${new Date(vibe.date).toLocaleDateString("en-GB")}</td>
-        <td><span class="vibe-badge ${statusClass}">${emoji} ${vibe.status}</span></td>
-        <td>${vibe.notes}</td>
-      `;
-      tbody.appendChild(row);
-    });
+    renderPagination('adminVibeList', page, allDocs.length, loadAdminVibes);
   } catch (error) {
     console.error("Error loading admin vibes:", error);
+    tbody.innerHTML = '<tr><td colspan="3" class="empty-state">Error loading data.</td></tr>';
   }
 }
 
 
 async function loadAdminPlanned() {
+  const tbody = document.getElementById("adminPlannedList");
+  if (!tbody) return;
+
+  setLoading('#adminPlannedList');
+
   try {
     const snapshot = await firebase
       .firestore()
       .collection("plannedExpenses")
       .where("isPurchased", "==", false)
       .get();
-
-    const tbody = document.getElementById("adminPlannedList");
-    if (!tbody) return;
 
     tbody.innerHTML = "";
 
@@ -805,10 +939,10 @@ async function loadAdminPlanned() {
         <td>${item.description || "-"}</td>
         <td class="mono">£${item.estimatedCost.toFixed(2)}</td>
         <td>
-          <button class="btn btn-primary btn-small" onclick="markAsPaid('${doc.id}')">
+          <button class="btn btn-primary btn-small" data-action="mark-paid" data-id="${doc.id}">
             Mark as Paid
           </button>
-          <button class="btn btn-danger btn-small" onclick="deletePlannedExpense('${doc.id}')">
+          <button class="btn btn-danger btn-small" data-action="delete-planned" data-id="${doc.id}">
             Delete
           </button>
         </td>
@@ -817,6 +951,7 @@ async function loadAdminPlanned() {
     });
   } catch (error) {
     console.error("Error loading admin planned:", error);
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Error loading data.</td></tr>';
   }
 }
 
@@ -875,6 +1010,10 @@ async function markAsPaid(id) {
 
 async function handleRecurringSubmit(e) {
   e.preventDefault();
+  const submitBtn = e.target.querySelector('[type="submit"]');
+  const originalText = submitBtn.textContent;
+  submitBtn.textContent = 'Saving...';
+  submitBtn.disabled = true;
 
   try {
     const recurring = {
@@ -894,59 +1033,74 @@ async function handleRecurringSubmit(e) {
     e.target.reset();
     document.getElementById("recurringActive").checked = true;
 
+    adminPaginationState.recurring = null;
     loadAdminRecurring();
   } catch (error) {
     showMessage("Error adding recurring cost: " + error.message, "error");
+  } finally {
+    submitBtn.textContent = originalText;
+    submitBtn.disabled = false;
   }
 }
 
 // Add function to load recurring costs
-async function loadAdminRecurring() {
-  try {
-    const snapshot = await firebase
-      .firestore()
-      .collection("recurringCosts")
-      .orderBy("createdAt", "desc")
-      .get();
+async function loadAdminRecurring(page = 1) {
+  const tbody = document.getElementById("adminRecurringList");
+  if (!tbody) return;
 
-    const tbody = document.getElementById("adminRecurringList");
-    if (!tbody) return;
+  setLoading('#adminRecurringList');
+
+  try {
+    if (page === 1 || !adminPaginationState.recurring) {
+      const snapshot = await firebase
+        .firestore()
+        .collection("recurringCosts")
+        .orderBy("createdAt", "desc")
+        .get();
+      adminPaginationState.recurring = { docs: snapshot.docs };
+    }
+
+    const allDocs = adminPaginationState.recurring.docs;
+    const start = (page - 1) * ADMIN_PAGE_SIZE;
+    const pageDocs = allDocs.slice(start, start + ADMIN_PAGE_SIZE);
 
     tbody.innerHTML = "";
 
-    if (snapshot.empty) {
+    if (allDocs.length === 0) {
       tbody.innerHTML =
         '<tr><td colspan="6" class="empty-state">No recurring costs.</td></tr>';
-      return;
+    } else {
+      pageDocs.forEach((doc) => {
+        const cost = doc.data();
+        const row = document.createElement("tr");
+        const statusBadge = cost.isActive
+          ? '<span class="vibe-badge green">Active</span>'
+          : '<span class="vibe-badge red">Inactive</span>';
+
+        row.innerHTML = `
+          <td>${cost.item}</td>
+          <td><span class="category-badge">${cost.category}</span></td>
+          <td class="mono">£${cost.amount.toFixed(2)}</td>
+          <td class="mono">${cost.dayOfMonth}</td>
+          <td>${statusBadge}</td>
+          <td>
+            <button class="btn btn-small ${cost.isActive ? 'btn-danger' : 'btn-primary'}"
+                    data-action="toggle-recurring" data-id="${doc.id}" data-active="${!cost.isActive}">
+              ${cost.isActive ? 'Deactivate' : 'Activate'}
+            </button>
+            <button class="btn btn-danger btn-small" data-action="delete-recurring" data-id="${doc.id}">
+              Delete
+            </button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
     }
 
-    snapshot.forEach((doc) => {
-      const cost = doc.data();
-      const row = document.createElement("tr");
-      const statusBadge = cost.isActive
-        ? '<span class="vibe-badge green">Active</span>'
-        : '<span class="vibe-badge red">Inactive</span>';
-
-      row.innerHTML = `
-        <td>${cost.item}</td>
-        <td><span class="category-badge">${cost.category}</span></td>
-        <td class="mono">£${cost.amount.toFixed(2)}</td>
-        <td class="mono">${cost.dayOfMonth}</td>
-        <td>${statusBadge}</td>
-        <td>
-          <button class="btn btn-small ${cost.isActive ? "btn-danger" : "btn-primary"}" 
-                  onclick="toggleRecurring('${doc.id}', ${!cost.isActive})">
-            ${cost.isActive ? "Deactivate" : "Activate"}
-          </button>
-          <button class="btn btn-danger btn-small" onclick="deleteRecurring('${doc.id}')">
-            Delete
-          </button>
-        </td>
-      `;
-      tbody.appendChild(row);
-    });
+    renderPagination('adminRecurringList', page, allDocs.length, loadAdminRecurring);
   } catch (error) {
     console.error("Error loading recurring costs:", error);
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Error loading data.</td></tr>';
   }
 }
 
@@ -1097,9 +1251,3 @@ async function loadContributionAnalytics() {
   }
 }
 
-// Make functions available globally
-window.deletePlannedExpense = deletePlannedExpense;
-window.processRecurringCosts = processRecurringCosts;
-window.markAsPaid = markAsPaid;
-window.toggleRecurring = toggleRecurring;
-window.deleteRecurring = deleteRecurring;

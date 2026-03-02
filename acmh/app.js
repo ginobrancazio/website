@@ -1,12 +1,30 @@
 // Public-facing application JavaScript
 let charts = {};
 
+const KOFI_URL = "https://ko-fi.com/ginolitway";
+
+// Resolved after DOM is ready so CSS variables are accessible
+let CHART_COLORS;
+
 // Initialize when DOM is ready
 document.addEventListener("DOMContentLoaded", () => {
   initializeApp();
 });
 
 async function initializeApp() {
+  // Read chart colours from CSS variables
+  const cs = getComputedStyle(document.documentElement);
+  CHART_COLORS = {
+    primary: cs.getPropertyValue('--chart-primary').trim(),
+    primaryBg: cs.getPropertyValue('--chart-primary-bg').trim(),
+    spending: cs.getPropertyValue('--chart-spending').trim(),
+    spendingBg: cs.getPropertyValue('--chart-spending-bg').trim(),
+    vibeGreen: cs.getPropertyValue('--chart-vibe-green').trim(),
+    vibeAmber: cs.getPropertyValue('--chart-vibe-amber').trim(),
+    vibeRed: cs.getPropertyValue('--chart-vibe-red').trim(),
+    palette: [1,2,3,4,5,6,7].map(i => cs.getPropertyValue(`--chart-palette-${i}`).trim()),
+  };
+
   try {
     // Load all data
     await Promise.all([
@@ -208,8 +226,8 @@ function createTimeChart(timeEntries) {
         {
           label: "Cumulative Hours",
           data: dataPoints,
-          borderColor: "rgb(124, 58, 237)",
-          backgroundColor: "rgba(124, 58, 237, 0.1)",
+          borderColor: CHART_COLORS.primary,
+          backgroundColor: CHART_COLORS.primaryBg,
           tension: 0.4,
           fill: true,
         },
@@ -285,8 +303,8 @@ function createBudgetChart(expenses) {
         {
           label: "Cumulative Spending (£)",
           data: dataPoints,
-          borderColor: "rgb(245, 101, 101)",
-          backgroundColor: "rgba(245, 101, 101, 0.1)",
+          borderColor: CHART_COLORS.spending,
+          backgroundColor: CHART_COLORS.spendingBg,
           tension: 0.4,
           fill: true,
         },
@@ -352,15 +370,7 @@ function createTimeCategoryChart(timeEntries) {
       datasets: [
         {
           data: hours,
-          backgroundColor: [
-            "rgba(124, 58, 237, 0.8)",
-            "rgba(59, 130, 246, 0.8)",
-            "rgba(16, 185, 129, 0.8)",
-            "rgba(245, 158, 11, 0.8)",
-            "rgba(245, 101, 101, 0.8)",
-            "rgba(139, 92, 246, 0.8)",
-            "rgba(236, 72, 153, 0.8)",
-          ],
+          backgroundColor: CHART_COLORS.palette,
         },
       ],
     },
@@ -402,15 +412,7 @@ function createBudgetCategoryChart(expenses) {
       datasets: [
         {
           data: amounts,
-          backgroundColor: [
-            "rgba(124, 58, 237, 0.8)",
-            "rgba(59, 130, 246, 0.8)",
-            "rgba(16, 185, 129, 0.8)",
-            "rgba(245, 158, 11, 0.8)",
-            "rgba(245, 101, 101, 0.8)",
-            "rgba(139, 92, 246, 0.8)",
-            "rgba(236, 72, 153, 0.8)",
-          ],
+          backgroundColor: CHART_COLORS.palette,
         },
       ],
     },
@@ -446,9 +448,9 @@ function createVibeChart(vibeChecks) {
   });
 
   const colors = vibeChecks.map((v) => {
-    if (v.status === "Green") return "rgba(46, 204, 113, 0.8)";
-    if (v.status === "Amber") return "rgba(243, 156, 18, 0.8)";
-    return "rgba(232, 69, 69, 0.8)";
+    if (v.status === "Green") return CHART_COLORS.vibeGreen;
+    if (v.status === "Amber") return CHART_COLORS.vibeAmber;
+    return CHART_COLORS.vibeRed;
   });
 
   if (charts.vibeChart) charts.vibeChart.destroy();
@@ -460,7 +462,7 @@ function createVibeChart(vibeChecks) {
         {
           label: "Vibe Check",
           data: dataPoints,
-          borderColor: "rgb(124, 58, 237)",
+          borderColor: CHART_COLORS.primary,
           backgroundColor: colors,
           tension: 0.4,
           pointRadius: 8,
@@ -661,212 +663,203 @@ function setupGalleryFilters() {
   });
 }
 
+// Show a loading row inside a table body (accepts a CSS selector)
+function setLoading(selector) {
+  const el = document.querySelector(selector);
+  if (el) el.innerHTML = '<tr><td colspan="10" class="loading-state">Loading...</td></tr>';
+}
+
+// ---- Budget helpers ----
+
+async function loadIncomeSection() {
+  setLoading('#incomeTable tbody');
+
+  const allIncomeSnapshot = await db.collection("income").get();
+  const recentIncomeSnapshot = await db
+    .collection("income")
+    .orderBy("date", "desc")
+    .limit(20)
+    .get();
+
+  const incomeTable = document
+    .getElementById("incomeTable")
+    .querySelector("tbody");
+  incomeTable.innerHTML = "";
+
+  let totalIncome = 0;
+  allIncomeSnapshot.forEach((doc) => {
+    totalIncome += doc.data().amount;
+  });
+
+  if (recentIncomeSnapshot.empty) {
+    incomeTable.innerHTML =
+      '<tr><td colspan="4" class="empty-state">No income recorded yet.</td></tr>';
+  } else {
+    recentIncomeSnapshot.forEach((doc) => {
+      const income = doc.data();
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td data-label="Date" class="mono">${new Date(income.date).toLocaleDateString("en-GB")}</td>
+        <td data-label="Source"><span class="category-badge">${income.source}</span></td>
+        <td data-label="Description">${income.description}</td>
+        <td data-label="Amount" class="mono">£${income.amount.toFixed(2)}</td>
+      `;
+      incomeTable.appendChild(row);
+    });
+  }
+
+  return totalIncome;
+}
+
+async function loadExpensesSection() {
+  setLoading('#expensesTable tbody');
+
+  const allExpensesSnapshot = await db.collection("expenses").get();
+  const recentExpensesSnapshot = await db
+    .collection("expenses")
+    .orderBy("date", "desc")
+    .limit(20)
+    .get();
+
+  const expensesTable = document
+    .getElementById("expensesTable")
+    .querySelector("tbody");
+  expensesTable.innerHTML = "";
+
+  let totalSpent = 0;
+  allExpensesSnapshot.forEach((doc) => {
+    totalSpent += doc.data().amount;
+  });
+
+  if (recentExpensesSnapshot.empty) {
+    expensesTable.innerHTML =
+      '<tr><td colspan="4" class="empty-state">No expenses recorded yet.</td></tr>';
+  } else {
+    recentExpensesSnapshot.forEach((doc) => {
+      const expense = doc.data();
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td data-label="Date" class="mono">${new Date(expense.date).toLocaleDateString("en-GB")}</td>
+        <td data-label="Category"><span class="category-badge">${expense.category}</span></td>
+        <td data-label="Description">${expense.description}</td>
+        <td data-label="Amount" class="mono">£${expense.amount.toFixed(2)}</td>
+      `;
+      expensesTable.appendChild(row);
+    });
+  }
+
+  return totalSpent;
+}
+
+async function loadPlannedSection() {
+  setLoading('#plannedTable tbody');
+
+  const plannedSnapshot = await db
+    .collection("plannedExpenses")
+    .where("isPurchased", "==", false)
+    .get();
+
+  const recurringSnapshot = await db
+    .collection("recurringCosts")
+    .where("isActive", "==", true)
+    .get();
+
+  const plannedTable = document
+    .getElementById("plannedTable")
+    .querySelector("tbody");
+  plannedTable.innerHTML = "";
+
+  if (plannedSnapshot.empty && recurringSnapshot.empty) {
+    plannedTable.innerHTML =
+      '<tr><td colspan="4" class="empty-state">No planned expenses.</td></tr>';
+  } else {
+    plannedSnapshot.forEach((doc) => {
+      const planned = doc.data();
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td data-label="Item">${planned.item}</td>
+        <td data-label="Category"><span class="category-badge">${planned.category}</span></td>
+        <td data-label="Est. Cost" class="mono">£${planned.estimatedCost.toFixed(2)}</td>
+        <td data-label="Notes">${planned.notes || "-"}</td>
+        <td data-label="Action">
+          <button
+            class="btn-contribute"
+            data-item-id="${doc.id}"
+            data-item-name="${planned.item}"
+            data-item-cost="${planned.estimatedCost}"
+          >
+            💝 Contribute
+          </button>
+        </td>
+      `;
+      plannedTable.appendChild(row);
+    });
+
+    recurringSnapshot.forEach((doc) => {
+      const recurring = doc.data();
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td data-label="Item">
+          ${recurring.item}
+          <span class="recurring-badge">RECURRING</span>
+        </td>
+        <td data-label="Category"><span class="category-badge">${recurring.category}</span></td>
+        <td data-label="Cost" class="mono">£${recurring.amount.toFixed(2)} / month</td>
+        <td data-label="Notes">${recurring.description || "-"}</td>
+        <td data-label="Action">
+          <button
+            class="btn-contribute"
+            data-item-id="${doc.id}"
+            data-item-name="${recurring.item} (Monthly)"
+            data-item-cost="${recurring.amount}"
+          >
+            💝 Contribute
+          </button>
+        </td>
+      `;
+      plannedTable.appendChild(row);
+    });
+
+    const plannedTableElement = document.getElementById("plannedTable");
+    if (plannedTableElement) {
+      const handleContribute = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const button = e.target.closest('.btn-contribute');
+        if (button) {
+          const itemId = button.dataset.itemId;
+          const itemName = button.dataset.itemName;
+          const itemCost = parseFloat(button.dataset.itemCost);
+          contributeToItem(itemId, itemName, itemCost);
+        }
+      };
+      plannedTableElement.addEventListener("click", handleContribute);
+      plannedTableElement.addEventListener("touchend", handleContribute);
+    }
+  }
+}
+
+function updateBudgetSummary(income, spent) {
+  const profitLoss = income - spent;
+  const profitLossElement = document.getElementById("budgetProfitLoss");
+
+  document.getElementById("budgetIncome").textContent = `£${income.toFixed(2)}`;
+  document.getElementById("budgetSpent").textContent = `£${spent.toFixed(2)}`;
+  profitLossElement.textContent = `£${profitLoss.toFixed(2)}`;
+
+  profitLossElement.classList.remove("profit", "loss");
+  profitLossElement.classList.add(profitLoss >= 0 ? "profit" : "loss");
+}
+
 // Load Budget Data
 async function loadBudget() {
   try {
-    // Load ALL income
-    const allIncomeSnapshot = await db.collection("income").get();
-
-    // Load recent income for table display
-    const recentIncomeSnapshot = await db
-      .collection("income")
-      .orderBy("date", "desc")
-      .limit(20)
-      .get();
-
-    const incomeTable = document
-      .getElementById("incomeTable")
-      .querySelector("tbody");
-    incomeTable.innerHTML = "";
-
-    let totalIncome = 0;
-
-    // Calculate total from ALL income
-    allIncomeSnapshot.forEach((doc) => {
-      const income = doc.data();
-      totalIncome += income.amount;
-    });
-
-    // Populate income table
-    if (recentIncomeSnapshot.empty) {
-      incomeTable.innerHTML =
-        '<tr><td colspan="4" class="empty-state">No income recorded yet.</td></tr>';
-    } else {
-      recentIncomeSnapshot.forEach((doc) => {
-        const income = doc.data();
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td data-label="Date" class="mono">${new Date(income.date).toLocaleDateString("en-GB")}</td>
-    <td data-label="Source"><span class="category-badge">${income.source}</span></td>
-    <td data-label="Description">${income.description}</td>
-    <td data-label="Amount" class="mono">£${income.amount.toFixed(2)}</td>
-  `;
-        incomeTable.appendChild(row);
-      });
-    }
-
-    // Load ALL expenses
-    const allExpensesSnapshot = await db.collection("expenses").get();
-
-    // Load recent expenses for table display
-    const recentExpensesSnapshot = await db
-      .collection("expenses")
-      .orderBy("date", "desc")
-      .limit(20)
-      .get();
-
-    const expensesTable = document
-      .getElementById("expensesTable")
-      .querySelector("tbody");
-    expensesTable.innerHTML = "";
-
-    let totalSpent = 0;
-
-    // Calculate total from ALL expenses
-    allExpensesSnapshot.forEach((doc) => {
-      const expense = doc.data();
-      totalSpent += expense.amount;
-    });
-
-    // Populate expenses table
-    if (recentExpensesSnapshot.empty) {
-      expensesTable.innerHTML =
-        '<tr><td colspan="4" class="empty-state">No expenses recorded yet.</td></tr>';
-    } else {
-      recentExpensesSnapshot.forEach((doc) => {
-        const expense = doc.data();
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td data-label="Date" class="mono">${new Date(expense.date).toLocaleDateString("en-GB")}</td>
-    <td data-label="Category"><span class="category-badge">${expense.category}</span></td>
-    <td data-label="Description">${expense.description}</td>
-    <td data-label="Amount" class="mono">£${expense.amount.toFixed(2)}</td>
-  `;
-        expensesTable.appendChild(row);
-      });
-    }
-
-     // Load planned expenses (updated)
-const plannedSnapshot = await db
-  .collection("plannedExpenses")
-  .where("isPurchased", "==", false)
-  .get();
-
-// Load active recurring costs
-const recurringSnapshot = await db
-  .collection("recurringCosts")
-  .where("isActive", "==", true)
-  .get();
-
-const plannedTable = document
-  .getElementById("plannedTable")
-  .querySelector("tbody");
-
-plannedTable.innerHTML = "";
-
-// If both empty
-if (plannedSnapshot.empty && recurringSnapshot.empty) {
-  plannedTable.innerHTML =
-    '<tr><td colspan="4" class="empty-state">No planned expenses.</td></tr>';
-} else {
-
-  
-// Normal planned expenses
-plannedSnapshot.forEach((doc) => {
-  const planned = doc.data();
-  const row = document.createElement("tr");
-
-  row.innerHTML = `
-    <td data-label="Item">${planned.item}</td>
-    <td data-label="Category"><span class="category-badge">${planned.category}</span></td>
-    <td data-label="Est. Cost" class="mono">£${planned.estimatedCost.toFixed(2)}</td>
-    <td data-label="Notes">${planned.notes || "-"}</td>
-    <td data-label="Action">
-      <button 
-        class="btn-contribute" 
-        data-item-id="${doc.id}"
-        data-item-name="${planned.item}"
-        data-item-cost="${planned.estimatedCost}"
-      >
-        💝 Contribute
-      </button>
-    </td>
-  `;
-
-  plannedTable.appendChild(row);
-});
-
-// Recurring expenses
-recurringSnapshot.forEach((doc) => {
-  const recurring = doc.data();
-  const row = document.createElement("tr");
-
-  row.innerHTML = `
-    <td data-label="Item">
-      ${recurring.item}
-      <span class="recurring-badge">RECURRING</span>
-    </td>
-    <td data-label="Category"><span class="category-badge">${recurring.category}</span></td>
-    <td data-label="Cost" class="mono">£${recurring.amount.toFixed(2)} / month</td>
-    <td data-label="Notes">${recurring.description || "-"}</td>
-    <td data-label="Action">
-      <button 
-        class="btn-contribute"
-        data-item-id="${doc.id}"
-        data-item-name="${recurring.item} (Monthly)"
-        data-item-cost="${recurring.amount}"
-      >
-        💝 Contribute
-      </button>
-    </td>
-  `;
-
-  plannedTable.appendChild(row);
-});
-
-const plannedTableElement = document.getElementById("plannedTable");
-if (plannedTableElement) {
-  // Use both click and touchend events for better mobile support
-  const handleContribute = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const button = e.target.closest('.btn-contribute');
-    if (button) {
-      const itemId = button.dataset.itemId;
-      const itemName = button.dataset.itemName;
-      const itemCost = parseFloat(button.dataset.itemCost);
-      
-      console.log('Button clicked:', { itemId, itemName, itemCost });
-      
-      contributeToItem(itemId, itemName, itemCost);
-    }
-  };
-  
-  plannedTableElement.addEventListener("click", handleContribute);
-  plannedTableElement.addEventListener("touchend", handleContribute);
-}
-}
-
-    // Calculate profit/loss
-    const profitLoss = totalIncome - totalSpent;
-    const profitLossElement = document.getElementById("budgetProfitLoss");
-
-    // Update budget summary
-    document.getElementById("budgetIncome").textContent =
-      `£${totalIncome.toFixed(2)}`;
-    document.getElementById("budgetSpent").textContent =
-      `£${totalSpent.toFixed(2)}`;
-    profitLossElement.textContent = `£${profitLoss.toFixed(2)}`;
-
-    // Add profit/loss color class
-    profitLossElement.classList.remove("profit", "loss");
-    if (profitLoss >= 0) {
-      profitLossElement.classList.add("profit");
-    } else {
-      profitLossElement.classList.add("loss");
-    }
-    
+    const [totalIncome, totalSpent] = await Promise.all([
+      loadIncomeSection(),
+      loadExpensesSection(),
+      loadPlannedSection(),
+    ]);
+    updateBudgetSummary(totalIncome, totalSpent);
   } catch (error) {
     console.error("Error loading budget:", error);
     document.getElementById("budgetIncome").textContent = "Error";
@@ -882,12 +875,12 @@ window.contributeToItem = async function (itemId, itemName, amount) {
 
   // ⭐ Open Ko-fi IMMEDIATELY (before any async operations)
   // This must happen synchronously from the user click
-  const kofiWindow = window.open("https://ko-fi.com/ginolitway", "_blank");
+  const kofiWindow = window.open(KOFI_URL, "_blank");
   
   if (!kofiWindow) {
     // Popup was blocked
     alert("Please allow popups for this site, or click OK to visit Ko-fi");
-    window.location.href = "https://ko-fi.com/ginolitway";
+    window.location.href = KOFI_URL;
   }
 
   // Log to Firestore in the background (don't wait for it)
