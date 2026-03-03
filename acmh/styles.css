@@ -1357,3 +1357,215 @@ footer {
     min-height: 450px;
   }
 }
+
+/* ==============================================
+   DARK MODE — Sci-fi Neon Theme
+   ============================================== */
+
+[data-theme="dark"] {
+  --bg: #07080f;
+  --bg-secondary: #0c0e1a;
+  --text: #e2e8ff;
+  --text-muted: #7b8db0;
+  --accent-cyan: #00d4ff;
+  --accent-pink: #ff00aa;
+  --accent-coral: #ff6b35;
+  --accent-green: #00ffaa;
+  --accent-yellow: #ffaa00;
+  --gradient-start: #9d4eff;
+  --gradient-end: #00d4ff;
+  --border: rgba(0, 212, 255, 0.18);
+  --grid-color: rgba(0, 212, 255, 0.04);
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.7);
+
+  /* Neon chart colours */
+  --chart-primary: rgb(157, 78, 255);
+  --chart-primary-bg: rgba(157, 78, 255, 0.15);
+  --chart-spending: rgb(255, 107, 53);
+  --chart-spending-bg: rgba(255, 107, 53, 0.15);
+  --chart-vibe-green: rgba(0, 255, 170, 0.85);
+  --chart-vibe-amber: rgba(255, 170, 0, 0.85);
+  --chart-vibe-red: rgba(255, 107, 53, 0.85);
+  --chart-palette-1: rgba(157, 78, 255, 0.85);
+  --chart-palette-2: rgba(0, 212, 255, 0.85);
+  --chart-palette-3: rgba(0, 255, 170, 0.85);
+  --chart-palette-4: rgba(255, 170, 0, 0.85);
+  --chart-palette-5: rgba(255, 107, 53, 0.85);
+  --chart-palette-6: rgba(200, 0, 255, 0.85);
+  --chart-palette-7: rgba(255, 0, 170, 0.85);
+}
+
+/* Nav: override hardcoded background */
+[data-theme="dark"] nav {
+  background: rgba(7, 8, 15, 0.95);
+  border-bottom-color: rgba(0, 212, 255, 0.12);
+}
+
+/* Cards — subtle neon border glow */
+[data-theme="dark"] .metric-card,
+[data-theme="dark"] .chart-container,
+[data-theme="dark"] .update-card,
+[data-theme="dark"] .table-container,
+[data-theme="dark"] .summary-card,
+[data-theme="dark"] .screenshot-card,
+[data-theme="dark"] .screenshot-item,
+[data-theme="dark"] .task-column,
+[data-theme="dark"] .video-container,
+[data-theme="dark"] .about-content {
+  border-color: rgba(0, 212, 255, 0.12);
+  box-shadow: 0 0 24px rgba(157, 78, 255, 0.06);
+}
+
+[data-theme="dark"] .metric-card:hover,
+[data-theme="dark"] .update-card:hover,
+[data-theme="dark"] .screenshot-card:hover,
+[data-theme="dark"] .screenshot-item:hover {
+  border-color: rgba(157, 78, 255, 0.5);
+  box-shadow: 0 0 32px rgba(157, 78, 255, 0.2);
+}
+
+/* Metric values — neon glow */
+[data-theme="dark"] .metric-value {
+  text-shadow: 0 0 20px rgba(157, 78, 255, 0.5);
+}
+
+/* Section headers — cyan terminal style */
+[data-theme="dark"] .section-header {
+  color: var(--accent-cyan);
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
+}
+
+/* Primary button */
+[data-theme="dark"] .btn-primary {
+  box-shadow: 0 0 20px rgba(157, 78, 255, 0.35);
+}
+[data-theme="dark"] .btn-primary:hover {
+  box-shadow: 0 0 32px rgba(0, 212, 255, 0.5);
+}
+
+/* Secondary button — neon outline */
+[data-theme="dark"] .btn-secondary {
+  border-color: rgba(0, 212, 255, 0.35);
+  color: var(--accent-cyan);
+}
+[data-theme="dark"] .btn-secondary:hover {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  box-shadow: 0 0 16px rgba(0, 212, 255, 0.25);
+}
+
+/* Contribute button */
+[data-theme="dark"] .btn-contribute {
+  box-shadow: 0 0 14px rgba(157, 78, 255, 0.3);
+}
+[data-theme="dark"] .btn-contribute:hover {
+  box-shadow: 0 4px 22px rgba(157, 78, 255, 0.55);
+}
+
+/* Table header rows */
+[data-theme="dark"] .data-table th {
+  background: rgba(0, 212, 255, 0.05);
+}
+
+/* Update card left border accent */
+[data-theme="dark"] .update-card {
+  border-left-color: var(--accent-cyan);
+}
+
+/* Accordion */
+[data-theme="dark"] .accordion-header {
+  background: var(--bg-secondary);
+  border-color: rgba(0, 212, 255, 0.12);
+  animation: none;
+}
+[data-theme="dark"] .accordion-header:hover {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.12);
+}
+[data-theme="dark"] .accordion-header span:first-child::before {
+  color: var(--accent-cyan);
+}
+
+/* Game frame corner brackets */
+[data-theme="dark"] .frame-corner.tl,
+[data-theme="dark"] .frame-corner.tr {
+  border-color: var(--accent-cyan);
+  filter: drop-shadow(0 0 5px var(--accent-cyan));
+}
+[data-theme="dark"] .frame-corner.bl,
+[data-theme="dark"] .frame-corner.br {
+  border-color: var(--accent-coral);
+  filter: drop-shadow(0 0 5px var(--accent-coral));
+}
+
+/* Gallery filter buttons */
+[data-theme="dark"] .filter-btn {
+  background: var(--bg-secondary);
+  border-color: rgba(0, 212, 255, 0.2);
+  color: var(--text-muted);
+}
+[data-theme="dark"] .filter-btn:hover,
+[data-theme="dark"] .filter-btn.active {
+  background: var(--gradient-start);
+  border-color: var(--gradient-start);
+  box-shadow: 0 0 16px rgba(157, 78, 255, 0.4);
+}
+
+/* Hero badge */
+[data-theme="dark"] .hero-badge {
+  box-shadow: 0 0 20px rgba(255, 107, 53, 0.4);
+}
+
+/* Footer */
+[data-theme="dark"] footer {
+  border-top-color: rgba(0, 212, 255, 0.12);
+}
+
+/* Category badges */
+[data-theme="dark"] .category-badge {
+  background: rgba(0, 212, 255, 0.06);
+  border-color: rgba(0, 212, 255, 0.15);
+  color: var(--text-muted);
+}
+
+/* Vibe badges in dark */
+[data-theme="dark"] .vibe-badge.green {
+  background: rgba(0, 255, 170, 0.15);
+  color: var(--accent-green);
+}
+[data-theme="dark"] .vibe-badge.amber {
+  background: rgba(255, 170, 0, 0.15);
+  color: var(--accent-yellow);
+}
+[data-theme="dark"] .vibe-badge.red {
+  background: rgba(255, 107, 53, 0.15);
+  color: var(--accent-coral);
+}
+
+/* Theme toggle button */
+.theme-toggle {
+  background: none;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.theme-toggle:hover {
+  border-color: var(--accent-cyan);
+  color: var(--text);
+}
+[data-theme="dark"] .theme-toggle {
+  border-color: rgba(0, 212, 255, 0.3);
+  color: var(--accent-cyan);
+}
+[data-theme="dark"] .theme-toggle:hover {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.25);
+}

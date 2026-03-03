@@ -15,6 +15,8 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
   
   <link rel="stylesheet" href="styles.css" />
+  <!-- Apply saved theme before paint to prevent flash -->
+  <script>(function(){if(localStorage.getItem('acmh-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');})()</script>
   <style>
     .admin-container {
       max-width: 1400px;
@@ -410,6 +412,7 @@
         <li><a href="index.html">Public View</a></li>
         <li><a href="#" id="logoutBtn" style="color: var(--accent-coral);">Logout</a></li>
       </ul>
+      <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">🌙 Dark</button>
     </nav>
 
     <div class="admin-container">

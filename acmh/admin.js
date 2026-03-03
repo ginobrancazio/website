@@ -36,8 +36,37 @@ function renderPagination(tbodyId, page, total, loadFn) {
   });
 }
 
+// ---- Theme management ----
+
+function updateThemeToggle() {
+  const btn = document.getElementById('themeToggle');
+  if (!btn) return;
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  btn.textContent = isDark ? '☀ Light' : '🌙 Dark';
+}
+
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  if (isDark) {
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem('acmh-theme', 'light');
+  } else {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    localStorage.setItem('acmh-theme', 'dark');
+  }
+  updateThemeToggle();
+}
+
+function initTheme() {
+  updateThemeToggle();
+  const btn = document.getElementById('themeToggle');
+  if (btn) btn.addEventListener('click', toggleTheme);
+}
+
 // Initialize
 document.addEventListener("DOMContentLoaded", () => {
+  initTheme();
+
   // Set today's date as default for all date inputs
   const today = new Date().toISOString().split("T")[0];
   document.querySelectorAll('input[type="date"]').forEach((input) => {
@@ -47,8 +76,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Setup auth state observer
   setupAuthObserver();
 
-loadContributionAnalytics()
-  
+  loadContributionAnalytics();
+
   // Setup event listeners
   setupEventListeners();
 });

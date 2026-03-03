@@ -6,8 +6,48 @@ let KOFI_URL = "https://ko-fi.com/ginolitway"; // default; overridden by Firesto
 // Resolved after DOM is ready so CSS variables are accessible
 let CHART_COLORS;
 
+// ---- Theme management ----
+
+function applyChartTheme(isDark) {
+  if (typeof Chart === 'undefined') return;
+  Chart.defaults.color = isDark ? '#7b8db0' : '#5a5a5a';
+  Chart.defaults.borderColor = isDark
+    ? 'rgba(0, 212, 255, 0.08)'
+    : 'rgba(0, 0, 0, 0.08)';
+}
+
+function updateThemeToggle() {
+  const btn = document.getElementById('themeToggle');
+  if (!btn) return;
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  btn.textContent = isDark ? '☀ Light' : '🌙 Dark';
+}
+
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  if (isDark) {
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem('acmh-theme', 'light');
+  } else {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    localStorage.setItem('acmh-theme', 'dark');
+  }
+  applyChartTheme(!isDark);
+  updateThemeToggle();
+}
+
+function initTheme() {
+  const isDark = localStorage.getItem('acmh-theme') === 'dark';
+  // data-theme may already be set by the anti-FOUC inline script
+  applyChartTheme(isDark);
+  updateThemeToggle();
+  const btn = document.getElementById('themeToggle');
+  if (btn) btn.addEventListener('click', toggleTheme);
+}
+
 // Initialize when DOM is ready
 document.addEventListener("DOMContentLoaded", () => {
+  initTheme();
   initializeApp();
 });
 
