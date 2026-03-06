@@ -1462,10 +1462,14 @@ function renderTimelineItem(item) {
   switch (item.type) {
     case 'update':
       body = `
-        <h4 class="tl-title">${item.data.title}</h4>
-        <p class="tl-body">${item.data.summary || (item.data.content || '').substring(0, 140) + '...'}</p>
-        ${item.data.screenshotUrl ? `<img src="${item.data.screenshotUrl}" class="tl-img" loading="lazy" alt="${item.data.title}">` : ''}
-        ${item.data.tags && item.data.tags.length ? `<div class="tl-tags">${item.data.tags.map(t => `<span class="update-tag">${t}</span>`).join('')}</div>` : ''}
+        <div class="tl-body-row">
+          <div class="tl-text">
+            <h4 class="tl-title">${item.data.title}</h4>
+            <p class="tl-body">${item.data.summary || (item.data.content || '').substring(0, 140) + '...'}</p>
+            ${item.data.tags && item.data.tags.length ? `<div class="tl-tags">${item.data.tags.map(t => `<span class="update-tag">${t}</span>`).join('')}</div>` : ''}
+          </div>
+          ${item.data.screenshotUrl ? `<img src="${item.data.screenshotUrl}" class="tl-img" loading="lazy" alt="${item.data.title}">` : ''}
+        </div>
       `;
       break;
     case 'milestone-start':
@@ -1475,9 +1479,13 @@ function renderTimelineItem(item) {
       break;
     case 'screenshot':
       body = `
-        <h4 class="tl-title">${item.data.title}</h4>
-        <img src="${item.data.imageUrl}" class="tl-img" loading="lazy" alt="${item.data.title}">
-        ${item.data.description ? `<p class="tl-body">${item.data.description}</p>` : ''}
+        <div class="tl-body-row">
+          <img src="${item.data.imageUrl}" class="tl-img" loading="lazy" alt="${item.data.title}">
+          <div class="tl-text">
+            <h4 class="tl-title">${item.data.title}</h4>
+            ${item.data.description ? `<p class="tl-body">${item.data.description}</p>` : ''}
+          </div>
+        </div>
       `;
       break;
   }

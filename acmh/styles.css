@@ -1558,13 +1558,29 @@ footer {
   margin-bottom: 0.4rem;
 }
 
+.tl-body-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.tl-text {
+  flex: 1;
+  min-width: 0;
+}
+
 .tl-img {
-  width: 100%;
-  max-width: 420px;
+  width: 200px;
+  flex-shrink: 0;
   border-radius: 8px;
-  margin-top: 0.6rem;
   border: 1px solid var(--border);
-  display: block;
+  object-fit: cover;
+  align-self: flex-start;
+}
+
+@media (max-width: 600px) {
+  .tl-body-row { flex-direction: column; }
+  .tl-img { width: 100%; }
 }
 
 .tl-tags {
