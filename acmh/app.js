@@ -3,6 +3,11 @@ let charts = {};
 
 let KOFI_URL = "https://ko-fi.com/ginolitway"; // default; overridden by Firestore gameInfo.kofiUrl
 
+// Raw data stored globally so month filter can re-render without re-fetching
+let allTimeEntries = [];
+let allExpenses = [];
+let allVibeChecks = [];
+
 // Resolved after DOM is ready so CSS variables are accessible
 let CHART_COLORS;
 
@@ -177,62 +182,104 @@ async function handleNewsletterSubmit(e) {
 // Load Metrics and Charts
 async function loadMetrics() {
   try {
-    // Load time entries
-    const timeSnapshot = await db
-      .collection("timeEntries")
-      .orderBy("date")
-      .get();
-    const timeEntries = [];
-    timeSnapshot.forEach((doc) => timeEntries.push(doc.data()));
-
-    // Load expenses
-    const expenseSnapshot = await db
-      .collection("expenses")
-      .orderBy("date")
-      .get();
-    const expenses = [];
-    expenseSnapshot.forEach((doc) => expenses.push(doc.data()));
-
-    // Load vibe checks
-    const vibeSnapshot = await db
-      .collection("vibeChecks")
-      .orderBy("date")
-      .get();
-    const vibeChecks = [];
-    vibeSnapshot.forEach((doc) => vibeChecks.push(doc.data()));
-
-    // Calculate metrics
-    const totalHours = timeEntries.reduce((sum, e) => sum + e.hours, 0);
-    const totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
-
-    // Get unique dates for days active
-    const uniqueDates = new Set([
-      ...timeEntries.map((e) => e.date),
-      ...expenses.map((e) => e.date),
+    const [timeSnapshot, expenseSnapshot, vibeSnapshot] = await Promise.all([
+      db.collection("timeEntries").orderBy("date").get(),
+      db.collection("expenses").orderBy("date").get(),
+      db.collection("vibeChecks").orderBy("date").get(),
     ]);
-    const daysActive = uniqueDates.size;
 
-    // Calculate average hours per week
-    const weeks = daysActive / 7;
-    const avgHours = weeks > 0 ? (totalHours / weeks).toFixed(1) : 0;
+    allTimeEntries = [];
+    allExpenses = [];
+    allVibeChecks = [];
+    timeSnapshot.forEach((doc) => allTimeEntries.push(doc.data()));
+    expenseSnapshot.forEach((doc) => allExpenses.push(doc.data()));
+    vibeSnapshot.forEach((doc) => allVibeChecks.push(doc.data()));
 
-    // Update metric cards
-    document.getElementById("totalHours").textContent =
-      totalHours.toFixed(1);
-    document.getElementById("totalSpent").textContent =
-      `£${totalSpent.toFixed(2)}`;
-    document.getElementById("daysActive").textContent = daysActive;
-    document.getElementById("avgHours").textContent = avgHours;
-
-    // Create charts
-    createTimeChart(timeEntries);
-    createBudgetChart(expenses);
-    createTimeCategoryChart(timeEntries);
-    createBudgetCategoryChart(expenses);
-    createVibeChart(vibeChecks);
+    buildMonthFilter();
+    renderMetrics(allTimeEntries, allExpenses, allVibeChecks);
   } catch (error) {
     console.error("Error loading metrics:", error);
   }
+}
+
+// Render stat cards + all charts for a given (possibly filtered) dataset
+function renderMetrics(timeEntries, expenses, vibeChecks) {
+  const totalHours = timeEntries.reduce((sum, e) => sum + e.hours, 0);
+  const totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
+
+  const uniqueDates = new Set([
+    ...timeEntries.map((e) => e.date),
+    ...expenses.map((e) => e.date),
+  ]);
+  const daysActive = uniqueDates.size;
+  const weeks = daysActive / 7;
+  const avgHours = weeks > 0 ? (totalHours / weeks).toFixed(1) : 0;
+
+  document.getElementById("totalHours").textContent = totalHours.toFixed(1);
+  document.getElementById("totalSpent").textContent = `£${totalSpent.toFixed(2)}`;
+  document.getElementById("daysActive").textContent = daysActive;
+  document.getElementById("avgHours").textContent = avgHours;
+
+  createTimeChart(timeEntries);
+  createBudgetChart(expenses);
+  createTimeCategoryChart(timeEntries);
+  createBudgetCategoryChart(expenses);
+  createVibeChart(vibeChecks);
+}
+
+// Build the month filter buttons above the metrics section
+function buildMonthFilter() {
+  const container = document.getElementById("chart-filter");
+  if (!container) return;
+
+  // Collect all unique YYYY-MM strings across every dataset
+  const monthSet = new Set();
+  [...allTimeEntries, ...allExpenses, ...allVibeChecks].forEach((entry) => {
+    if (entry.date) monthSet.add(entry.date.substring(0, 7));
+  });
+  const months = Array.from(monthSet).sort();
+
+  container.innerHTML = "";
+
+  // "All Time" button
+  const allBtn = document.createElement("button");
+  allBtn.className = "filter-btn active";
+  allBtn.textContent = "All Time";
+  allBtn.dataset.month = "all";
+  container.appendChild(allBtn);
+
+  // One button per month that has data
+  months.forEach((month) => {
+    const [year, mon] = month.split("-");
+    const label = new Date(year, parseInt(mon) - 1, 1).toLocaleDateString("en-GB", {
+      month: "short",
+      year: "numeric",
+    });
+    const btn = document.createElement("button");
+    btn.className = "filter-btn";
+    btn.textContent = label;
+    btn.dataset.month = month;
+    container.appendChild(btn);
+  });
+
+  // Filter on click
+  container.querySelectorAll(".filter-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      container.querySelectorAll(".filter-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      const month = btn.dataset.month;
+      if (month === "all") {
+        renderMetrics(allTimeEntries, allExpenses, allVibeChecks);
+      } else {
+        renderMetrics(
+          allTimeEntries.filter((e) => e.date && e.date.startsWith(month)),
+          allExpenses.filter((e) => e.date && e.date.startsWith(month)),
+          allVibeChecks.filter((e) => e.date && e.date.startsWith(month))
+        );
+      }
+    });
+  });
 }
 
 // Create Time Over Time Chart

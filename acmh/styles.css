@@ -490,6 +490,14 @@ nav {
   opacity: 0.9;
 }
 
+/* Month filter above charts */
+.chart-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 2rem;
+}
+
 /* Metrics Dashboard */
 .metrics-grid {
   display: grid;
