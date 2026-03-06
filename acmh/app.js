@@ -7,6 +7,14 @@ let KOFI_URL = "https://ko-fi.com/ginolitway"; // default; overridden by Firesto
 let allTimeEntries = [];
 let allExpenses = [];
 let allVibeChecks = [];
+let allScreenshots = [];
+let allUpdates = [];
+let allMilestoneItems = [];
+
+// Carousel state
+let carouselImages = [];
+let carouselIndex = 0;
+let carouselInterval = null;
 
 // Custom Chart.js plugin: alternating month bands + solid boundary lines + pill labels.
 // Only activates on charts with a time-based x-axis.
@@ -175,7 +183,7 @@ async function initializeApp() {
       loadMilestones(),
     ]);
 
-    // Setup event listeners
+    buildTimeline();
     setupEventListeners();
   } catch (error) {
     console.error("Error initializing app:", error);
@@ -289,6 +297,8 @@ async function loadMetrics() {
     expenseSnapshot.forEach((doc) => allExpenses.push(doc.data()));
     vibeSnapshot.forEach((doc) => allVibeChecks.push(doc.data()));
 
+    updateStatsBarTime(allTimeEntries);
+    renderVibeStrip(allVibeChecks);
     buildMonthFilter();
     renderMetrics(allTimeEntries, allExpenses, allVibeChecks);
   } catch (error) {
@@ -725,9 +735,10 @@ async function loadUpdates() {
     const snapshot = await db
       .collection("updates")
       .orderBy("date", "desc")
-      .limit(10)
+      .limit(20)
       .get();
 
+    allUpdates = [];
     const grid = document.getElementById("updatesGrid");
     grid.innerHTML = "";
 
@@ -739,6 +750,7 @@ async function loadUpdates() {
 
     snapshot.forEach((doc) => {
       const update = doc.data();
+      allUpdates.push(update);
       const card = createUpdateCard(update);
       grid.appendChild(card);
     });
@@ -764,6 +776,7 @@ function createUpdateCard(update) {
     : "";
 
   card.innerHTML = `
+    ${update.screenshotUrl ? `<img src="${update.screenshotUrl}" class="update-thumb" loading="lazy" alt="${update.title}">` : ''}
     <div class="update-header">
       <h3 class="update-title">${update.title}</h3>
       <span class="update-date mono">${date}</span>
@@ -785,6 +798,7 @@ async function loadScreenshots() {
       .orderBy("date", "desc")
       .get();
 
+    allScreenshots = [];
     const grid = document.getElementById("screenshotsGrid");
     grid.innerHTML = "";
 
@@ -796,15 +810,19 @@ async function loadScreenshots() {
 
     snapshot.forEach((doc) => {
       const screenshot = doc.data();
+      allScreenshots.push(screenshot);
       const item = createScreenshotItem(screenshot);
       grid.appendChild(item);
     });
 
     // Setup filters
     setupGalleryFilters();
-    
+
     // Setup modal AFTER screenshots are loaded
     setupImageModal();
+
+    // Init hero carousel
+    initCarousel(allScreenshots);
   } catch (error) {
     console.error("Error loading screenshots:", error);
   }
@@ -1203,14 +1221,14 @@ function setupImageModal() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const accordion = document.querySelector(".accordion");
-  const header = document.querySelector(".accordion-header");
-
-  if (accordion && header) {
-    header.addEventListener("click", () => {
-      accordion.classList.toggle("open");
-    });
-  }
+  document.querySelectorAll(".accordion").forEach(accordion => {
+    const header = accordion.querySelector(".accordion-header");
+    if (header) {
+      header.addEventListener("click", () => {
+        accordion.classList.toggle("open");
+      });
+    }
+  });
 });
 
 // ---- Milestones (public) ----
@@ -1232,8 +1250,21 @@ async function loadMilestones() {
     }
 
     const milestones = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    allMilestoneItems = milestones;
     const completed = milestones.filter(m => m.isCompleted);
     const activeList = milestones.filter(m => !m.isCompleted);
+
+    // Update stats bar with first active milestone
+    if (activeList.length > 0) {
+      const milestoneItem = document.getElementById('statMilestoneItem');
+      const milestoneName = document.getElementById('statMilestoneName');
+      const milestoneDivider = document.getElementById('milestoneDivider');
+      if (milestoneItem) milestoneItem.style.display = '';
+      if (milestoneDivider) milestoneDivider.style.display = '';
+      if (milestoneName) milestoneName.textContent = activeList[0].title;
+      const bar = document.getElementById('statsBar');
+      if (bar) bar.style.display = '';
+    }
 
     section.style.display = '';
 
@@ -1309,4 +1340,213 @@ async function loadMilestones() {
   } catch (error) {
     console.error('Error loading milestones:', error);
   }
+}
+
+// ---- Stats bar (items 1, 2, 6) ----
+
+function calcStreak(timeEntries) {
+  if (!timeEntries.length) return 0;
+  const dateSet = new Set(timeEntries.map(e => e.date));
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  let check = new Date(today);
+
+  // If nothing logged today, start streak check from yesterday
+  if (!dateSet.has(check.toISOString().split('T')[0])) {
+    check.setDate(check.getDate() - 1);
+  }
+
+  let streak = 0;
+  while (true) {
+    const s = check.toISOString().split('T')[0];
+    if (!dateSet.has(s)) break;
+    streak++;
+    check.setDate(check.getDate() - 1);
+  }
+  return streak;
+}
+
+function updateStatsBarTime(timeEntries) {
+  if (!timeEntries.length) return;
+  const bar = document.getElementById('statsBar');
+  if (bar) bar.style.display = '';
+
+  // Last active
+  const sorted = [...timeEntries].sort((a, b) => a.date > b.date ? 1 : -1);
+  const last = new Date(sorted[sorted.length - 1].date);
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const lastNorm = new Date(last); lastNorm.setHours(0, 0, 0, 0);
+  const diff = Math.round((today - lastNorm) / 86400000);
+  const lastStr = diff === 0 ? 'Today' : diff === 1 ? 'Yesterday' : `${diff}d ago`;
+
+  const lastEl = document.getElementById('statLastActive');
+  if (lastEl) lastEl.textContent = lastStr;
+
+  // Streak
+  const streak = calcStreak(timeEntries);
+  const streakEl = document.getElementById('statStreak');
+  if (streakEl) streakEl.textContent = streak > 0 ? `${streak}d` : '—';
+
+  // Total hours
+  const totalHours = timeEntries.reduce((s, e) => s + (e.hours || 0), 0);
+  const hoursEl = document.getElementById('statHoursBar');
+  if (hoursEl) hoursEl.textContent = `${totalHours.toFixed(0)}h`;
+}
+
+// ---- Vibe strip (item 7) ----
+
+function renderVibeStrip(vibeChecks) {
+  const strip = document.getElementById('vibeStrip');
+  if (!strip) return;
+  if (!vibeChecks.length) {
+    strip.closest('.vibe-strip-wrapper').style.display = 'none';
+    return;
+  }
+
+  const sorted = [...vibeChecks].sort((a, b) => a.date > b.date ? 1 : -1).slice(-40);
+  strip.innerHTML = sorted.map(v => {
+    const cls = v.status === 'Green' ? 'vibe-dot-green' : v.status === 'Amber' ? 'vibe-dot-amber' : 'vibe-dot-red';
+    const label = new Date(v.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    const note = v.notes ? ` — ${v.notes.substring(0, 60)}` : '';
+    return `<span class="vibe-dot ${cls}" title="${label}${note}"></span>`;
+  }).join('');
+}
+
+// ---- Carousel (item 9) ----
+
+function initCarousel(screenshots) {
+  if (!screenshots || screenshots.length < 2) return;
+
+  carouselImages = screenshots.slice(0, 15);
+  carouselIndex = 0;
+
+  const prevBtn = document.getElementById('carouselPrev');
+  const nextBtn = document.getElementById('carouselNext');
+  const dotsEl = document.getElementById('carouselDots');
+
+  if (prevBtn) { prevBtn.style.display = ''; prevBtn.addEventListener('click', () => goToSlide((carouselIndex - 1 + carouselImages.length) % carouselImages.length)); }
+  if (nextBtn) { nextBtn.style.display = ''; nextBtn.addEventListener('click', () => goToSlide((carouselIndex + 1) % carouselImages.length)); }
+
+  if (dotsEl) {
+    dotsEl.innerHTML = carouselImages.map((_, i) =>
+      `<span class="carousel-dot${i === 0 ? ' active' : ''}" data-i="${i}"></span>`
+    ).join('');
+    dotsEl.querySelectorAll('.carousel-dot').forEach(dot => {
+      dot.addEventListener('click', () => goToSlide(parseInt(dot.dataset.i)));
+    });
+  }
+
+  // Auto-advance after 3s delay
+  setTimeout(() => {
+    carouselInterval = setInterval(() => goToSlide((carouselIndex + 1) % carouselImages.length), 5000);
+  }, 3000);
+}
+
+function goToSlide(index) {
+  carouselIndex = index;
+  const img = document.getElementById('gameCover');
+  const dotsEl = document.getElementById('carouselDots');
+
+  if (img) {
+    img.style.opacity = '0';
+    setTimeout(() => {
+      img.src = carouselImages[index].imageUrl;
+      img.alt = carouselImages[index].title;
+      img.style.opacity = '1';
+    }, 280);
+  }
+
+  if (dotsEl) {
+    dotsEl.querySelectorAll('.carousel-dot').forEach((dot, i) =>
+      dot.classList.toggle('active', i === index)
+    );
+  }
+
+  // Reset auto-advance timer
+  if (carouselInterval) {
+    clearInterval(carouselInterval);
+    carouselInterval = setInterval(() => goToSlide((carouselIndex + 1) % carouselImages.length), 5000);
+  }
+}
+
+// ---- Timeline (item 4) ----
+
+function buildTimeline() {
+  const container = document.getElementById('timelineContainer');
+  if (!container) return;
+
+  const items = [];
+
+  allUpdates.forEach(u => {
+    if (u.date) items.push({ type: 'update', date: u.date, data: u });
+  });
+
+  allMilestoneItems.forEach(m => {
+    if (m.startDate) items.push({ type: 'milestone-start', date: m.startDate, data: m });
+    if (m.isCompleted && m.endDate) items.push({ type: 'milestone-end', date: m.endDate, data: m });
+  });
+
+  allScreenshots.slice(0, 15).forEach(s => {
+    if (s.date) items.push({ type: 'screenshot', date: s.date, data: s });
+  });
+
+  items.sort((a, b) => a.date > b.date ? -1 : 1);
+
+  if (items.length === 0) {
+    container.innerHTML = '<div class="empty-state">Nothing yet — check back soon!</div>';
+    return;
+  }
+
+  container.innerHTML = '<div class="tl-list">' + items.map(renderTimelineItem).join('') + '</div>';
+}
+
+function renderTimelineItem(item) {
+  const dateStr = new Date(item.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+
+  const typeMap = {
+    'update':           { icon: '📝', label: 'Update' },
+    'milestone-start':  { icon: '🚀', label: 'Milestone Started' },
+    'milestone-end':    { icon: '✅', label: 'Milestone Complete' },
+    'screenshot':       { icon: '📸', label: item.data.category || 'Screenshot' },
+  };
+  const cfg = typeMap[item.type] || { icon: '•', label: '' };
+
+  let body = '';
+  switch (item.type) {
+    case 'update':
+      body = `
+        <h4 class="tl-title">${item.data.title}</h4>
+        <p class="tl-body">${item.data.summary || (item.data.content || '').substring(0, 140) + '...'}</p>
+        ${item.data.screenshotUrl ? `<img src="${item.data.screenshotUrl}" class="tl-img" loading="lazy" alt="${item.data.title}">` : ''}
+        ${item.data.tags && item.data.tags.length ? `<div class="tl-tags">${item.data.tags.map(t => `<span class="update-tag">${t}</span>`).join('')}</div>` : ''}
+      `;
+      break;
+    case 'milestone-start':
+    case 'milestone-end':
+      body = `<h4 class="tl-title">${item.data.title}</h4>
+        ${item.data.description ? `<p class="tl-body">${item.data.description}</p>` : ''}`;
+      break;
+    case 'screenshot':
+      body = `
+        <h4 class="tl-title">${item.data.title}</h4>
+        <img src="${item.data.imageUrl}" class="tl-img" loading="lazy" alt="${item.data.title}">
+        ${item.data.description ? `<p class="tl-body">${item.data.description}</p>` : ''}
+      `;
+      break;
+  }
+
+  return `
+    <div class="tl-item tl-${item.type}">
+      <div class="tl-indicator">
+        <div class="tl-dot">${cfg.icon}</div>
+      </div>
+      <div class="tl-card">
+        <div class="tl-meta">
+          <span class="tl-date mono">${dateStr}</span>
+          <span class="tl-badge tl-badge-${item.type}">${cfg.label}</span>
+        </div>
+        ${body}
+      </div>
+    </div>
+  `;
 }

@@ -750,12 +750,14 @@ async function handleUpdateSubmit(e) {
       ? tagsInput.split(",").map((tag) => tag.trim())
       : [];
 
+    const imageUrl = document.getElementById("updateImageUrl").value.trim();
     const update = {
       title: document.getElementById("updateTitle").value,
       summary: document.getElementById("updateSummary").value,
       content: document.getElementById("updateContent").value,
       date: document.getElementById("updateDate").value,
       tags,
+      screenshotUrl: imageUrl || null,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     };
 

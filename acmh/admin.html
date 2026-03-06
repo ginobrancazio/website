@@ -1139,9 +1139,9 @@
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label">Date</label>
-                <input 
-                  type="date" 
-                  id="updateDate" 
+                <input
+                  type="date"
+                  id="updateDate"
                   class="form-input"
                   required
                 />
@@ -1149,13 +1149,23 @@
 
               <div class="form-group">
                 <label class="form-label">Tags (comma separated)</label>
-                <input 
-                  type="text" 
-                  id="updateTags" 
+                <input
+                  type="text"
+                  id="updateTags"
                   class="form-input"
                   placeholder="art, gameplay, milestone"
                 />
               </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Featured Image URL (optional)</label>
+              <input
+                type="url"
+                id="updateImageUrl"
+                class="form-input"
+                placeholder="Paste a Firebase Storage image URL to show a thumbnail"
+              />
             </div>
 
             <button type="submit" class="btn btn-primary">

@@ -45,15 +45,40 @@
     <a href="../index.html" class="nav-logo">← GINO BRANCAZIO</a>
     <ul class="nav-links">
       <li><a href="#about">About</a></li>
-      <li><a href="#metrics">Metrics</a></li>
-      <li><a href="#progress">Progress</a></li>
       <li><a href="#milestonesSection">Milestones</a></li>
+      <li><a href="#metrics">Metrics</a></li>
+      <li><a href="#timeline">Timeline</a></li>
+      <li><a href="#progress">Progress</a></li>
       <li><a href="#budget">Budget</a></li>
-      <!-- <li><a href="#tasks">Tasks</a></li> -->
       <li><a href="admin.html" class="admin-link">Admin</a></li>
     </ul>
     <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">🌙 Dark</button>
   </nav>
+
+  <!-- Stats Bar -->
+  <div id="statsBar" class="stats-bar" style="display:none">
+    <div class="stats-bar-inner">
+      <div class="stats-bar-item">
+        <span class="stats-bar-value" id="statLastActive">—</span>
+        <span class="stats-bar-label">Last Active</span>
+      </div>
+      <div class="stats-bar-divider"></div>
+      <div class="stats-bar-item">
+        <span class="stats-bar-value" id="statStreak">—</span>
+        <span class="stats-bar-label">Streak</span>
+      </div>
+      <div class="stats-bar-divider"></div>
+      <div class="stats-bar-item">
+        <span class="stats-bar-value" id="statHoursBar">—</span>
+        <span class="stats-bar-label">Total Hours</span>
+      </div>
+      <div class="stats-bar-divider" id="milestoneDivider" style="display:none"></div>
+      <div class="stats-bar-item" id="statMilestoneItem" style="display:none">
+        <span class="stats-bar-value" id="statMilestoneName">—</span>
+        <span class="stats-bar-label">Current Milestone</span>
+      </div>
+    </div>
+  </div>
 
   <!-- Hero Section -->
   <section class="hero">
@@ -93,6 +118,9 @@
         class="game-cover"
         id="gameCover"
       />
+      <div class="carousel-dots" id="carouselDots"></div>
+      <button class="carousel-btn carousel-prev" id="carouselPrev" style="display:none">&#8249;</button>
+      <button class="carousel-btn carousel-next" id="carouselNext" style="display:none">&#8250;</button>
     </div>
   </div>
 </section>
@@ -148,10 +176,26 @@
 	
 </section>
 
+  <!-- Milestones -->
+  <section id="milestonesSection" class="section milestones-section">
+    <h2 class="section-header mono">// MILESTONES</h2>
+    <div id="activeMilestone" class="milestone-active-wrapper milestone-active-grid">
+      <div class="loading-state">Loading milestone...</div>
+    </div>
+    <h3 class="milestones-subheader">Completed</h3>
+    <div id="completedMilestones" class="milestones-grid">
+      <div class="loading-state">Loading...</div>
+    </div>
+  </section>
+
   <!-- Metrics Dashboard -->
   <section id="metrics" class="section metrics-section">
     <h2 class="section-header mono">// DEVELOPMENT METRICS</h2>
     <div id="chart-filter" class="chart-filter"></div>
+    <div class="vibe-strip-wrapper">
+      <span class="vibe-strip-label mono">RECENT VIBES</span>
+      <div id="vibeStrip" class="vibe-strip"></div>
+    </div>
     <div class="metrics-grid">
       <div class="metric-card">
         <div class="metric-icon">⏱️</div>
@@ -204,22 +248,14 @@
 
   
 
-  <!-- Milestones -->
-  <section id="milestonesSection" class="section milestones-section">
-    <h2 class="section-header mono">// MILESTONES</h2>
-    <div id="activeMilestone" class="milestone-active-wrapper milestone-active-grid">
-      <div class="loading-state">Loading milestone...</div>
-    </div>
-    <h3 class="milestones-subheader">Completed</h3>
-    <div id="completedMilestones" class="milestones-grid">
-      <div class="loading-state">Loading...</div>
-    </div>
-  </section>
-
    <!-- Budget Breakdown -->
-  <section id="budget" class="section budget-section">
-    <h2 class="section-header mono">// BUDGET TRACKER</h2>
-    
+  <section id="budget" class="section budget-section accordion">
+    <button class="accordion-header mono">
+      <span>// BUDGET TRACKER</span>
+      <span class="accordion-hint">Click to expand</span>
+      <span class="accordion-icon">▾</span>
+    </button>
+    <div class="accordion-content">
     <div class="budget-summary">
       <div class="summary-card">
         <h3>Total Income</h3>
@@ -301,6 +337,7 @@
         </div>
       </div>
     </div>
+    </div><!-- end accordion-content -->
   </section>
 
 
@@ -370,6 +407,14 @@
 
 -->
   
+  <!-- Development Timeline -->
+  <section id="timeline" class="section timeline-section">
+    <h2 class="section-header mono">// DEVELOPMENT TIMELINE</h2>
+    <div id="timelineContainer" class="timeline-container">
+      <div class="loading-state">Loading timeline...</div>
+    </div>
+  </section>
+
   <!-- Development Updates -->
   <section id="progress" class="section updates-section">
     <h2 class="section-header mono">// DEVELOPMENT UPDATES</h2>
