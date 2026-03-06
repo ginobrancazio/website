@@ -120,7 +120,7 @@ nav {
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: center;
-  padding: 10rem 6rem 4rem; /* extra top to clear nav + stats bar */
+  padding: 8rem 6rem 4rem;
   gap: 4rem;
   max-width: 1400px;
   margin: 0 auto;
@@ -1452,61 +1452,6 @@ footer {
 .vibe-dot-amber  { background: var(--accent-yellow); }
 .vibe-dot-red    { background: var(--accent-coral); }
 
-/* ---- Carousel (item 9) ---- */
-
-.game-frame {
-  position: relative;
-  overflow: hidden;
-}
-
-.game-cover {
-  transition: opacity 0.28s ease;
-}
-
-.carousel-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(0, 0, 0, 0.45);
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  font-size: 1.8rem;
-  line-height: 1;
-  padding: 0.4rem 0.65rem;
-  border-radius: 8px;
-  z-index: 10;
-  transition: background 0.2s;
-}
-
-.carousel-btn:hover { background: rgba(0, 0, 0, 0.7); }
-.carousel-prev { left: 8px; }
-.carousel-next { right: 8px; }
-
-.carousel-dots {
-  position: absolute;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 6px;
-  z-index: 10;
-}
-
-.carousel-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.45);
-  cursor: pointer;
-  transition: background 0.2s, transform 0.2s;
-}
-
-.carousel-dot.active {
-  background: #fff;
-  transform: scale(1.25);
-}
-
 /* ---- Timeline (item 4) ---- */
 
 .timeline-section {}
@@ -1698,7 +1643,7 @@ footer {
 
   .hero {
     grid-template-columns: 1fr;
-    padding: 9rem 2rem 4rem;
+    padding: 7rem 2rem 4rem;
   }
 
   .section,

@@ -11,10 +11,6 @@ let allScreenshots = [];
 let allUpdates = [];
 let allMilestoneItems = [];
 
-// Carousel state
-let carouselImages = [];
-let carouselIndex = 0;
-let carouselInterval = null;
 
 // Custom Chart.js plugin: alternating month bands + solid boundary lines + pill labels.
 // Only activates on charts with a time-based x-axis.
@@ -821,8 +817,6 @@ async function loadScreenshots() {
     // Setup modal AFTER screenshots are loaded
     setupImageModal();
 
-    // Init hero carousel
-    initCarousel(allScreenshots);
   } catch (error) {
     console.error("Error loading screenshots:", error);
   }
@@ -1410,63 +1404,6 @@ function renderVibeStrip(vibeChecks) {
     const note = v.notes ? ` — ${v.notes.substring(0, 60)}` : '';
     return `<span class="vibe-dot ${cls}" title="${label}${note}"></span>`;
   }).join('');
-}
-
-// ---- Carousel (item 9) ----
-
-function initCarousel(screenshots) {
-  if (!screenshots || screenshots.length < 2) return;
-
-  carouselImages = screenshots.slice(0, 15);
-  carouselIndex = 0;
-
-  const prevBtn = document.getElementById('carouselPrev');
-  const nextBtn = document.getElementById('carouselNext');
-  const dotsEl = document.getElementById('carouselDots');
-
-  if (prevBtn) { prevBtn.style.display = ''; prevBtn.addEventListener('click', () => goToSlide((carouselIndex - 1 + carouselImages.length) % carouselImages.length)); }
-  if (nextBtn) { nextBtn.style.display = ''; nextBtn.addEventListener('click', () => goToSlide((carouselIndex + 1) % carouselImages.length)); }
-
-  if (dotsEl) {
-    dotsEl.innerHTML = carouselImages.map((_, i) =>
-      `<span class="carousel-dot${i === 0 ? ' active' : ''}" data-i="${i}"></span>`
-    ).join('');
-    dotsEl.querySelectorAll('.carousel-dot').forEach(dot => {
-      dot.addEventListener('click', () => goToSlide(parseInt(dot.dataset.i)));
-    });
-  }
-
-  // Auto-advance after 3s delay
-  setTimeout(() => {
-    carouselInterval = setInterval(() => goToSlide((carouselIndex + 1) % carouselImages.length), 5000);
-  }, 3000);
-}
-
-function goToSlide(index) {
-  carouselIndex = index;
-  const img = document.getElementById('gameCover');
-  const dotsEl = document.getElementById('carouselDots');
-
-  if (img) {
-    img.style.opacity = '0';
-    setTimeout(() => {
-      img.src = carouselImages[index].imageUrl;
-      img.alt = carouselImages[index].title;
-      img.style.opacity = '1';
-    }, 280);
-  }
-
-  if (dotsEl) {
-    dotsEl.querySelectorAll('.carousel-dot').forEach((dot, i) =>
-      dot.classList.toggle('active', i === index)
-    );
-  }
-
-  // Reset auto-advance timer
-  if (carouselInterval) {
-    clearInterval(carouselInterval);
-    carouselInterval = setInterval(() => goToSlide((carouselIndex + 1) % carouselImages.length), 5000);
-  }
 }
 
 // ---- Timeline (item 4) ----
