@@ -8,6 +8,56 @@ let allTimeEntries = [];
 let allExpenses = [];
 let allVibeChecks = [];
 
+// Custom Chart.js plugin: draws a dashed vertical line + short label at each month boundary.
+// Only activates on charts with a time-based x-axis.
+const monthBoundaryPlugin = {
+  id: 'monthBoundaries',
+  afterDraw(chart) {
+    const { ctx, chartArea, scales } = chart;
+    if (!scales.x || scales.x.type !== 'time') return;
+
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const lineColor  = isDark ? 'rgba(0, 212, 255, 0.18)' : 'rgba(0, 0, 0, 0.1)';
+    const labelColor = isDark ? 'rgba(0, 212, 255, 0.45)' : 'rgba(0, 0, 0, 0.3)';
+
+    const xScale = scales.x;
+    const { top, bottom } = chartArea;
+
+    // Walk forward one month at a time from just after the axis min
+    const current = new Date(xScale.min);
+    current.setDate(1);
+    current.setHours(0, 0, 0, 0);
+    current.setMonth(current.getMonth() + 1);
+
+    ctx.save();
+
+    while (current.getTime() <= xScale.max) {
+      const x = xScale.getPixelForValue(current.getTime());
+
+      // Dashed vertical line
+      ctx.strokeStyle = lineColor;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 4]);
+      ctx.beginPath();
+      ctx.moveTo(x, top);
+      ctx.lineTo(x, bottom);
+      ctx.stroke();
+
+      // Month label just inside the top of the chart area
+      const monthLabel = current.toLocaleDateString('en-GB', { month: 'short', year: '2-digit' });
+      ctx.setLineDash([]);
+      ctx.fillStyle = labelColor;
+      ctx.font = '10px Inter, system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(monthLabel, x, top + 13);
+
+      current.setMonth(current.getMonth() + 1);
+    }
+
+    ctx.restore();
+  },
+};
+
 // Resolved after DOM is ready so CSS variables are accessible
 let CHART_COLORS;
 
@@ -227,7 +277,7 @@ function renderMetrics(timeEntries, expenses, vibeChecks) {
   createVibeChart(vibeChecks);
 }
 
-// Build the month filter buttons above the metrics section
+// Build the month filter dropdown above the metrics section
 function buildMonthFilter() {
   const container = document.getElementById("chart-filter");
   if (!container) return;
@@ -241,44 +291,46 @@ function buildMonthFilter() {
 
   container.innerHTML = "";
 
-  // "All Time" button
-  const allBtn = document.createElement("button");
-  allBtn.className = "filter-btn active";
-  allBtn.textContent = "All Time";
-  allBtn.dataset.month = "all";
-  container.appendChild(allBtn);
+  const label = document.createElement("label");
+  label.htmlFor = "month-select";
+  label.className = "filter-label mono";
+  label.textContent = "Period:";
+  container.appendChild(label);
 
-  // One button per month that has data
+  const select = document.createElement("select");
+  select.id = "month-select";
+  select.className = "month-select";
+
+  const allOption = document.createElement("option");
+  allOption.value = "all";
+  allOption.textContent = "All Time";
+  select.appendChild(allOption);
+
   months.forEach((month) => {
     const [year, mon] = month.split("-");
-    const label = new Date(year, parseInt(mon) - 1, 1).toLocaleDateString("en-GB", {
-      month: "short",
+    const monthLabel = new Date(year, parseInt(mon) - 1, 1).toLocaleDateString("en-GB", {
+      month: "long",
       year: "numeric",
     });
-    const btn = document.createElement("button");
-    btn.className = "filter-btn";
-    btn.textContent = label;
-    btn.dataset.month = month;
-    container.appendChild(btn);
+    const option = document.createElement("option");
+    option.value = month;
+    option.textContent = monthLabel;
+    select.appendChild(option);
   });
 
-  // Filter on click
-  container.querySelectorAll(".filter-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      container.querySelectorAll(".filter-btn").forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
+  container.appendChild(select);
 
-      const month = btn.dataset.month;
-      if (month === "all") {
-        renderMetrics(allTimeEntries, allExpenses, allVibeChecks);
-      } else {
-        renderMetrics(
-          allTimeEntries.filter((e) => e.date && e.date.startsWith(month)),
-          allExpenses.filter((e) => e.date && e.date.startsWith(month)),
-          allVibeChecks.filter((e) => e.date && e.date.startsWith(month))
-        );
-      }
-    });
+  select.addEventListener("change", () => {
+    const month = select.value;
+    if (month === "all") {
+      renderMetrics(allTimeEntries, allExpenses, allVibeChecks);
+    } else {
+      renderMetrics(
+        allTimeEntries.filter((e) => e.date && e.date.startsWith(month)),
+        allExpenses.filter((e) => e.date && e.date.startsWith(month)),
+        allVibeChecks.filter((e) => e.date && e.date.startsWith(month))
+      );
+    }
   });
 }
 
@@ -313,6 +365,7 @@ function createTimeChart(timeEntries) {
 
   charts.timeChart = new Chart(ctx, {
     type: "line",
+    plugins: [monthBoundaryPlugin],
     data: {
       datasets: [
         {
@@ -390,6 +443,7 @@ function createBudgetChart(expenses) {
 
   charts.budgetChart = new Chart(ctx, {
     type: "line",
+    plugins: [monthBoundaryPlugin],
     data: {
       datasets: [
         {
@@ -549,6 +603,7 @@ function createVibeChart(vibeChecks) {
 
   charts.vibeChart = new Chart(ctx, {
     type: "line",
+    plugins: [monthBoundaryPlugin],
     data: {
       datasets: [
         {
