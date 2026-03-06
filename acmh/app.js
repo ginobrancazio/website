@@ -1223,6 +1223,16 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
   });
+
+  // Set stats bar position to sit flush below the nav
+  const nav = document.querySelector('nav');
+  if (nav) {
+    const setNavHeight = () => {
+      document.documentElement.style.setProperty('--nav-height', nav.offsetHeight + 'px');
+    };
+    setNavHeight();
+    window.addEventListener('resize', setNavHeight);
+  }
 });
 
 // ---- Milestones (public) ----
