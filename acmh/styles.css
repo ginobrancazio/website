@@ -1228,11 +1228,7 @@ footer {
 
 /* ---- Milestones ---- */
 
-.milestones-section {
-  max-width: 900px;
-  margin-left: auto;
-  margin-right: auto;
-}
+.milestones-section {}
 
 .milestone-active-wrapper {
   margin-bottom: 2.5rem;
