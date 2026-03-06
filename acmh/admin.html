@@ -439,8 +439,7 @@
         <button class="tab" data-tab="screenshots">Upload Screenshot</button>
         <button class="tab" data-tab="updates">Dev Update</button>
         <button class="tab" data-tab="contributions">Contributions</button>
-
-
+        <button class="tab" data-tab="milestones">Milestones</button>
       </div>
 
       <!-- Game Info Tab -->
@@ -1220,6 +1219,63 @@
         </div>
       </div>
       
+    </div>
+  </div>
+
+  <!-- Milestones Tab -->
+  <div id="milestones" class="tab-content">
+    <div class="form-card">
+      <h2 class="form-card-title">Set Next Milestone</h2>
+      <form id="milestoneForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Milestone Title</label>
+            <input
+              type="text"
+              id="milestoneTitle"
+              class="form-input"
+              required
+              placeholder="e.g., Alpha Build Complete"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Start Date</label>
+            <input
+              type="date"
+              id="milestoneStartDate"
+              class="form-input"
+              required
+            />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description (optional)</label>
+          <textarea
+            id="milestoneDescription"
+            class="form-textarea"
+            placeholder="What does reaching this milestone mean?"
+            rows="3"
+          ></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Milestone</button>
+      </form>
+    </div>
+
+    <div class="form-card">
+      <h3 class="form-card-title">All Milestones</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Started</th>
+            <th>Completed</th>
+            <th>Duration</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="adminMilestonesList"></tbody>
+      </table>
     </div>
   </div>
 

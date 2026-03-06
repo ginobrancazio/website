@@ -211,6 +211,23 @@ if (recurringList) {
 // Wire process-recurring button via data-action
 const processBtn = document.querySelector('[data-action="process-recurring"]');
 if (processBtn) processBtn.addEventListener('click', processRecurringCosts);
+
+// Milestone form
+document
+  .getElementById("milestoneForm")
+  .addEventListener("submit", handleMilestoneSubmit);
+
+// Event delegation for milestones table
+const milestonesList = document.getElementById('adminMilestonesList');
+if (milestonesList) {
+  milestonesList.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const id = btn.dataset.id;
+    if (btn.dataset.action === 'complete-milestone') completeMilestone(id);
+    if (btn.dataset.action === 'delete-milestone') deleteMilestone(id);
+  });
+}
 }
 
 // Authentication Handlers
@@ -292,6 +309,9 @@ function switchTab(tabName) {
       break;
     case "recurring":
       loadAdminRecurring();
+      break;
+    case "milestones":
+      loadAdminMilestones();
       break;
   }
 }
@@ -1279,6 +1299,134 @@ async function loadContributionAnalytics() {
     if (clicksTable) {
       clicksTable.innerHTML = `<tr><td colspan="3" style="color: var(--accent-coral);">Error loading data: ${error.message}</td></tr>`;
     }
+  }
+}
+
+// ---- Milestones ----
+
+async function handleMilestoneSubmit(e) {
+  e.preventDefault();
+  const submitBtn = e.target.querySelector('[type="submit"]');
+  const originalText = submitBtn.textContent;
+  submitBtn.textContent = 'Saving...';
+  submitBtn.disabled = true;
+
+  try {
+    const milestone = {
+      title: document.getElementById('milestoneTitle').value,
+      description: document.getElementById('milestoneDescription').value || '',
+      startDate: document.getElementById('milestoneStartDate').value,
+      endDate: null,
+      isCompleted: false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+
+    await firebase.firestore().collection('milestones').add(milestone);
+
+    showMessage('Milestone added successfully!');
+    e.target.reset();
+    document.getElementById('milestoneStartDate').value = new Date().toISOString().split('T')[0];
+    loadAdminMilestones();
+  } catch (error) {
+    showMessage('Error adding milestone: ' + error.message, 'error');
+  } finally {
+    submitBtn.textContent = originalText;
+    submitBtn.disabled = false;
+  }
+}
+
+async function loadAdminMilestones() {
+  const tbody = document.getElementById('adminMilestonesList');
+  if (!tbody) return;
+
+  setLoading('#adminMilestonesList');
+
+  try {
+    const snapshot = await firebase
+      .firestore()
+      .collection('milestones')
+      .orderBy('startDate', 'desc')
+      .get();
+
+    tbody.innerHTML = '';
+
+    if (snapshot.empty) {
+      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No milestones yet.</td></tr>';
+      return;
+    }
+
+    const today = new Date();
+
+    snapshot.forEach((doc) => {
+      const m = doc.data();
+      const start = new Date(m.startDate);
+      const end = m.endDate ? new Date(m.endDate) : null;
+
+      const startStr = start.toLocaleDateString('en-GB');
+      const endStr = end ? end.toLocaleDateString('en-GB') : '-';
+
+      let durationStr = '-';
+      if (end) {
+        const days = Math.round((end - start) / 86400000);
+        durationStr = `${days} day${days !== 1 ? 's' : ''}`;
+      } else if (!m.isCompleted) {
+        const days = Math.round((today - start) / 86400000);
+        durationStr = `${days} day${days !== 1 ? 's' : ''} (ongoing)`;
+      }
+
+      const statusBadge = m.isCompleted
+        ? '<span class="vibe-badge green">Completed</span>'
+        : '<span class="vibe-badge amber">Active</span>';
+
+      const actions = m.isCompleted
+        ? `<button class="btn btn-danger btn-small" data-action="delete-milestone" data-id="${doc.id}">Delete</button>`
+        : `<button class="btn btn-primary btn-small" data-action="complete-milestone" data-id="${doc.id}">Mark Complete</button>
+           <button class="btn btn-danger btn-small" data-action="delete-milestone" data-id="${doc.id}">Delete</button>`;
+
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td><strong>${m.title}</strong>${m.description ? `<br><small style="color:var(--text-muted)">${m.description}</small>` : ''}</td>
+        <td class="mono">${startStr}</td>
+        <td class="mono">${endStr}</td>
+        <td class="mono">${durationStr}</td>
+        <td>${statusBadge}</td>
+        <td>${actions}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  } catch (error) {
+    console.error('Error loading milestones:', error);
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Error loading data.</td></tr>';
+  }
+}
+
+async function completeMilestone(id) {
+  if (!confirm('Mark this milestone as completed? This will record today as the end date.')) return;
+
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    await firebase.firestore().collection('milestones').doc(id).update({
+      isCompleted: true,
+      endDate: today,
+      completedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+
+    showMessage('Milestone marked as complete!');
+    loadAdminMilestones();
+  } catch (error) {
+    showMessage('Error completing milestone: ' + error.message, 'error');
+  }
+}
+
+async function deleteMilestone(id) {
+  if (!confirm('Are you sure you want to delete this milestone?')) return;
+
+  try {
+    await firebase.firestore().collection('milestones').doc(id).delete();
+    showMessage('Milestone deleted!');
+    loadAdminMilestones();
+  } catch (error) {
+    showMessage('Error deleting milestone: ' + error.message, 'error');
   }
 }
 

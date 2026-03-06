@@ -1226,6 +1226,135 @@ footer {
   background: var(--bg-secondary);
 }
 
+/* ---- Milestones ---- */
+
+.milestones-section {
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.milestone-active-wrapper {
+  margin-bottom: 2.5rem;
+}
+
+.milestone-active {
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+  border-radius: 16px;
+  padding: 2rem 2.5rem;
+  color: #fff;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(74, 111, 165, 0.25);
+}
+
+.milestone-active-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.8;
+  margin-bottom: 0.5rem;
+}
+
+.milestone-active-title {
+  font-size: 1.75rem;
+  font-weight: 900;
+  margin-bottom: 0.5rem;
+}
+
+.milestone-active-desc {
+  opacity: 0.85;
+  font-size: 0.95rem;
+  margin-bottom: 1.25rem;
+}
+
+.milestone-active-counter {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.milestone-days {
+  font-size: 3.5rem;
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.milestone-days-label {
+  font-size: 1rem;
+  opacity: 0.85;
+}
+
+.milestone-active-since {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.milestones-subheader {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 1rem;
+}
+
+.milestones-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.milestone-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  border-left: 4px solid var(--accent-green);
+}
+
+.milestone-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.milestone-card-title {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.milestone-card-duration {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent-green);
+  white-space: nowrap;
+  font-family: var(--font-mono, monospace);
+}
+
+.milestone-card-desc {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.milestone-card-dates {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono, monospace);
+}
+
+.milestone-none {
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+  padding: 1.5rem;
+}
+
 .footer-content {
   max-width: 1400px;
   margin: 0 auto;

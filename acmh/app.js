@@ -172,6 +172,7 @@ async function initializeApp() {
       loadScreenshots(),
       loadBudget(),
       loadYouTubePlaylist(),
+      loadMilestones(),
     ]);
 
     // Setup event listeners
@@ -1211,3 +1212,94 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
+// ---- Milestones (public) ----
+
+async function loadMilestones() {
+  const section = document.getElementById('milestonesSection');
+  if (!section) return;
+
+  try {
+    const snapshot = await firebase
+      .firestore()
+      .collection('milestones')
+      .orderBy('startDate', 'asc')
+      .get();
+
+    if (snapshot.empty) {
+      section.style.display = 'none';
+      return;
+    }
+
+    const milestones = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const completed = milestones.filter(m => m.isCompleted);
+    const active = milestones.find(m => !m.isCompleted);
+
+    section.style.display = '';
+
+    // Active milestone
+    const activeContainer = document.getElementById('activeMilestone');
+    if (activeContainer) {
+      if (active) {
+        const start = new Date(active.startDate);
+        const today = new Date();
+        const days = Math.floor((today - start) / 86400000);
+        activeContainer.innerHTML = `
+          <div class="milestone-active">
+            <div class="milestone-active-label">Current Milestone</div>
+            <div class="milestone-active-title">${active.title}</div>
+            ${active.description ? `<p class="milestone-active-desc">${active.description}</p>` : ''}
+            <div class="milestone-active-counter">
+              <span class="milestone-days" id="milestoneDayCount">${days}</span>
+              <span class="milestone-days-label">day${days !== 1 ? 's' : ''} in progress</span>
+            </div>
+            <div class="milestone-active-since">Started ${start.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+          </div>
+        `;
+
+        // Update the counter every minute
+        setInterval(() => {
+          const d = Math.floor((new Date() - start) / 86400000);
+          const el = document.getElementById('milestoneDayCount');
+          if (el) el.textContent = d;
+        }, 60000);
+      } else {
+        activeContainer.innerHTML = '<p class="milestone-none">No active milestone set.</p>';
+      }
+    }
+
+    // Completed milestones
+    const completedContainer = document.getElementById('completedMilestones');
+    if (completedContainer) {
+      if (completed.length === 0) {
+        completedContainer.innerHTML = '<p class="milestone-none">No completed milestones yet.</p>';
+      } else {
+        completedContainer.innerHTML = completed
+          .slice()
+          .reverse()
+          .map(m => {
+            const start = new Date(m.startDate);
+            const end = new Date(m.endDate);
+            const days = Math.round((end - start) / 86400000);
+            return `
+              <div class="milestone-card completed">
+                <div class="milestone-card-header">
+                  <span class="milestone-card-title">${m.title}</span>
+                  <span class="milestone-card-duration">${days} day${days !== 1 ? 's' : ''}</span>
+                </div>
+                ${m.description ? `<p class="milestone-card-desc">${m.description}</p>` : ''}
+                <div class="milestone-card-dates">
+                  ${start.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  &rarr;
+                  ${end.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </div>
+              </div>
+            `;
+          })
+          .join('');
+      }
+    }
+  } catch (error) {
+    console.error('Error loading milestones:', error);
+  }
+}
