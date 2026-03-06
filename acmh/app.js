@@ -1258,14 +1258,24 @@ async function loadMilestones() {
     const completed = milestones.filter(m => m.isCompleted);
     const activeList = milestones.filter(m => !m.isCompleted);
 
-    // Update stats bar with first active milestone
+    // Update stats bar + sidebar with first active milestone
     if (activeList.length > 0) {
+      const title = activeList[0].title;
+
       const milestoneItem = document.getElementById('statMilestoneItem');
       const milestoneName = document.getElementById('statMilestoneName');
       const milestoneDivider = document.getElementById('milestoneDivider');
       if (milestoneItem) milestoneItem.style.display = '';
       if (milestoneDivider) milestoneDivider.style.display = '';
-      if (milestoneName) milestoneName.textContent = activeList[0].title;
+      if (milestoneName) milestoneName.textContent = title;
+
+      const sideMilestoneItem = document.getElementById('sideMilestoneItem');
+      const sideMilestoneName = document.getElementById('sideMilestoneName');
+      const sideMilestoneDivider = document.getElementById('sideMilestoneDivider');
+      if (sideMilestoneItem) sideMilestoneItem.style.display = '';
+      if (sideMilestoneDivider) sideMilestoneDivider.style.display = '';
+      if (sideMilestoneName) sideMilestoneName.textContent = title;
+
       const bar = document.getElementById('statsBar');
       if (bar) bar.style.display = '';
     }
@@ -1374,6 +1384,8 @@ function updateStatsBarTime(timeEntries) {
   if (!timeEntries.length) return;
   const bar = document.getElementById('statsBar');
   if (bar) bar.style.display = '';
+  const sidebar = document.getElementById('statsSidebar');
+  if (sidebar) sidebar.style.display = '';
 
   // Last active
   const sorted = [...timeEntries].sort((a, b) => a.date > b.date ? 1 : -1);
@@ -1383,18 +1395,20 @@ function updateStatsBarTime(timeEntries) {
   const diff = Math.round((today - lastNorm) / 86400000);
   const lastStr = diff === 0 ? 'Today' : diff === 1 ? 'Yesterday' : `${diff}d ago`;
 
-  const lastEl = document.getElementById('statLastActive');
-  if (lastEl) lastEl.textContent = lastStr;
+  document.getElementById('statLastActive').textContent = lastStr;
+  document.getElementById('sideLastActive').textContent = lastStr;
 
   // Streak
   const streak = calcStreak(timeEntries);
-  const streakEl = document.getElementById('statStreak');
-  if (streakEl) streakEl.textContent = streak > 0 ? `${streak}d` : '—';
+  const streakVal = streak > 0 ? `${streak}d` : '—';
+  document.getElementById('statStreak').textContent = streakVal;
+  document.getElementById('sideStreak').textContent = streakVal;
 
   // Total hours
   const totalHours = timeEntries.reduce((s, e) => s + (e.hours || 0), 0);
-  const hoursEl = document.getElementById('statHoursBar');
-  if (hoursEl) hoursEl.textContent = `${totalHours.toFixed(0)}h`;
+  const hoursVal = `${totalHours.toFixed(0)}h`;
+  document.getElementById('statHoursBar').textContent = hoursVal;
+  document.getElementById('sideHours').textContent = hoursVal;
 }
 
 // ---- Vibe strip (item 7) ----
