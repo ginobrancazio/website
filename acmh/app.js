@@ -432,6 +432,7 @@ function createTimeChart(timeEntries) {
       scales: {
         x: {
           type: 'time',
+          max: new Date(),
           time: {
             unit: 'day',
             displayFormats: {
@@ -510,6 +511,7 @@ function createBudgetChart(expenses) {
       scales: {
         x: {
           type: 'time',
+          max: new Date(),
           time: {
             unit: 'day',
             displayFormats: {
@@ -682,6 +684,7 @@ function createVibeChart(vibeChecks) {
       scales: {
         x: {
           type: 'time',
+          max: new Date(),
           time: {
             unit: 'day',
             displayFormats: {
