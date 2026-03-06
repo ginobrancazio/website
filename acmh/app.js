@@ -8,22 +8,56 @@ let allTimeEntries = [];
 let allExpenses = [];
 let allVibeChecks = [];
 
-// Custom Chart.js plugin: draws a dashed vertical line + short label at each month boundary.
+// Custom Chart.js plugin: alternating month bands + solid boundary lines + pill labels.
 // Only activates on charts with a time-based x-axis.
 const monthBoundaryPlugin = {
   id: 'monthBoundaries',
+
+  // Alternating shaded bands drawn BEHIND the chart data
+  beforeDraw(chart) {
+    const { ctx, chartArea, scales } = chart;
+    if (!scales.x || scales.x.type !== 'time') return;
+
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const bandColor = isDark ? 'rgba(0, 212, 255, 0.055)' : 'rgba(0, 0, 0, 0.035)';
+
+    const xScale = scales.x;
+    const { top, bottom } = chartArea;
+
+    const cursor = new Date(xScale.min);
+    cursor.setDate(1);
+    cursor.setHours(0, 0, 0, 0);
+
+    let shade = false;
+    while (cursor.getTime() <= xScale.max) {
+      const next = new Date(cursor);
+      next.setMonth(next.getMonth() + 1);
+
+      if (shade) {
+        const x1 = Math.max(xScale.getPixelForValue(cursor.getTime()), chartArea.left);
+        const x2 = Math.min(xScale.getPixelForValue(next.getTime()), chartArea.right);
+        ctx.fillStyle = bandColor;
+        ctx.fillRect(x1, top, x2 - x1, bottom - top);
+      }
+
+      shade = !shade;
+      cursor.setMonth(cursor.getMonth() + 1);
+    }
+  },
+
+  // Boundary lines + pill labels drawn ON TOP of the chart data
   afterDraw(chart) {
     const { ctx, chartArea, scales } = chart;
     if (!scales.x || scales.x.type !== 'time') return;
 
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    const lineColor  = isDark ? 'rgba(0, 212, 255, 0.18)' : 'rgba(0, 0, 0, 0.1)';
-    const labelColor = isDark ? 'rgba(0, 212, 255, 0.45)' : 'rgba(0, 0, 0, 0.3)';
+    const lineColor  = isDark ? 'rgba(0, 212, 255, 0.6)'  : 'rgba(0, 0, 0, 0.22)';
+    const pillBg     = isDark ? 'rgba(0, 212, 255, 0.18)' : 'rgba(0, 0, 0, 0.09)';
+    const pillText   = isDark ? 'rgba(0, 212, 255, 1)'    : 'rgba(30, 30, 30, 0.75)';
 
     const xScale = scales.x;
     const { top, bottom } = chartArea;
 
-    // Walk forward one month at a time from just after the axis min
     const current = new Date(xScale.min);
     current.setDate(1);
     current.setHours(0, 0, 0, 0);
@@ -34,22 +68,31 @@ const monthBoundaryPlugin = {
     while (current.getTime() <= xScale.max) {
       const x = xScale.getPixelForValue(current.getTime());
 
-      // Dashed vertical line
+      // Solid vertical line
       ctx.strokeStyle = lineColor;
-      ctx.lineWidth = 1;
-      ctx.setLineDash([3, 4]);
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([]);
       ctx.beginPath();
       ctx.moveTo(x, top);
       ctx.lineTo(x, bottom);
       ctx.stroke();
 
-      // Month label just inside the top of the chart area
+      // Pill label
       const monthLabel = current.toLocaleDateString('en-GB', { month: 'short', year: '2-digit' });
-      ctx.setLineDash([]);
-      ctx.fillStyle = labelColor;
-      ctx.font = '10px Inter, system-ui, sans-serif';
+      ctx.font = 'bold 11px Inter, system-ui, sans-serif';
+      const tw = ctx.measureText(monthLabel).width;
+      const ph = 18, px = 7, py = 3;
+      const pillX = x - tw / 2 - px;
+      const pillY = top + 5;
+
+      ctx.fillStyle = pillBg;
+      ctx.beginPath();
+      ctx.roundRect(pillX, pillY, tw + px * 2, ph, 4);
+      ctx.fill();
+
+      ctx.fillStyle = pillText;
       ctx.textAlign = 'center';
-      ctx.fillText(monthLabel, x, top + 13);
+      ctx.fillText(monthLabel, x, pillY + ph - py);
 
       current.setMonth(current.getMonth() + 1);
     }
