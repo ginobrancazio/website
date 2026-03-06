@@ -293,9 +293,9 @@ async function loadMetrics() {
     expenseSnapshot.forEach((doc) => allExpenses.push(doc.data()));
     vibeSnapshot.forEach((doc) => allVibeChecks.push(doc.data()));
 
-    updateStatsBarTime(allTimeEntries);
-    renderVibeStrip(allVibeChecks);
-    buildMonthFilter();
+    try { updateStatsBarTime(allTimeEntries); } catch(e) { console.error("updateStatsBarTime failed:", e); }
+    try { renderVibeStrip(allVibeChecks); } catch(e) { console.error("renderVibeStrip failed:", e); }
+    try { buildMonthFilter(); } catch(e) { console.error("buildMonthFilter failed:", e); }
     renderMetrics(allTimeEntries, allExpenses, allVibeChecks);
   } catch (error) {
     console.error("Error loading metrics:", error);
@@ -327,7 +327,7 @@ function renderMetrics(timeEntries, expenses, vibeChecks) {
   createVibeChart(vibeChecks);
 }
 
-// Build the month filter dropdown above the metrics section
+// Build the month filter pill buttons above the metrics section
 function buildMonthFilter() {
   const container = document.getElementById("chart-filter");
   if (!container) return;
@@ -341,37 +341,13 @@ function buildMonthFilter() {
 
   container.innerHTML = "";
 
-  const label = document.createElement("label");
-  label.htmlFor = "month-select";
-  label.className = "filter-label mono";
-  label.textContent = "Period:";
-  container.appendChild(label);
-
-  const select = document.createElement("select");
-  select.id = "month-select";
-  select.className = "month-select";
-
-  const allOption = document.createElement("option");
-  allOption.value = "all";
-  allOption.textContent = "All Time";
-  select.appendChild(allOption);
-
-  months.forEach((month) => {
-    const [year, mon] = month.split("-");
-    const monthLabel = new Date(year, parseInt(mon) - 1, 1).toLocaleDateString("en-GB", {
-      month: "long",
-      year: "numeric",
+  function setActive(selectedValue) {
+    container.querySelectorAll(".filter-btn").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.value === selectedValue);
     });
-    const option = document.createElement("option");
-    option.value = month;
-    option.textContent = monthLabel;
-    select.appendChild(option);
-  });
+  }
 
-  container.appendChild(select);
-
-  select.addEventListener("change", () => {
-    const month = select.value;
+  function applyFilter(month) {
     if (month === "all") {
       renderMetrics(allTimeEntries, allExpenses, allVibeChecks);
     } else {
@@ -381,6 +357,28 @@ function buildMonthFilter() {
         allVibeChecks.filter((e) => e.date && e.date.startsWith(month))
       );
     }
+    setActive(month);
+  }
+
+  const allBtn = document.createElement("button");
+  allBtn.className = "filter-btn active";
+  allBtn.dataset.value = "all";
+  allBtn.textContent = "All Time";
+  allBtn.addEventListener("click", () => applyFilter("all"));
+  container.appendChild(allBtn);
+
+  months.forEach((month) => {
+    const [year, mon] = month.split("-");
+    const monthLabel = new Date(year, parseInt(mon) - 1, 1).toLocaleDateString("en-GB", {
+      month: "short",
+      year: "numeric",
+    });
+    const btn = document.createElement("button");
+    btn.className = "filter-btn";
+    btn.dataset.value = month;
+    btn.textContent = monthLabel;
+    btn.addEventListener("click", () => applyFilter(month));
+    container.appendChild(btn);
   });
 }
 
@@ -1381,11 +1379,8 @@ function calcStreak(timeEntries) {
 }
 
 function updateStatsBarTime(timeEntries) {
-  if (!timeEntries.length) return;
-  const bar = document.getElementById('statsBar');
-  if (bar) bar.style.display = '';
-  const sidebar = document.getElementById('statsSidebar');
-  if (sidebar) sidebar.style.display = '';
+  // Stats bar and sidebar were removed from the page; nothing to update.
+  return;
 
   // Last active
   const sorted = [...timeEntries].sort((a, b) => a.date > b.date ? 1 : -1);
@@ -1395,20 +1390,26 @@ function updateStatsBarTime(timeEntries) {
   const diff = Math.round((today - lastNorm) / 86400000);
   const lastStr = diff === 0 ? 'Today' : diff === 1 ? 'Yesterday' : `${diff}d ago`;
 
-  document.getElementById('statLastActive').textContent = lastStr;
-  document.getElementById('sideLastActive').textContent = lastStr;
+  const elLastActive = document.getElementById('statLastActive');
+  if (elLastActive) elLastActive.textContent = lastStr;
+  const elSideLastActive = document.getElementById('sideLastActive');
+  if (elSideLastActive) elSideLastActive.textContent = lastStr;
 
   // Streak
   const streak = calcStreak(timeEntries);
   const streakVal = streak > 0 ? `${streak}d` : '—';
-  document.getElementById('statStreak').textContent = streakVal;
-  document.getElementById('sideStreak').textContent = streakVal;
+  const elStreak = document.getElementById('statStreak');
+  if (elStreak) elStreak.textContent = streakVal;
+  const elSideStreak = document.getElementById('sideStreak');
+  if (elSideStreak) elSideStreak.textContent = streakVal;
 
   // Total hours
   const totalHours = timeEntries.reduce((s, e) => s + (e.hours || 0), 0);
   const hoursVal = `${totalHours.toFixed(0)}h`;
-  document.getElementById('statHoursBar').textContent = hoursVal;
-  document.getElementById('sideHours').textContent = hoursVal;
+  const elHoursBar = document.getElementById('statHoursBar');
+  if (elHoursBar) elHoursBar.textContent = hoursVal;
+  const elSideHours = document.getElementById('sideHours');
+  if (elSideHours) elSideHours.textContent = hoursVal;
 }
 
 // ---- Vibe strip (item 7) ----

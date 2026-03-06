@@ -261,7 +261,7 @@ nav {
 .frame-corner.tl {
   top: -10px;
   left: -10px;
-  border-color: var(--accent-cyan);
+  border-color: var(--gradient-start);
   border-right: none;
   border-bottom: none;
 }
@@ -269,7 +269,7 @@ nav {
 .frame-corner.tr {
   top: -10px;
   right: -10px;
-  border-color: var(--accent-cyan);
+  border-color: var(--gradient-start);
   border-left: none;
   border-bottom: none;
 }
@@ -277,7 +277,7 @@ nav {
 .frame-corner.bl {
   bottom: -10px;
   left: -10px;
-  border-color: var(--accent-pink);
+  border-color: var(--gradient-end);
   border-right: none;
   border-top: none;
 }
@@ -285,7 +285,7 @@ nav {
 .frame-corner.br {
   bottom: -10px;
   right: -10px;
-  border-color: var(--accent-pink);
+  border-color: var(--gradient-end);
   border-left: none;
   border-top: none;
 }
@@ -299,9 +299,31 @@ nav {
 
 .section-header {
   font-size: 0.875rem;
+  font-weight: 700;
   color: var(--accent-coral);
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.12em;
+  position: relative;
+  padding-bottom: 0.75rem;
+}
+
+.section-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 2.5rem;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+  border-radius: 2px;
+}
+
+.section-desc {
+  font-size: 0.9rem;
+  color: var(--text-muted);
   margin-bottom: 2rem;
-  letter-spacing: 0.05em;
+  max-width: 55ch;
+  line-height: 1.6;
 }
 
 /* Accordion Style - Enhanced */
@@ -490,52 +512,13 @@ nav {
   opacity: 0.9;
 }
 
-/* Month filter dropdown above charts */
+/* Period filter pill buttons above charts */
 .chart-filter {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
   margin-bottom: 2rem;
-}
-
-.filter-label {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.month-select {
-  background: var(--bg-secondary);
-  border: 1.5px solid var(--border);
-  border-radius: 8px;
-  color: var(--text);
-  font-family: inherit;
-  font-size: 0.9rem;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  min-width: 200px;
-  appearance: auto;
-}
-
-.month-select:hover,
-.month-select:focus {
-  border-color: var(--accent-cyan);
-  outline: none;
-}
-
-[data-theme="dark"] .month-select {
-  background: var(--bg-secondary);
-  color: var(--text);
-  border-color: rgba(0, 212, 255, 0.2);
-}
-
-[data-theme="dark"] .month-select:hover,
-[data-theme="dark"] .month-select:focus {
-  border-color: var(--accent-cyan);
-  box-shadow: 0 0 10px rgba(0, 212, 255, 0.15);
 }
 
 /* Metrics Dashboard */
@@ -610,7 +593,7 @@ nav {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-left: 4px solid var(--accent-cyan);
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 2rem;
   transition: transform 0.2s, box-shadow 0.2s;
 }
@@ -891,7 +874,7 @@ nav {
 
 .budget-tables {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
 }
 
@@ -1241,12 +1224,14 @@ footer {
 }
 
 .milestone-active {
-  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+  background:
+    linear-gradient(var(--bg-secondary), var(--bg-secondary)) padding-box,
+    linear-gradient(135deg, var(--gradient-start), var(--gradient-end)) border-box;
+  border: 2px solid transparent;
   border-radius: 16px;
   padding: 2rem 2.5rem;
-  color: #fff;
   text-align: center;
-  box-shadow: 0 8px 32px rgba(74, 111, 165, 0.25);
+  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.1);
 }
 
 .milestone-active-label {
@@ -1254,7 +1239,7 @@ footer {
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  opacity: 0.8;
+  color: var(--text-muted);
   margin-bottom: 0.5rem;
 }
 
@@ -1262,11 +1247,15 @@ footer {
   font-size: 1.75rem;
   font-weight: 900;
   margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .milestone-active-desc {
-  opacity: 0.85;
   font-size: 0.95rem;
+  color: var(--text-muted);
   margin-bottom: 1.25rem;
 }
 
@@ -1283,16 +1272,20 @@ footer {
   font-weight: 900;
   line-height: 1;
   font-variant-numeric: tabular-nums;
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .milestone-days-label {
   font-size: 1rem;
-  opacity: 0.85;
+  color: var(--text-muted);
 }
 
 .milestone-active-since {
   font-size: 0.85rem;
-  opacity: 0.7;
+  color: var(--text-muted);
 }
 
 .milestones-subheader {
@@ -1925,6 +1918,11 @@ footer {
   text-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
 }
 
+[data-theme="dark"] .section-header::after {
+  background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+  filter: drop-shadow(0 0 4px var(--gradient-start));
+}
+
 /* Primary button */
 [data-theme="dark"] .btn-primary {
   box-shadow: 0 0 20px rgba(157, 78, 255, 0.35);
@@ -1974,6 +1972,11 @@ footer {
 }
 [data-theme="dark"] .accordion-header span:first-child::before {
   color: var(--accent-cyan);
+}
+
+/* Milestone active — neon border in dark mode */
+[data-theme="dark"] .milestone-active {
+  box-shadow: 0 0 28px rgba(157, 78, 255, 0.15);
 }
 
 /* Game frame corner brackets */
