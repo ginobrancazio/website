@@ -1238,6 +1238,12 @@ footer {
   margin-bottom: 2.5rem;
 }
 
+.milestone-active-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+
 .milestone-active {
   background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
   border-radius: 16px;
@@ -1277,7 +1283,7 @@ footer {
 }
 
 .milestone-days {
-  font-size: 3.5rem;
+  font-size: 2.75rem;
   font-weight: 900;
   line-height: 1;
   font-variant-numeric: tabular-nums;

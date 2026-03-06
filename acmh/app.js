@@ -1233,38 +1233,45 @@ async function loadMilestones() {
 
     const milestones = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     const completed = milestones.filter(m => m.isCompleted);
-    const active = milestones.find(m => !m.isCompleted);
+    const activeList = milestones.filter(m => !m.isCompleted);
 
     section.style.display = '';
 
-    // Active milestone
+    // Active milestones
     const activeContainer = document.getElementById('activeMilestone');
     if (activeContainer) {
-      if (active) {
-        const start = new Date(active.startDate);
-        const today = new Date();
-        const days = Math.floor((today - start) / 86400000);
-        activeContainer.innerHTML = `
-          <div class="milestone-active">
-            <div class="milestone-active-label">Current Milestone</div>
-            <div class="milestone-active-title">${active.title}</div>
-            ${active.description ? `<p class="milestone-active-desc">${active.description}</p>` : ''}
-            <div class="milestone-active-counter">
-              <span class="milestone-days" id="milestoneDayCount">${days}</span>
-              <span class="milestone-days-label">day${days !== 1 ? 's' : ''} in progress</span>
-            </div>
-            <div class="milestone-active-since">Started ${start.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
-          </div>
-        `;
-
-        // Update the counter every minute
-        setInterval(() => {
-          const d = Math.floor((new Date() - start) / 86400000);
-          const el = document.getElementById('milestoneDayCount');
-          if (el) el.textContent = d;
-        }, 60000);
-      } else {
+      if (activeList.length === 0) {
         activeContainer.innerHTML = '<p class="milestone-none">No active milestone set.</p>';
+      } else {
+        const today = new Date();
+        activeContainer.innerHTML = activeList.map((active, i) => {
+          const start = new Date(active.startDate);
+          const days = Math.floor((today - start) / 86400000);
+          const counterId = `milestoneDayCount-${i}`;
+          return `
+            <div class="milestone-active">
+              <div class="milestone-active-label">${activeList.length > 1 ? 'Active Milestone' : 'Current Milestone'}</div>
+              <div class="milestone-active-title">${active.title}</div>
+              ${active.description ? `<p class="milestone-active-desc">${active.description}</p>` : ''}
+              <div class="milestone-active-counter">
+                <span class="milestone-days" id="${counterId}">${days}</span>
+                <span class="milestone-days-label">day${days !== 1 ? 's' : ''} in progress</span>
+              </div>
+              <div class="milestone-active-since">Started ${start.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+            </div>
+          `;
+        }).join('');
+
+        // Update counters every minute
+        activeList.forEach((active, i) => {
+          const start = new Date(active.startDate);
+          const counterId = `milestoneDayCount-${i}`;
+          setInterval(() => {
+            const d = Math.floor((new Date() - start) / 86400000);
+            const el = document.getElementById(counterId);
+            if (el) el.textContent = d;
+          }, 60000);
+        });
       }
     }
 
