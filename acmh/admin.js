@@ -1465,7 +1465,7 @@ function initNewsletterTab() {
 
   // Save API key on change
   document.getElementById('newsletterApiKey').addEventListener('input', (e) => {
-    if (e.target.value) localStorage.setItem('acmh-claude-key', e.target.value);
+    if (e.target.value) localStorage.setItem('acmh-openai-key', e.target.value);
   });
 
   document.getElementById('generateNewsletterBtn').addEventListener('click', generateNewsletter);
@@ -1483,7 +1483,7 @@ function initNewsletterTab() {
 }
 
 function restoreNewsletterApiKey() {
-  const saved = localStorage.getItem('acmh-claude-key');
+  const saved = localStorage.getItem('acmh-openai-key');
   if (saved) document.getElementById('newsletterApiKey').value = saved;
 }
 
@@ -1494,10 +1494,10 @@ async function generateNewsletter() {
   const btn = document.getElementById('generateNewsletterBtn');
 
   if (!monthValue) { statusEl.textContent = 'Please select a month.'; return; }
-  if (!apiKey) { statusEl.textContent = 'Please enter your Claude API key.'; return; }
+  if (!apiKey) { statusEl.textContent = 'Please enter your OpenAI API key.'; return; }
 
   // Save key for next time
-  localStorage.setItem('acmh-claude-key', apiKey);
+  localStorage.setItem('acmh-openai-key', apiKey);
 
   btn.disabled = true;
   btn.textContent = 'Fetching data...';
@@ -1512,10 +1512,10 @@ async function generateNewsletter() {
     // Show data summary
     showNewsletterDataSummary(data, monthLabel);
 
-    btn.textContent = 'Generating with Claude...';
+    btn.textContent = 'Generating with OpenAI...';
 
     const prompt = buildNewsletterPrompt(data, monthLabel);
-    const newsletter = await callClaudeAPI(apiKey, prompt);
+    const newsletter = await callOpenAI(apiKey, prompt);
 
     document.getElementById('newsletterOutput').value = newsletter;
     document.getElementById('newsletterPreview').style.display = 'block';
@@ -1660,17 +1660,15 @@ Keep it scannable with short paragraphs. Aim for 400-600 words in the body. Use 
   return prompt;
 }
 
-async function callClaudeAPI(apiKey, prompt) {
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+async function callOpenAI(apiKey, prompt) {
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true',
+      'Authorization': `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'gpt-4o-mini',
       max_tokens: 2048,
       messages: [{ role: 'user', content: prompt }],
     }),
@@ -1682,7 +1680,7 @@ async function callClaudeAPI(apiKey, prompt) {
   }
 
   const result = await response.json();
-  return result.content[0].text;
+  return result.choices[0].message.content;
 }
 
 function showNewsletterDataSummary(data, monthLabel) {
