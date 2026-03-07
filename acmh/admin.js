@@ -1440,13 +1440,27 @@ async function deleteMilestone(id) {
 // NEWSLETTER GENERATOR
 // ============================================================
 
+const DEFAULT_NEWSLETTER_INSTRUCTIONS = `You are writing a friendly, personal monthly development newsletter for subscribers of Animal City Monster Hunters, an indie game in development by Gino Brancazio. The tone should be warm, honest, enthusiastic, and human — like an email from a friend who happens to be making a game. Don't be corporate or overly formal.
+
+Please write a complete newsletter ready to paste into an email. Structure it as follows:
+1. A compelling subject line (prefix with "Subject: ")
+2. A warm opening greeting
+3. A narrative body that weaves together the development highlights, any milestones progress, and the general mood/vibe — make it engaging and tell the story of the month, not just a list of facts
+4. If there are screenshots/images, mention them with their URLs so the sender can embed them
+5. An honest reflection on how development is going (use the vibe check data but don't just quote it robotically)
+6. A brief look ahead / what's next
+7. A warm sign-off from Gino
+
+Keep it scannable with short paragraphs. Aim for 400-600 words in the body. Use the actual data provided — don't invent things that aren't in the data. If a section has no data (e.g. no income), skip it naturally.`;
+
 function initNewsletterTab() {
   // Populate month selector with last 24 months
   const select = document.getElementById('newsletterMonth');
   if (!select) return;
   if (select.options.length > 0) {
-    // Already initialised — just restore saved API key
+    // Already initialised — just restore saved values
     restoreNewsletterApiKey();
+    restoreNewsletterInstructions();
     return;
   }
 
@@ -1462,10 +1476,22 @@ function initNewsletterTab() {
   }
 
   restoreNewsletterApiKey();
+  restoreNewsletterInstructions();
 
   // Save API key on change
   document.getElementById('newsletterApiKey').addEventListener('input', (e) => {
     if (e.target.value) localStorage.setItem('acmh-openai-key', e.target.value);
+  });
+
+  // Save custom instructions on change
+  document.getElementById('newsletterPromptInstructions').addEventListener('input', (e) => {
+    localStorage.setItem('acmh-nl-instructions', e.target.value);
+  });
+
+  // Reset instructions to default
+  document.getElementById('resetPromptBtn').addEventListener('click', () => {
+    document.getElementById('newsletterPromptInstructions').value = DEFAULT_NEWSLETTER_INSTRUCTIONS;
+    localStorage.removeItem('acmh-nl-instructions');
   });
 
   document.getElementById('generateNewsletterBtn').addEventListener('click', generateNewsletter);
@@ -1485,6 +1511,11 @@ function initNewsletterTab() {
 function restoreNewsletterApiKey() {
   const saved = localStorage.getItem('acmh-openai-key');
   if (saved) document.getElementById('newsletterApiKey').value = saved;
+}
+
+function restoreNewsletterInstructions() {
+  const saved = localStorage.getItem('acmh-nl-instructions');
+  document.getElementById('newsletterPromptInstructions').value = saved || DEFAULT_NEWSLETTER_INSTRUCTIONS;
 }
 
 async function generateNewsletter() {
@@ -1640,22 +1671,10 @@ function buildNewsletterPrompt(data, monthLabel) {
     }
   }
 
-  const prompt = `You are writing a friendly, personal monthly development newsletter for subscribers of Animal City Monster Hunters, an indie game in development by Gino Brancazio. The tone should be warm, honest, enthusiastic, and human — like an email from a friend who happens to be making a game. Don't be corporate or overly formal.
+  const instructions = (document.getElementById('newsletterPromptInstructions')?.value.trim())
+    || DEFAULT_NEWSLETTER_INSTRUCTIONS;
 
-Here is all the data from ${monthLabel}:
-
-${sections.join('\n')}
-
-Please write a complete newsletter ready to paste into an email. Structure it as follows:
-1. A compelling subject line (prefix with "Subject: ")
-2. A warm opening greeting
-3. A narrative body that weaves together the development highlights, any milestones progress, and the general mood/vibe — make it engaging and tell the story of the month, not just a list of facts
-4. If there are screenshots/images, mention them with their URLs so the sender can embed them
-5. A honest reflection on how development is going (use the vibe check data but don't just quote it robotically)
-6. A brief look ahead / what's next
-7. A warm sign-off from Gino
-
-Keep it scannable with short paragraphs. Aim for 400-600 words in the body. Use the actual data provided — don't invent things that aren't in the data. If a section has no data (e.g. no income), skip it naturally.`;
+  const prompt = `Here is all the logged data from ${monthLabel}:\n\n${sections.join('\n')}\n\n---\n\n${instructions}`;
 
   return prompt;
 }

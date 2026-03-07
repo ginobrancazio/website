@@ -1318,6 +1318,22 @@
         </div>
       </div>
 
+      <!-- Prompt editor -->
+      <div style="margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <label class="form-label" style="margin: 0;">
+            Writing Instructions
+            <span style="font-weight: 400; color: var(--text-muted); font-size: 0.8rem;"> — edit to change tone, structure, or focus. Data is always inserted above this automatically.</span>
+          </label>
+          <button id="resetPromptBtn" class="btn btn-secondary btn-small" style="white-space: nowrap;">Reset to default</button>
+        </div>
+        <textarea
+          id="newsletterPromptInstructions"
+          style="width: 100%; min-height: 220px; font-family: inherit; font-size: 0.875rem; line-height: 1.6; padding: 1rem; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); resize: vertical;"
+          spellcheck="false"
+        ></textarea>
+      </div>
+
       <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-bottom: 1.5rem;">
         <button id="generateNewsletterBtn" class="btn btn-primary">Generate Newsletter</button>
         <button id="copyNewsletterBtn" class="btn btn-secondary" style="display:none;">Copy to Clipboard</button>
