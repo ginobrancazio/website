@@ -313,6 +313,9 @@ function switchTab(tabName) {
     case "milestones":
       loadAdminMilestones();
       break;
+    case "newsletter":
+      initNewsletterTab();
+      break;
   }
 }
 
@@ -1432,3 +1435,285 @@ async function deleteMilestone(id) {
   }
 }
 
+
+// ============================================================
+// NEWSLETTER GENERATOR
+// ============================================================
+
+function initNewsletterTab() {
+  // Populate month selector with last 24 months
+  const select = document.getElementById('newsletterMonth');
+  if (!select) return;
+  if (select.options.length > 0) {
+    // Already initialised — just restore saved API key
+    restoreNewsletterApiKey();
+    return;
+  }
+
+  const now = new Date();
+  for (let i = 0; i < 24; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    const label = d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+    const opt = document.createElement('option');
+    opt.value = value;
+    opt.textContent = label;
+    select.appendChild(opt);
+  }
+
+  restoreNewsletterApiKey();
+
+  // Save API key on change
+  document.getElementById('newsletterApiKey').addEventListener('input', (e) => {
+    if (e.target.value) localStorage.setItem('acmh-claude-key', e.target.value);
+  });
+
+  document.getElementById('generateNewsletterBtn').addEventListener('click', generateNewsletter);
+
+  document.getElementById('copyNewsletterBtn').addEventListener('click', () => {
+    const output = document.getElementById('newsletterOutput');
+    output.select();
+    navigator.clipboard.writeText(output.value).then(() => {
+      const btn = document.getElementById('copyNewsletterBtn');
+      const original = btn.textContent;
+      btn.textContent = '✓ Copied!';
+      setTimeout(() => { btn.textContent = original; }, 2000);
+    });
+  });
+}
+
+function restoreNewsletterApiKey() {
+  const saved = localStorage.getItem('acmh-claude-key');
+  if (saved) document.getElementById('newsletterApiKey').value = saved;
+}
+
+async function generateNewsletter() {
+  const monthValue = document.getElementById('newsletterMonth').value;
+  const apiKey = document.getElementById('newsletterApiKey').value.trim();
+  const statusEl = document.getElementById('newsletterStatus');
+  const btn = document.getElementById('generateNewsletterBtn');
+
+  if (!monthValue) { statusEl.textContent = 'Please select a month.'; return; }
+  if (!apiKey) { statusEl.textContent = 'Please enter your Claude API key.'; return; }
+
+  // Save key for next time
+  localStorage.setItem('acmh-claude-key', apiKey);
+
+  btn.disabled = true;
+  btn.textContent = 'Fetching data...';
+  statusEl.textContent = '';
+
+  try {
+    const [year, month] = monthValue.split('-').map(Number);
+    const monthLabel = new Date(year, month - 1, 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+
+    const data = await fetchNewsletterData(monthValue);
+
+    // Show data summary
+    showNewsletterDataSummary(data, monthLabel);
+
+    btn.textContent = 'Generating with Claude...';
+
+    const prompt = buildNewsletterPrompt(data, monthLabel);
+    const newsletter = await callClaudeAPI(apiKey, prompt);
+
+    document.getElementById('newsletterOutput').value = newsletter;
+    document.getElementById('newsletterPreview').style.display = 'block';
+    document.getElementById('copyNewsletterBtn').style.display = '';
+    statusEl.textContent = `Generated from ${countDataPoints(data)} data points.`;
+
+  } catch (err) {
+    statusEl.style.color = 'var(--accent-coral)';
+    statusEl.textContent = 'Error: ' + err.message;
+    console.error('Newsletter generation error:', err);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Generate Newsletter';
+  }
+}
+
+async function fetchNewsletterData(monthPrefix) {
+  const db = firebase.firestore();
+
+  // All collections ordered by date — filter client-side for the month
+  const [timeSnap, expenseSnap, vibeSnap, updateSnap, screenshotSnap, milestoneSnap, incomeSnap] = await Promise.all([
+    db.collection('timeEntries').orderBy('date').get(),
+    db.collection('expenses').orderBy('date').get(),
+    db.collection('vibeChecks').orderBy('date').get(),
+    db.collection('updates').orderBy('date', 'desc').get(),
+    db.collection('screenshots').orderBy('date', 'desc').get(),
+    db.collection('milestones').orderBy('startDate', 'asc').get(),
+    db.collection('income').orderBy('date').get(),
+  ]);
+
+  const inMonth = (doc) => doc.date && doc.date.startsWith(monthPrefix);
+  const milestoneInMonth = (m) =>
+    (m.startDate && m.startDate.startsWith(monthPrefix)) ||
+    (m.completedDate && m.completedDate.startsWith(monthPrefix)) ||
+    (!m.isCompleted && m.startDate && m.startDate <= monthPrefix + '-31');
+
+  return {
+    timeEntries:  timeSnap.docs.map(d => d.data()).filter(inMonth),
+    expenses:     expenseSnap.docs.map(d => d.data()).filter(inMonth),
+    vibeChecks:   vibeSnap.docs.map(d => d.data()).filter(inMonth),
+    updates:      updateSnap.docs.map(d => d.data()).filter(inMonth),
+    screenshots:  screenshotSnap.docs.map(d => d.data()).filter(inMonth),
+    milestones:   milestoneSnap.docs.map(d => ({ id: d.id, ...d.data() })).filter(milestoneInMonth),
+    income:       incomeSnap.docs.map(d => d.data()).filter(inMonth),
+  };
+}
+
+function buildNewsletterPrompt(data, monthLabel) {
+  const { timeEntries, expenses, vibeChecks, updates, screenshots, milestones, income } = data;
+
+  const totalHours = timeEntries.reduce((s, e) => s + (e.hours || 0), 0);
+  const totalSpent = expenses.reduce((s, e) => s + (e.amount || 0), 0);
+  const totalIncome = income.reduce((s, e) => s + (e.amount || 0), 0);
+
+  const hoursByCategory = {};
+  timeEntries.forEach(e => {
+    hoursByCategory[e.category] = (hoursByCategory[e.category] || 0) + (e.hours || 0);
+  });
+
+  const overallVibe = vibeChecks.length
+    ? (vibeChecks.filter(v => v.status === 'Green').length > vibeChecks.length / 2 ? 'Green' :
+       vibeChecks.filter(v => v.status === 'Red').length > vibeChecks.length / 2 ? 'Red' : 'Amber')
+    : null;
+
+  const activeMilestones = milestones.filter(m => !m.isCompleted);
+  const completedMilestones = milestones.filter(m => m.isCompleted && m.completedDate && m.completedDate.startsWith(monthLabel.split(' ')[1] + '-' + String(new Date(Date.parse('1 ' + monthLabel)).getMonth() + 1).padStart(2, '0')));
+
+  let sections = [];
+
+  sections.push(`MONTH: ${monthLabel}`);
+  sections.push(`GAME: Animal City Monster Hunters — a Godot-built indie game in active development`);
+
+  if (totalHours > 0) {
+    sections.push(`\nTIME LOGGED THIS MONTH: ${totalHours.toFixed(1)} hours total`);
+    const catLines = Object.entries(hoursByCategory).sort((a,b) => b[1]-a[1]).map(([cat,h]) => `  - ${cat}: ${h.toFixed(1)}h`).join('\n');
+    sections.push(`Breakdown by category:\n${catLines}`);
+  }
+
+  if (updates.length > 0) {
+    sections.push(`\nDEV UPDATES (${updates.length} this month):`);
+    updates.forEach(u => {
+      sections.push(`  • "${u.title}" (${u.date})\n    Summary: ${u.summary || ''}\n    Content: ${u.content || ''}`);
+      if (u.tags && u.tags.length) sections.push(`    Tags: ${u.tags.join(', ')}`);
+    });
+  }
+
+  if (milestones.length > 0) {
+    sections.push(`\nMILESTONES:`);
+    completedMilestones.forEach(m => {
+      sections.push(`  ✓ COMPLETED: "${m.title}" — completed ${m.completedDate}`);
+      if (m.description) sections.push(`    ${m.description}`);
+    });
+    activeMilestones.forEach(m => {
+      const start = new Date(m.startDate);
+      const days = Math.floor((Date.now() - start) / 86400000);
+      sections.push(`  → ACTIVE: "${m.title}" — ${days} days in progress`);
+      if (m.description) sections.push(`    ${m.description}`);
+    });
+  }
+
+  if (screenshots.length > 0) {
+    sections.push(`\nSCREENSHOTS / ARTWORK UPLOADED (${screenshots.length} items):`);
+    screenshots.forEach(s => {
+      sections.push(`  • "${s.title}" [${s.category}] — ${s.description || ''}`);
+      if (s.imageUrl) sections.push(`    Image URL: ${s.imageUrl}`);
+    });
+  }
+
+  if (vibeChecks.length > 0) {
+    sections.push(`\nVIBE CHECKS (${vibeChecks.length} logged, overall: ${overallVibe}):`);
+    vibeChecks.forEach(v => {
+      sections.push(`  ${v.status === 'Green' ? '🟢' : v.status === 'Amber' ? '🟡' : '🔴'} ${v.date}: ${v.notes || ''}`);
+    });
+  }
+
+  if (expenses.length > 0 || income.length > 0) {
+    sections.push(`\nFINANCIALS THIS MONTH:`);
+    if (income.length > 0) sections.push(`  Total income: £${totalIncome.toFixed(2)}`);
+    if (expenses.length > 0) {
+      sections.push(`  Total spent: £${totalSpent.toFixed(2)}`);
+      expenses.forEach(e => sections.push(`  - ${e.category}: £${e.amount.toFixed(2)} — ${e.description}`));
+    }
+  }
+
+  const prompt = `You are writing a friendly, personal monthly development newsletter for subscribers of Animal City Monster Hunters, an indie game in development by Gino Brancazio. The tone should be warm, honest, enthusiastic, and human — like an email from a friend who happens to be making a game. Don't be corporate or overly formal.
+
+Here is all the data from ${monthLabel}:
+
+${sections.join('\n')}
+
+Please write a complete newsletter ready to paste into an email. Structure it as follows:
+1. A compelling subject line (prefix with "Subject: ")
+2. A warm opening greeting
+3. A narrative body that weaves together the development highlights, any milestones progress, and the general mood/vibe — make it engaging and tell the story of the month, not just a list of facts
+4. If there are screenshots/images, mention them with their URLs so the sender can embed them
+5. A honest reflection on how development is going (use the vibe check data but don't just quote it robotically)
+6. A brief look ahead / what's next
+7. A warm sign-off from Gino
+
+Keep it scannable with short paragraphs. Aim for 400-600 words in the body. Use the actual data provided — don't invent things that aren't in the data. If a section has no data (e.g. no income), skip it naturally.`;
+
+  return prompt;
+}
+
+async function callClaudeAPI(apiKey, prompt) {
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 2048,
+      messages: [{ role: 'user', content: prompt }],
+    }),
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error?.message || `API error ${response.status}`);
+  }
+
+  const result = await response.json();
+  return result.content[0].text;
+}
+
+function showNewsletterDataSummary(data, monthLabel) {
+  const preview = document.getElementById('newsletterDataPreview');
+  const list = document.getElementById('newsletterDataList');
+  const summary = document.getElementById('newsletterDataSummary');
+  if (!preview || !list) return;
+
+  const totalHours = data.timeEntries.reduce((s, e) => s + (e.hours || 0), 0);
+
+  const stats = [
+    { label: 'Hours logged', value: totalHours.toFixed(1) },
+    { label: 'Dev updates', value: data.updates.length },
+    { label: 'Screenshots', value: data.screenshots.length },
+    { label: 'Vibe checks', value: data.vibeChecks.length },
+    { label: 'Expenses', value: data.expenses.length },
+    { label: 'Milestones', value: data.milestones.length },
+  ];
+
+  list.innerHTML = stats.map(s => `
+    <div class="nl-stat">
+      <div class="nl-stat-value">${s.value}</div>
+      <div class="nl-stat-label">${s.label}</div>
+    </div>
+  `).join('');
+
+  if (summary) summary.textContent = monthLabel;
+  preview.style.display = 'block';
+}
+
+function countDataPoints(data) {
+  return data.timeEntries.length + data.updates.length + data.screenshots.length +
+    data.vibeChecks.length + data.expenses.length + data.milestones.length;
+}

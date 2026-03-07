@@ -440,6 +440,7 @@
         <button class="tab" data-tab="updates">Dev Update</button>
         <button class="tab" data-tab="contributions">Contributions</button>
         <button class="tab" data-tab="milestones">Milestones</button>
+        <button class="tab" data-tab="newsletter">✉ Newsletter</button>
       </div>
 
       <!-- Game Info Tab -->
@@ -1288,6 +1289,67 @@
       </table>
     </div>
   </div>
+
+  <!-- Newsletter Tab -->
+  <div id="newsletter" class="tab-content">
+    <div class="form-card">
+      <h2 class="form-card-title">✉ Newsletter Generator</h2>
+      <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;">
+        Select a month and generate a subscriber newsletter from all logged data. Uses Claude AI to write the narrative.
+      </p>
+
+      <div class="form-row" style="margin-bottom: 1.5rem;">
+        <div class="form-group">
+          <label class="form-label">Month</label>
+          <select id="newsletterMonth" class="form-select"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">
+            Claude API Key
+            <span style="font-weight: 400; color: var(--text-muted); font-size: 0.8rem;"> — saved locally, never sent anywhere except Anthropic</span>
+          </label>
+          <input
+            type="password"
+            id="newsletterApiKey"
+            class="form-input"
+            placeholder="sk-ant-..."
+            autocomplete="off"
+          />
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-bottom: 1.5rem;">
+        <button id="generateNewsletterBtn" class="btn btn-primary">Generate Newsletter</button>
+        <button id="copyNewsletterBtn" class="btn btn-secondary" style="display:none;">Copy to Clipboard</button>
+        <span id="newsletterStatus" style="font-size: 0.85rem; color: var(--text-muted);"></span>
+      </div>
+
+      <div id="newsletterPreview" style="display:none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+          <h3 style="font-size: 1rem; font-weight: 700;">Generated Draft</h3>
+          <span style="font-size: 0.8rem; color: var(--text-muted);" id="newsletterDataSummary"></span>
+        </div>
+        <textarea
+          id="newsletterOutput"
+          style="width: 100%; min-height: 600px; font-family: inherit; font-size: 0.9rem; line-height: 1.7; padding: 1.5rem; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); resize: vertical;"
+          spellcheck="true"
+          placeholder="Generated newsletter will appear here..."
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="form-card" id="newsletterDataPreview" style="display:none;">
+      <h3 class="form-card-title" style="font-size: 1rem;">Data included in generation</h3>
+      <div id="newsletterDataList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;"></div>
+    </div>
+  </div>
+
+  <style>
+    #newsletterOutput:focus { outline: none; border-color: var(--gradient-start); }
+    .nl-stat { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; text-align: center; }
+    .nl-stat-value { font-size: 1.5rem; font-weight: 900; background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .nl-stat-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 0.25rem; }
+  </style>
 
   <script src="firebase-config.js"></script>
   <script src="admin.js"></script>
